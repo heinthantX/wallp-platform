@@ -31,17 +31,20 @@ const (
 type AdminUser struct {
 	bun.BaseModel `bun:"table:admin_users"`
 
-	ID           string     `bun:",pk"`
-	Email        string     `bun:",notnull,unique"`
-	Name         string     `bun:",notnull"`
-	PasswordHash string     `bun:",notnull"`
-	Role         string     `bun:",notnull"`
-	TOTPSecret   *string    `bun:"totp_secret"`
-	TOTPEnabled  bool       `bun:"totp_enabled,notnull"`
-	Disabled     bool       `bun:",notnull"`
-	LastLoginAt  *time.Time `bun:",nullzero"`
-	CreatedAt    time.Time  `bun:",notnull"`
-	UpdatedAt    time.Time  `bun:",notnull"`
+	ID             string     `bun:",pk"`
+	Email          string     `bun:",notnull,unique"`
+	Name           string     `bun:",notnull"`
+	PasswordHash   string     `bun:",notnull"`
+	Role           string     `bun:",notnull"`
+	TOTPSecret     *string    `bun:"totp_secret"`
+	TOTPEnabled    bool       `bun:"totp_enabled,notnull"`
+	Disabled       bool       `bun:",notnull"`
+	TOTPLastStep   *int64     `bun:"totp_last_step"`
+	MFAFailedCount int        `bun:"mfa_failed_count,notnull"`
+	MFALockedUntil *time.Time `bun:"mfa_locked_until"`
+	LastLoginAt    *time.Time `bun:",nullzero"`
+	CreatedAt      time.Time  `bun:",notnull"`
+	UpdatedAt      time.Time  `bun:",notnull"`
 }
 
 // AppUser is an optional end-user account for the phone app.

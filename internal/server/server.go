@@ -30,7 +30,13 @@ func New(d *api.Deps) (http.Handler, huma.API) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.New()
-	r.Use(gin.Recovery(), requestID(), logger(), securityHeaders())
+	if len(d.Cfg.TrustedProxies) == 0 {
+		_ = r.SetTrustedProxies(nil)
+	} else if err := r.SetTrustedProxies(d.Cfg.TrustedProxies); err != nil {
+		slog.Error("invalid TRUSTED_PROXIES, trusting none", "err", err)
+		_ = r.SetTrustedProxies(nil)
+	}
+	r.Use(gin.Recovery(), requestID(), logger(), securityHeaders(d.Cfg.IsProd()))
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     d.Cfg.CORSOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -47,6 +53,9 @@ func New(d *api.Deps) (http.Handler, huma.API) {
 	cfg.Info.Description = "Admin API for the wallp dashboard, optional app-user accounts, the Events API and the public catalog."
 	cfg.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
 		auth.SecurityScheme: {Type: "http", Scheme: "bearer", BearerFormat: "JWT"},
+	}
+	if d.Cfg.IsProd() && !d.Cfg.DocsPublic {
+		cfg.DocsPath, cfg.OpenAPIPath, cfg.SchemasPath = "", "", ""
 	}
 	cfg.Servers = []*huma.Server{{URL: d.Cfg.PublicBaseURL}}
 	h := humagin.New(r, cfg)
@@ -83,9 +92,15 @@ func logger() gin.HandlerFunc {
 	}
 }
 
-func securityHeaders() gin.HandlerFunc {
+func securityHeaders(prod bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.Writer.Header()
+		if prod {
+			h.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		}
+		if p := c.Request.URL.Path; p != "/docs" && !strings.HasPrefix(p, "/docs/") {
+			h.Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+		}
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "no-referrer")
 		h.Set("X-Frame-Options", "DENY")

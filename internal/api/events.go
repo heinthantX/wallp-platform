@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/uptrace/bun"
 	"net/http"
 	"strconv"
 	"sync"
@@ -76,6 +77,7 @@ func registerEvents(h huma.API, d *Deps) {
 				userID = &p.ID
 			}
 			var rows []model.Event
+			seen := map[string]bool{}
 			for _, e := range in.Body.Events {
 				id := e.ItemID
 				if id == "" {
@@ -85,7 +87,16 @@ func registerEvents(h huma.API, d *Deps) {
 				if !eventTypes[e.Type] || id == "" || at.Before(now.Add(-7*24*time.Hour)) || at.After(now.Add(5*time.Minute)) {
 					continue
 				}
+				k := e.Type + "\x00" + id
+				if seen[k] {
+					continue
+				}
+				seen[k] = true
 				rows = append(rows, model.Event{InstallID: in.Body.InstallID, AppUserID: userID, Type: e.Type, ItemID: id, At: at, CreatedAt: now})
+			}
+			rows, err := d.keepKnownEvents(ctx, rows)
+			if err != nil {
+				return nil, err
 			}
 			if len(rows) > 0 {
 				if _, err := d.DB.NewInsert().Model(&rows).Exec(ctx); err != nil {
@@ -94,4 +105,36 @@ func registerEvents(h huma.API, d *Deps) {
 			}
 			return nil, nil
 		})
+}
+
+// eventTables maps an event type to the table its item id must exist in.
+var eventTables = map[string]string{
+	"theme_applied": "themes", "theme_favourited": "themes", "theme_unfavourited": "themes",
+	"wallpaper_applied": "wallpapers", "icon_pack_applied": "icon_packs", "font_applied": "fonts",
+}
+
+// keepKnownEvents drops events whose item does not exist (one query per table).
+func (d *Deps) keepKnownEvents(ctx context.Context, rows []model.Event) ([]model.Event, error) {
+	ids := map[string][]string{}
+	for _, r := range rows {
+		t := eventTables[r.Type]
+		ids[t] = append(ids[t], r.ItemID)
+	}
+	known := map[string]bool{}
+	for t, in := range ids {
+		var found []string
+		if err := d.DB.NewSelect().TableExpr(t).Column("id").Where("id IN (?)", bun.In(in)).Scan(ctx, &found); err != nil {
+			return nil, err
+		}
+		for _, id := range found {
+			known[t+"\x00"+id] = true
+		}
+	}
+	out := rows[:0]
+	for _, r := range rows {
+		if known[eventTables[r.Type]+"\x00"+r.ItemID] {
+			out = append(out, r)
+		}
+	}
+	return out, nil
 }

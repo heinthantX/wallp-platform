@@ -75,6 +75,28 @@ func googleFontAllowedURL(rawURL, configHost string) error {
 		"host not in allowlist: "+host)
 }
 
+// googleHTTPClient re-checks the allowlist on every redirect hop (max 3).
+func googleHTTPClient(configHost string) *http.Client {
+	return &http.Client{Timeout: 10 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		if len(via) > 3 {
+			return errors.New("too many redirects")
+		}
+		return googleFontAllowedURL(req.URL.String(), configHost)
+	}}
+}
+
+// googleConfigHost is the configured (httptest) host exempt from the https
+// and allowlist checks; never in production.
+func (d *Deps) googleConfigHost() string {
+	if d.Cfg.IsProd() {
+		return ""
+	}
+	if h := extractHost(d.Cfg.GoogleFontsMetadataURL); h != "" {
+		return h
+	}
+	return extractHost(d.Cfg.GoogleFontsDownloadURL)
+}
+
 // extractHost returns the hostname from a URL string, or "" on parse error.
 func extractHost(rawURL string) string {
 	if rawURL == "" {
@@ -120,7 +142,7 @@ type SearchGoogleFontsOutput struct {
 type ImportGoogleFontInput struct {
 	Body struct {
 		Family   string   `json:"family"`
-		Variants []string `json:"variants,omitempty"`
+		Variants []string `json:"variants,omitempty" maxItems:"20"`
 	}
 }
 
@@ -132,7 +154,7 @@ type googleCache struct {
 
 var gCache googleCache
 
-func fetchGoogleFontsMetadata(ctx context.Context, metaURL string) ([]GoogleFontMetadataEntry, error) {
+func fetchGoogleFontsMetadata(ctx context.Context, metaURL, configHost string) ([]GoogleFontMetadataEntry, error) {
 	if metaURL == "" {
 		metaURL = "https://fonts.google.com/metadata/fonts"
 	}
@@ -151,14 +173,17 @@ func fetchGoogleFontsMetadata(ctx context.Context, metaURL string) ([]GoogleFont
 		return gCache.items, nil
 	}
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	if err := googleFontAllowedURL(metaURL, configHost); err != nil {
+		return nil, err
+	}
+	client := googleHTTPClient(configHost)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, metaURL, nil)
 	if err != nil {
 		return nil, err
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, apierr.New(http.StatusBadGateway, "google_fonts_error", "Failed to fetch Google Fonts metadata: "+err.Error())
+		return nil, apierr.New(http.StatusBadGateway, "google_fonts_error", "Google Fonts is unavailable right now")
 	}
 	defer resp.Body.Close()
 
@@ -296,7 +321,7 @@ func parseFontWeight(v string) int {
 // - 10 MB body limit (+1 byte to detect overflow → 422 font_too_large)
 // - 10 s timeout
 func downloadFontFile(ctx context.Context, downloadBaseURL, family, variant string, entry GoogleFontMetadataEntry, configHost string) ([]byte, string, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := googleHTTPClient(configHost)
 
 	// 1. Check entry.Files map for direct file URL
 	if len(entry.Files) > 0 {
@@ -340,7 +365,7 @@ func downloadFontFile(ctx context.Context, downloadBaseURL, family, variant stri
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, "", apierr.New(http.StatusBadGateway, "download_failed", "Failed to connect to Google Fonts download service: "+err.Error())
+		return nil, "", apierr.New(http.StatusBadGateway, "download_failed", "Google Fonts is unavailable right now")
 	}
 	defer resp.Body.Close()
 
@@ -434,7 +459,7 @@ func registerGoogleFonts(h huma.API, d *Deps, fontsStore *items.Store) {
 		Summary:     "Search Google Fonts metadata",
 		Tags:        fontTags,
 	}), func(ctx context.Context, in *SearchGoogleFontsInput) (*SearchGoogleFontsOutput, error) {
-		metaList, err := fetchGoogleFontsMetadata(ctx, d.Cfg.GoogleFontsMetadataURL)
+		metaList, err := fetchGoogleFontsMetadata(ctx, d.Cfg.GoogleFontsMetadataURL, d.googleConfigHost())
 		if err != nil {
 			return nil, err
 		}
@@ -491,7 +516,7 @@ func registerGoogleFonts(h huma.API, d *Deps, fontsStore *items.Store) {
 			return nil, apierr.Invalid("family", "Family is required")
 		}
 
-		metaList, err := fetchGoogleFontsMetadata(ctx, d.Cfg.GoogleFontsMetadataURL)
+		metaList, err := fetchGoogleFontsMetadata(ctx, d.Cfg.GoogleFontsMetadataURL, d.googleConfigHost())
 		if err != nil {
 			return nil, err
 		}
@@ -516,16 +541,19 @@ func registerGoogleFonts(h huma.API, d *Deps, fontsStore *items.Store) {
 			return nil, apierr.Invalid("license", "license must be OFL-1.1 or Apache-2.0")
 		}
 
-		variants := in.Body.Variants
+		var variants []string
+		seenV := map[string]bool{}
+		for _, v := range in.Body.Variants {
+			if !seenV[v] {
+				seenV[v] = true
+				variants = append(variants, v)
+			}
+		}
 		if len(variants) == 0 {
 			variants = []string{"regular"}
 		}
 
-		// Determine the configured test host for the allowlist.
-		configHost := extractHost(d.Cfg.GoogleFontsMetadataURL)
-		if configHost == "" {
-			configHost = extractHost(d.Cfg.GoogleFontsDownloadURL)
-		}
+		configHost := d.googleConfigHost()
 
 		var fontFiles []catalog.FontFile
 

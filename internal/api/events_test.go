@@ -34,6 +34,7 @@ func countEvents(t *testing.T, s *testServer) int {
 
 func TestEventsStoreAndDrop(t *testing.T) {
 	s := newServer(t)
+	seedItem(t, s, "themes", "a")
 	now := time.Now().UTC()
 	id := uuid.NewString()
 	st, _ := s.do(t, "POST", "/v1/events", "", eventBody(id,

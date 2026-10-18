@@ -19,6 +19,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/heinthant/wallp-backend/internal/apierr"
+	"github.com/heinthant/wallp-backend/internal/assets"
 	"github.com/heinthant/wallp-backend/internal/audit"
 	"github.com/heinthant/wallp-backend/internal/catalog"
 	"github.com/heinthant/wallp-backend/internal/model"
@@ -1236,7 +1237,14 @@ func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, asse
 		h := sha256.Sum256(a.Bytes)
 		hashStr := hex.EncodeToString(h[:])
 
-		ext := strings.TrimPrefix(filepath.Ext(a.Name), ".")
+		if len(a.Bytes) > assets.MaxAssetSize {
+			return nil, apierr.Invalid("assets", "Asset "+filepath.Base(a.Name)+" is larger than 10 MB")
+		}
+		// The type comes from the content, never from the uploaded name.
+		format, mime, err := assets.Sniff(a.Bytes)
+		if err != nil {
+			return nil, apierr.Invalid("assets", "Asset "+filepath.Base(a.Name)+" has an unsupported file type")
+		}
 		stem := strings.TrimSuffix(a.Name, filepath.Ext(a.Name))
 
 		if len(stem) == 64 {
@@ -1245,12 +1253,7 @@ func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, asse
 			}
 		}
 
-		format := strings.ToLower(ext)
-		mime := MimeForFormat(format)
 		destPath := filepath.Join(destAssetsDir, hashStr+"."+format)
-		if stem != "" && len(stem) == 64 {
-			destPath = filepath.Join(destAssetsDir, a.Name)
-		}
 
 		verified = append(verified, verifiedAsset{
 			file:      a,

@@ -323,6 +323,9 @@ func Rollback(ctx context.Context, db *bun.DB, storageDir, version string) (*mod
 	defer mu.Unlock()
 
 	var rel model.Release
+	var man catalog.Manifest
+	var prevID int64
+	var oldStatus string
 	err := db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		if err := tx.NewSelect().Model(&rel).Where("target = ?", model.TargetLive).Where("version = ?", version).Scan(ctx); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -336,12 +339,16 @@ func Rollback(ctx context.Context, db *bun.DB, storageDir, version string) (*mod
 		if rel.Current {
 			return apierr.Conflict("already_live", "That release is already live")
 		}
-		var man catalog.Manifest
+		oldStatus = rel.Status
 		if err := json.Unmarshal(rel.Manifest, &man); err != nil {
 			return err
 		}
 		if _, err := os.Stat(filepath.Join(Dir(storageDir), filepath.Base(man.Catalog))); err != nil {
 			return apierr.Conflict("files_missing", "The files of that release are no longer on disk")
+		}
+		if err := tx.NewSelect().Model((*model.Release)(nil)).Column("id").
+			Where("target = ?", model.TargetLive).Where("current = ?", true).Scan(ctx, &prevID); err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
 		}
 		if _, err := tx.NewUpdate().Model((*model.Release)(nil)).
 			Set("status = ?", model.ReleaseRolledBack).Set("current = ?", false).
@@ -352,14 +359,27 @@ func Rollback(ctx context.Context, db *bun.DB, storageDir, version string) (*mod
 		if _, err := tx.NewUpdate().Model(&rel).Column("status", "current").WherePK().Exec(ctx); err != nil {
 			return err
 		}
-		if err := audit.Record(ctx, tx, "rollback", "release", rel.Version, nil, rel); err != nil {
-			return err
-		}
-		mb, _ := manifestBytes(man)
-		return writeAtomic(filepath.Join(Dir(storageDir), "manifest.json"), mb)
+		return audit.Record(ctx, tx, "rollback", "release", rel.Version, nil, rel)
 	})
 	if err != nil {
 		return nil, err
+	}
+	// The DB change is committed first; the manifest is written after it.
+	mb, _ := manifestBytes(man)
+	if werr := writeAtomic(filepath.Join(Dir(storageDir), "manifest.json"), mb); werr != nil {
+		cerr := db.RunInTx(context.WithoutCancel(ctx), nil, func(ctx context.Context, tx bun.Tx) error {
+			if _, err := tx.NewUpdate().Model((*model.Release)(nil)).
+				Set("status = ?", oldStatus).Set("current = ?", false).Where("id = ?", rel.ID).Exec(ctx); err != nil {
+				return err
+			}
+			if prevID == 0 {
+				return nil
+			}
+			_, err := tx.NewUpdate().Model((*model.Release)(nil)).
+				Set("status = ?", model.ReleaseLive).Set("current = ?", true).Where("id = ?", prevID).Exec(ctx)
+			return err
+		})
+		return nil, errors.Join(werr, cerr)
 	}
 	return &rel, nil
 }

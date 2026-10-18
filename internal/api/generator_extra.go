@@ -26,6 +26,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/heinthant/wallp-backend/internal/apierr"
+	"github.com/heinthant/wallp-backend/internal/assets"
 	"github.com/heinthant/wallp-backend/internal/auth"
 	"github.com/heinthant/wallp-backend/internal/catalog"
 	"github.com/heinthant/wallp-backend/internal/generator"
@@ -176,7 +177,7 @@ func registerGeneratorExtra(h huma.API, d *Deps) {
 		mr := multipart.NewReader(bytes.NewReader(in.RawBody), boundary)
 		form, err := mr.ReadForm(10 << 20)
 		if err != nil {
-			return nil, apierr.Invalid("body", "Failed to parse multipart form: "+err.Error())
+			return nil, apierr.Invalid("body", "The upload could not be read")
 		}
 		defer form.RemoveAll()
 
@@ -186,25 +187,30 @@ func registerGeneratorExtra(h huma.API, d *Deps) {
 		}
 		f, err := imgFiles[0].Open()
 		if err != nil {
-			return nil, apierr.Invalid("image", "Failed to open image: "+err.Error())
+			return nil, apierr.Invalid("image", "The image could not be read")
 		}
 		defer f.Close()
 		imgBytes, err := io.ReadAll(f)
 		if err != nil {
-			return nil, apierr.Invalid("image", "Failed to read image bytes: "+err.Error())
+			return nil, apierr.Invalid("image", "The image could not be read")
 		}
 
 		cfg, _, err := image.DecodeConfig(bytes.NewReader(imgBytes))
 		if err != nil {
-			return nil, apierr.Invalid("image", "Invalid image format: "+err.Error())
+			return nil, apierr.Invalid("image", "The image could not be read")
 		}
 		if cfg.Width > 8000 || cfg.Height > 8000 {
 			return nil, apierr.Invalid("image", "Image side exceeds 8000 px")
 		}
+		if cfg.Width*cfg.Height > assets.MaxPixels {
+			return nil, apierr.Invalid("image", "Image is larger than 25 megapixels")
+		}
+		releaseDecode := assets.AcquireDecode()
+		defer releaseDecode()
 
 		img, _, err := image.Decode(bytes.NewReader(imgBytes))
 		if err != nil {
-			return nil, apierr.Invalid("image", "Failed to decode image: "+err.Error())
+			return nil, apierr.Invalid("image", "The image could not be read")
 		}
 
 		festivalID := formValue(form, "festivalId")

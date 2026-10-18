@@ -36,6 +36,12 @@ type Config struct {
 	// "off" disables the scheduled-publish ticker (tests).
 	Scheduler string `env:"SCHEDULER" envDefault:"on"`
 
+	// Reverse proxy CIDRs whose X-Forwarded-For is trusted; empty = never.
+	TrustedProxies []string `env:"TRUSTED_PROXIES" envSeparator:","`
+
+	// Serve /docs and /openapi.* in production (hidden by default).
+	DocsPublic bool `env:"DOCS_PUBLIC" envDefault:"false"`
+
 	// Requests per minute per IP on auth endpoints.
 	AuthRateLimit int `env:"AUTH_RATE_LIMIT" envDefault:"20"`
 

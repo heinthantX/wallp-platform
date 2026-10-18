@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -95,7 +96,7 @@ func registerImportExport(h huma.API, d *Deps) {
 			mr := multipart.NewReader(bytes.NewReader(in.RawBody), boundary)
 			form, err := mr.ReadForm(64 << 20)
 			if err != nil {
-				return nil, apierr.Invalid("body", "Failed to parse multipart form: "+err.Error())
+				return nil, apierr.Invalid("body", "The upload could not be read")
 			}
 			defer form.RemoveAll()
 
@@ -229,7 +230,7 @@ func RunImportDir(ctx context.Context, d *Deps, dir, actor string) (*ImportResul
 	catPath := ""
 	if mf.Catalog != "" {
 		p := filepath.Join(dir, mf.Catalog)
-		if _, err := os.Stat(p); err == nil {
+		if _, err := os.Stat(p); err == nil && insideDir(dir, p) {
 			catPath = p
 		}
 	}
@@ -257,6 +258,9 @@ func RunImportDir(ctx context.Context, d *Deps, dir, actor string) (*ImportResul
 	themeMatches, _ := filepath.Glob(filepath.Join(dir, "themes", "*.json"))
 	var themeFiles []FileEntry
 	for _, p := range themeMatches {
+		if fi, err := os.Lstat(p); err != nil || !fi.Mode().IsRegular() {
+			continue // symlinks and directories are skipped
+		}
 		b, err := os.ReadFile(p)
 		if err != nil {
 			return nil, fmt.Errorf("read theme %s: %w", p, err)
@@ -266,9 +270,11 @@ func RunImportDir(ctx context.Context, d *Deps, dir, actor string) (*ImportResul
 
 	var assetFiles []items.AssetFile
 	assetsDir := filepath.Join(dir, "assets")
-	if entries, err := os.ReadDir(assetsDir); err == nil {
+	if fi, err := os.Lstat(assetsDir); err == nil && fi.IsDir() { // not a symlink
+		entries, _ := os.ReadDir(assetsDir)
 		for _, entry := range entries {
-			if entry.IsDir() {
+			// Regular files only: skips symlinks and directories.
+			if !entry.Type().IsRegular() {
 				continue
 			}
 			b, err := os.ReadFile(filepath.Join(assetsDir, entry.Name()))
@@ -285,7 +291,11 @@ func RunImportDir(ctx context.Context, d *Deps, dir, actor string) (*ImportResul
 func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileEntry, assetFiles []items.AssetFile, actor, manifestPublishedAt string) (*ImportResult, error) {
 	var rawCatalog map[string]json.RawMessage
 	if err := json.Unmarshal(catBytes, &rawCatalog); err != nil {
-		return nil, apierr.Invalid("catalog", "Invalid catalog JSON: "+err.Error())
+		var se *json.SyntaxError
+		if errors.As(err, &se) {
+			return nil, apierr.Invalid("catalog", fmt.Sprintf("Invalid catalog JSON near byte %d", se.Offset))
+		}
+		return nil, apierr.Invalid("catalog", "Invalid catalog JSON")
 	}
 
 	var rawFestivals []json.RawMessage
@@ -561,4 +571,10 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	}
 
 	return bundle, nil
+}
+
+// insideDir reports whether p stays within dir.
+func insideDir(dir, p string) bool {
+	rel, err := filepath.Rel(dir, p)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }

@@ -136,7 +136,8 @@ func registerAppAuth(h huma.API, d *Deps) {
 			return nil, err
 		}
 		if exists {
-			return nil, apierr.Conflict("email_taken", "A user with this email already exists").WithField("email")
+			// ponytail: timing and the success response still differ; real fix needs email verification.
+			return nil, apierr.New(http.StatusUnprocessableEntity, "registration_failed", "Could not create an account with these details")
 		}
 		hash, err := auth.HashPassword(in.Body.Password)
 		if err != nil {
@@ -467,13 +468,21 @@ func registerAppAuth(h huma.API, d *Deps) {
 			LastSeenAt: now,
 			CreatedAt:  now,
 		}
-		_, err := d.DB.NewInsert().Model(install).
+		// Only take over an install that is unlinked or already ours.
+		res, err := d.DB.NewInsert().Model(install).
 			On("CONFLICT (install_id) DO UPDATE").
 			Set("app_user_id = EXCLUDED.app_user_id").
 			Set("app_version = EXCLUDED.app_version").
 			Set("last_seen_at = EXCLUDED.last_seen_at").
+			Where("app_install.app_user_id IS NULL OR app_install.app_user_id = EXCLUDED.app_user_id").
 			Exec(ctx)
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
+		if n, _ := res.RowsAffected(); n == 0 {
+			return nil, apierr.Conflict("install_linked", "This install is linked to another account")
+		}
+		return nil, nil
 	})
 }
 

@@ -88,18 +88,42 @@ type ImageMeta struct {
 
 // ProcessImage decodes image, checks max dimension, creates thumbnail, computes blurhash,
 // dominant color, and checks warnings.
+// MaxPixels caps width*height so a tiny file cannot decode into gigabytes.
+const MaxPixels = 25_000_000
+
+// decodeSlots bounds concurrent decode+resize work.
+var decodeSlots = make(chan struct{}, 2)
+
+// AcquireDecode blocks until a decode slot is free; call the result when done.
+func AcquireDecode() (release func()) {
+	decodeSlots <- struct{}{}
+	return func() { <-decodeSlots }
+}
+
+// CheckPixels rejects images over MaxPixels (call after DecodeConfig).
+func CheckPixels(w, h int) error {
+	if int64(w)*int64(h) > MaxPixels {
+		return apierr.Invalid("file", "Image is larger than 25 megapixels")
+	}
+	return nil
+}
+
 func ProcessImage(data []byte, isWallpaper bool) (image.Image, ImageMeta, error) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
-		return nil, ImageMeta{}, apierr.New(http.StatusUnprocessableEntity, "corrupted_image", "Failed to decode image: "+err.Error())
+		return nil, ImageMeta{}, apierr.New(http.StatusUnprocessableEntity, "corrupted_image", "The image could not be read")
 	}
+	if err := CheckPixels(cfg.Width, cfg.Height); err != nil {
+		return nil, ImageMeta{}, err
+	}
+	defer AcquireDecode()()
 	if cfg.Width > MaxDimension || cfg.Height > MaxDimension {
 		return nil, ImageMeta{}, apierr.New(http.StatusUnprocessableEntity, "image_too_large", fmt.Sprintf("Image dimensions (%dx%d) exceed maximum of %dpx", cfg.Width, cfg.Height, MaxDimension))
 	}
 
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
-		return nil, ImageMeta{}, apierr.New(http.StatusUnprocessableEntity, "corrupted_image", "Failed to decode image data: "+err.Error())
+		return nil, ImageMeta{}, apierr.New(http.StatusUnprocessableEntity, "corrupted_image", "The image could not be read")
 	}
 
 	width := img.Bounds().Dx()

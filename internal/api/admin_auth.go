@@ -11,6 +11,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"github.com/uptrace/bun"
 
@@ -153,6 +154,9 @@ func registerAdminAuth(h huma.API, d *Deps) {
 				if n > 0 {
 					return apierr.Conflict("setup_done", "An admin already exists, sign in instead")
 				}
+				if err := claimSetupLock(ctx, tx); err != nil {
+					return err
+				}
 				u, err = CreateAdminUser(ctx, tx, in.Body.Email, in.Body.Name, in.Body.Password, model.RoleAdmin)
 				return err
 			})
@@ -201,9 +205,34 @@ func registerAdminAuth(h huma.API, d *Deps) {
 			if err := d.DB.NewSelect().Model(u).Where("id = ?", c.Subject).Scan(ctx); err != nil || u.Disabled || u.TOTPSecret == nil {
 				return nil, apierr.Unauthorized("Account not available")
 			}
-			// ponytail: a code can be replayed inside its 30 s window; store the last used step if that matters.
-			if !totp.Validate(in.Body.Code, *u.TOTPSecret) {
+			now := time.Now().UTC()
+			if u.MFALockedUntil != nil && u.MFALockedUntil.After(now) {
+				return nil, apierr.New(http.StatusTooManyRequests, "mfa_locked", "Too many wrong codes, try again in a few minutes")
+			}
+			step, ok := matchTOTPStep(in.Body.Code, *u.TOTPSecret, now)
+			if !ok {
+				failed := u.MFAFailedCount + 1
+				var lockedUntil *time.Time
+				if failed >= mfaMaxFailures {
+					l := now.Add(mfaLockFor)
+					lockedUntil, failed = &l, 0
+				}
+				if _, err := d.DB.NewUpdate().Model((*model.AdminUser)(nil)).
+					Set("mfa_failed_count = ?", failed).Set("mfa_locked_until = ?", lockedUntil).
+					Where("id = ?", u.ID).Exec(ctx); err != nil {
+					return nil, err
+				}
 				return nil, apierr.New(http.StatusUnauthorized, "bad_code", "Wrong code, check your authenticator app").WithField("code")
+			}
+			// Claim the step atomically: a code works once.
+			res, err := d.DB.NewUpdate().Model((*model.AdminUser)(nil)).
+				Set("totp_last_step = ?", step).Set("mfa_failed_count = 0").Set("mfa_locked_until = NULL").
+				Where("id = ?", u.ID).Where("(totp_last_step IS NULL OR totp_last_step < ?)", step).Exec(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if n, _ := res.RowsAffected(); n != 1 {
+				return nil, apierr.New(http.StatusUnauthorized, "totp_replayed", "That code was already used, wait for the next one").WithField("code")
 			}
 			return d.adminSession(ctx, u)
 		})
@@ -469,4 +498,34 @@ func revokeSession(ctx context.Context, d *Deps, kind, userID, family string) er
 		return apierr.NotFound("Session")
 	}
 	return d.Auth.RevokeFamily(ctx, family)
+}
+
+const (
+	mfaMaxFailures = 5
+	mfaLockFor     = 5 * time.Minute
+)
+
+// matchTOTPStep returns the 30 s step a code is valid for (+/- one step of skew).
+func matchTOTPStep(code, secret string, now time.Time) (int64, bool) {
+	cur := now.Unix() / 30
+	for _, st := range []int64{cur, cur - 1, cur + 1} {
+		ok, err := totp.ValidateCustom(code, secret, time.Unix(st*30, 0), totp.ValidateOpts{
+			Period: 30, Skew: 0, Digits: otp.DigitsSix, Algorithm: otp.AlgorithmSHA1})
+		if err == nil && ok {
+			return st, true
+		}
+	}
+	return 0, false
+}
+
+// claimSetupLock makes first-run setup atomic: only one tx can insert id 1.
+func claimSetupLock(ctx context.Context, tx bun.IDB) error {
+	res, err := tx.NewRaw("INSERT INTO setup_lock (id, created_at) VALUES (1, ?) ON CONFLICT (id) DO NOTHING", time.Now().UTC()).Exec(ctx)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n != 1 {
+		return apierr.Conflict("setup_done", "An admin already exists, sign in instead")
+	}
+	return nil
 }

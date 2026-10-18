@@ -5,6 +5,7 @@ package apierr
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -68,6 +69,15 @@ var codes = map[int]string{
 // errors use the same shape as ours.
 func Install() {
 	huma.NewError = func(status int, msg string, errs ...error) huma.StatusError {
+		if status >= 500 {
+			// Never leak internals: log the cause, send a generic body.
+			slog.Error("server error", "status", status, "msg", msg, "errs", errors.Join(errs...))
+			e := &Error{status: status, Err: ErrorBody{Code: codes[status], Message: "Something went wrong. Try again."}}
+			if e.Err.Code == "" {
+				e.Err.Code = "internal"
+			}
+			return e
+		}
 		e := &Error{status: status, Err: ErrorBody{Code: codes[status], Message: msg}}
 		if e.Err.Code == "" {
 			e.Err.Code = strings.ToLower(strings.ReplaceAll(http.StatusText(status), " ", "_"))

@@ -136,7 +136,7 @@ func registerAssets(h huma.API, r *gin.Engine, d *Deps) {
 		mr := multipart.NewReader(bytes.NewReader(in.RawBody), boundary)
 		form, err := mr.ReadForm(assets.MaxAssetSize)
 		if err != nil {
-			return nil, apierr.Invalid("body", "Failed to parse multipart form: "+err.Error())
+			return nil, apierr.Invalid("body", "The upload could not be read")
 		}
 		defer form.RemoveAll()
 

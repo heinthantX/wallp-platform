@@ -154,8 +154,15 @@ func (s *Service) Refresh(ctx context.Context, kind, refresh string, m Meta, loo
 		if !ok {
 			return ErrInvalidToken
 		}
-		if _, err := tx.NewUpdate().Model(rt).Set("revoked_at = ?", now).WherePK().Exec(ctx); err != nil {
+		// Claim the token atomically: a concurrent second use loses and counts as reuse.
+		res, err := tx.NewUpdate().Model((*model.RefreshToken)(nil)).Set("revoked_at = ?", now).
+			Where("id = ?", rt.ID).Where("revoked_at IS NULL").Exec(ctx)
+		if err != nil {
 			return err
+		}
+		if n, _ := res.RowsAffected(); n != 1 {
+			reusedFamily = rt.FamilyID
+			return ErrTokenReused
 		}
 		out, err = s.issue(ctx, tx, kind, rt.UserID, role, name, rt.FamilyID, m)
 		return err
