@@ -5,7 +5,7 @@ import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 import { useFont, useSaveFont, useFontAction, useUploadAsset } from "@/lib/api/hooks/useFonts";
-import { IdField, LocalizedField, TagsField } from "@/components/fields";
+import { IdField, LocalizedField, TagsField, RelationSelect } from "@/components/fields";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -143,10 +143,7 @@ export function FontEditor({ isNew }: { isNew?: boolean }) {
               <CardContent className="space-y-4">
                 <Controller name="sampleText" control={control} render={({ field }) => <LocalizedField label="Sample text" value={{ en: "", ...(field.value ?? {}) }} onChange={field.onChange} />} />
                 {scripts.map((s) => (
-                  <div key={s} className="space-y-1.5">
-                    <Label htmlFor={`fb-${s}`}>Fallback font for {s} (id)</Label>
-                    <Controller name={`fallbackFor.${s}` as "fallbackFor"} control={control} render={({ field }) => <Input id={`fb-${s}`} placeholder="padauk" value={(field.value as unknown as string) ?? ""} onChange={field.onChange} />} />
-                  </div>
+                  <Controller key={s} name={`fallbackFor.${s}` as "fallbackFor"} control={control} render={({ field }) => <RelationSelect kind="fonts" id={`fb-${s}`} label={`Fallback font for ${s}`} optional exclude={item ? [item.id] : undefined} value={(field.value as unknown as string) ?? ""} onChange={(v) => field.onChange(v ?? "")} />} />
                 ))}
               </CardContent>
             </Card>

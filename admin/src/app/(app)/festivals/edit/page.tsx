@@ -10,7 +10,6 @@ import {
   useFestival,
   useSaveFestival,
   useFestivalAction,
-  useThemes,
   useAutosaveEditor,
   useValidate,
 } from "@/lib/api/hooks";
@@ -23,7 +22,7 @@ import {
   TagsField,
   DatesTableField,
   ColorField,
-  FontSelect,
+  RelationSelect,
   JsonEditor,
 } from "@/components/fields";
 import { ReviewBar, AuditTimeline, StatusBadge } from "@/components/items";
@@ -141,7 +140,6 @@ function FestivalEditor() {
   const isNew = !idParam;
 
   const { data: item, isLoading, isError, error, refetch } = useFestival(idParam);
-  const { data: themesData } = useThemes({ festival: idParam || undefined, perPage: 100 });
   const saveMutation = useSaveFestival();
   const actionMutation = useFestivalAction();
   const validateMutation = useValidate("festival");
@@ -757,10 +755,11 @@ function FestivalEditor() {
                         name="look.displayFont"
                         control={control}
                         render={({ field }) => (
-                          <FontSelect
+                          <RelationSelect
+                            kind="fonts"
                             label="Display / Heading Font"
                             value={field.value}
-                            onChange={field.onChange}
+                            onChange={(v) => field.onChange(v ?? "")}
                             error={errors.look?.displayFont?.message}
                           />
                         )}
@@ -878,30 +877,17 @@ function FestivalEditor() {
                       name="coverThemeId"
                       control={control}
                       render={({ field }) => (
-                        <div className="space-y-1.5">
-                          <Label htmlFor="coverThemeId">Cover Theme</Label>
-                          <Select
-                            value={field.value || "none"}
-                            onValueChange={(val) =>
-                              field.onChange(val === "none" ? undefined : val)
-                            }
-                          >
-                            <SelectTrigger id="coverThemeId">
-                              <SelectValue placeholder="Select a cover theme..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">None (Default thumbnail)</SelectItem>
-                              {themesData?.items?.map((t) => (
-                                <SelectItem key={t.id} value={t.id}>
-                                  {t.id} ({t.status})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="text-[11px] text-muted-foreground">
-                            Theme shown as the cover art in the store carousel and card rows.
-                          </p>
-                        </div>
+                        <RelationSelect
+                          kind="themes"
+                          id="coverThemeId"
+                          label="Cover Theme"
+                          optional
+                          noneLabel="None (Default thumbnail)"
+                          filter={{ festival: idParam || undefined }}
+                          value={field.value}
+                          onChange={field.onChange}
+                          helperText="Theme shown as the cover art in the store carousel and card rows."
+                        />
                       )}
                     />
                   </CardContent>

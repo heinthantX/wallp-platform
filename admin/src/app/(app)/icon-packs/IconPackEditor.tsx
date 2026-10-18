@@ -6,10 +6,8 @@ import { toast } from "sonner";
 import { Upload } from "lucide-react";
 import { useIconPack, useSaveIconPack, useIconPackAction } from "@/lib/api/hooks/useIconPacks";
 import { useUploadAsset } from "@/lib/api/hooks/useFonts";
-import { ColorField, IdField, LocalizedField } from "@/components/fields";
+import { ColorField, IdField, LocalizedField, RelationSelect } from "@/components/fields";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { ItemEditorShell } from "../fonts/ItemEditorShell";
 import { IconPackPreview } from "./IconPackPreview";
 import { iconPackSchema, defaultIconPack, type IconPackForm } from "./schema";
@@ -57,10 +55,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                 <Controller name="style" control={control} render={({ field }) => <LocalizedField label="Style label" value={{ en: "", ...(field.value ?? {}) }} onChange={field.onChange} />} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Controller name="id" control={control} render={({ field }) => <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={watch("name.en")} locked={Boolean(item)} error={errors.id?.message} />} />
-                  <div className="space-y-1.5">
-                    <Label htmlFor="festivalId">Festival (id, optional)</Label>
-                    <Controller name="festivalId" control={control} render={({ field }) => <Input id="festivalId" value={field.value ?? ""} onChange={field.onChange} />} />
-                  </div>
+                  <Controller name="festivalId" control={control} render={({ field }) => <RelationSelect kind="festivals" id="festivalId" label="Festival" optional value={field.value ?? ""} onChange={(v) => field.onChange(v ?? "")} />} />
                 </div>
               </CardContent>
             </Card>

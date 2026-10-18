@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Controller } from "react-hook-form";
 import { useBanner, useSaveBanner, useBannerAction } from "@/lib/api/hooks/useBanners";
-import { ColorField, IdField, LocalizedField } from "@/components/fields";
+import { ColorField, IdField, LocalizedField, RelationSelect } from "@/components/fields";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -84,15 +84,8 @@ export function BannerEditor({ isNew }: { isNew?: boolean }) {
                   ))}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="look-font">Title font (id)</Label>
-                    <Controller name="look.font" control={control} render={({ field }) => <Input id="look-font" value={field.value} onChange={field.onChange} />} />
-                    {errors.look?.font && <p className="text-xs text-destructive">{errors.look.font.message}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="art-theme">Art theme (id, optional)</Label>
-                    <Controller name="look.artThemeId" control={control} render={({ field }) => <Input id="art-theme" value={field.value ?? ""} onChange={field.onChange} />} />
-                  </div>
+                  <Controller name="look.font" control={control} render={({ field }) => <RelationSelect kind="fonts" id="look-font" label="Title font" value={field.value} onChange={(v) => field.onChange(v ?? "")} error={errors.look?.font?.message} />} />
+                  <Controller name="look.artThemeId" control={control} render={({ field }) => <RelationSelect kind="themes" id="art-theme" label="Art theme" optional value={field.value ?? ""} onChange={(v) => field.onChange(v ?? "")} />} />
                   {(["startsAt", "endsAt"] as const).map((k) => (
                     <div key={k} className="space-y-1.5">
                       <Label htmlFor={k}>{k === "startsAt" ? "Starts (UTC)" : "Ends (UTC)"}</Label>

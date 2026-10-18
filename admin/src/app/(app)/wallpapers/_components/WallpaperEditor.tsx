@@ -1,6 +1,5 @@
 "use client";
 
-import { festivalName } from "@/lib/festival/name";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,7 +10,6 @@ import {
   useWallpaper,
   useSaveWallpaper,
   useWallpaperAction,
-  useFestivals,
   useThemes,
   useUploadImageAsset,
   useAutosaveEditor,
@@ -22,7 +20,7 @@ import type { ItemView } from "@/lib/api/types";
 import type { Layer, Palette } from "@/lib/catalog/types";
 import { LayersEditor } from "@/components/layers-editor";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { LocalizedField, IdField, TagsField, JsonEditor } from "@/components/fields";
+import { LocalizedField, IdField, TagsField, JsonEditor, RelationSelect } from "@/components/fields";
 import { ReviewBar, AuditTimeline, StatusBadge } from "@/components/items";
 import { ConflictDialog } from "@/components/conflict-dialog";
 import { LayersCanvas } from "@/components/preview";
@@ -71,7 +69,6 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
   const router = useRouter();
   const isNew = !idParam;
   const { data: item, isLoading, isError, error, refetch } = useWallpaper(idParam);
-  const { data: festivals } = useFestivals({ perPage: 100 });
   const { data: themes } = useThemes({ perPage: 100 });
   const saveMutation = useSaveWallpaper();
   const actionMutation = useWallpaperAction();
@@ -297,27 +294,14 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                   control={control}
                   name="festivalId"
                   render={({ field }) => (
-                    <div className="space-y-1.5">
-                      <Label>Festival</Label>
-                      <Select
-                        value={field.value || "none"}
-                        onValueChange={(v) =>
-                          field.onChange(v === "none" ? undefined : v)
-                        }
-                      >
-                        <SelectTrigger aria-label="Festival">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Any time</SelectItem>
-                          {festivals?.items?.map((f) => (
-                            <SelectItem key={f.id} value={f.id}>
-                              {festivalName(f.data) ?? f.id}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <RelationSelect
+                      kind="festivals"
+                      label="Festival"
+                      optional
+                      noneLabel="Any time"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   )}
                 />
               </div>

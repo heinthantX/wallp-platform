@@ -1,6 +1,5 @@
 "use client";
 
-import { festivalName } from "@/lib/festival/name";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,7 +26,6 @@ import {
   useTheme,
   useSaveTheme,
   useThemeAction,
-  useFestivals,
   useEngines,
   useValidate,
   useAutosaveEditor,
@@ -39,7 +37,7 @@ import {
   IdField,
   TagsField,
   ColorField,
-  FontSelect,
+  RelationSelect,
   EngineSelect,
   EventIconSelect,
   JsonEditor,
@@ -432,7 +430,6 @@ export interface ThemeEditorProps {
 export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) {
   const router = useRouter();
   const { data: item, isLoading, isError, error, refetch } = useTheme(initialId);
-  const { data: festivalsData } = useFestivals({ perPage: 100 });
   const { data: enginesData } = useEngines();
 
   const generatedFromData = React.useMemo(() => {
@@ -837,33 +834,21 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                         )}
                       />
 
-                      <div className="space-y-1.5">
-                        <Label htmlFor="festivalId">Festival</Label>
-                        <Controller
-                          name="festivalId"
-                          control={control}
-                          render={({ field }) => (
-                            <Select
-                              value={field.value || "none"}
-                              onValueChange={(val) =>
-                                field.onChange(val === "none" ? "" : val)
-                              }
-                            >
-                              <SelectTrigger id="festivalId">
-                                <SelectValue placeholder="Select festival..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">None (All-year round)</SelectItem>
-                                {festivalsData?.items?.map((f) => (
-                                  <SelectItem key={f.id} value={f.id}>
-                                    {festivalName(f.data) ?? f.id}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        />
-                      </div>
+                      <Controller
+                        name="festivalId"
+                        control={control}
+                        render={({ field }) => (
+                          <RelationSelect
+                            kind="festivals"
+                            id="festivalId"
+                            label="Festival"
+                            optional
+                            noneLabel="None (All-year round)"
+                            value={field.value}
+                            onChange={(v) => field.onChange(v ?? "")}
+                          />
+                        )}
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1194,10 +1179,11 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                         name="fonts.display"
                         control={control}
                         render={({ field }) => (
-                          <FontSelect
+                          <RelationSelect
+                            kind="fonts"
                             label="Display / Clock Font"
                             value={field.value}
-                            onChange={field.onChange}
+                            onChange={(v) => field.onChange(v ?? "")}
                             error={errors.fonts?.display?.message}
                           />
                         )}
@@ -1207,10 +1193,11 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                         name="fonts.body"
                         control={control}
                         render={({ field }) => (
-                          <FontSelect
+                          <RelationSelect
+                            kind="fonts"
                             label="Body Font"
                             value={field.value}
-                            onChange={field.onChange}
+                            onChange={(v) => field.onChange(v ?? "")}
                           />
                         )}
                       />
@@ -1219,10 +1206,11 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                         name="fonts.labels"
                         control={control}
                         render={({ field }) => (
-                          <FontSelect
+                          <RelationSelect
+                            kind="fonts"
                             label="App Labels Font"
                             value={field.value}
-                            onChange={field.onChange}
+                            onChange={(v) => field.onChange(v ?? "")}
                           />
                         )}
                       />
@@ -1292,11 +1280,19 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                       />
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="iconPackId">Bundled Icon Pack ID</Label>
-                        <Input
-                          id="iconPackId"
-                          {...form.register("iconPackId")}
-                          placeholder="e.g. pack-autumn"
+                        <Label htmlFor="iconPackId">Bundled Icon Pack</Label>
+                        <Controller
+                          name="iconPackId"
+                          control={control}
+                          render={({ field }) => (
+                            <RelationSelect
+                              kind="iconPacks"
+                              id="iconPackId"
+                              optional
+                              value={field.value}
+                              onChange={(v) => field.onChange(v ?? "")}
+                            />
+                          )}
                         />
                       </div>
                     </div>
