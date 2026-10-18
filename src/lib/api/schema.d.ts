@@ -1044,6 +1044,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard home: next festivals, review queue, last release, top themes
+         * @description Roles: admin, viewer, designer, reviewer
+         */
+        get: operations["overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/releases": {
         parameters: {
             query?: never;
@@ -1122,6 +1142,46 @@ export interface paths {
          *     Roles: admin, admin
          */
         post: operations["rollback-release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/stats/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Applies and favourites per day
+         * @description Roles: admin, viewer, designer, reviewer
+         */
+        get: operations["stats-daily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/stats/themes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Applies, favourites and popularity per theme
+         * @description Roles: admin, viewer, designer, reviewer
+         */
+        get: operations["stats-themes"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1680,6 +1740,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload anonymous usage events
+         * @description Telemetry only: the app never depends on it. Max 100 events and 64 KB per request; 30 requests/hour per install and 120/hour per IP.
+         */
+        post: operations["post-events"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -2109,6 +2189,22 @@ export interface components {
             /** @enum {string} */
             role: "admin" | "designer" | "reviewer" | "viewer";
         };
+        DailyStatsOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/DailyStatsOutputBody.json
+             */
+            readonly $schema?: string;
+            items: components["schemas"]["DayStat"][] | null;
+        };
+        DayStat: {
+            /** Format: int64 */
+            applies: number;
+            day: string;
+            /** Format: int64 */
+            favourites: number;
+        };
         Detail: {
             field?: string;
             message: string;
@@ -2145,6 +2241,13 @@ export interface components {
             field?: string;
             /** @example Theme not found */
             message: string;
+        };
+        EventIn: {
+            /** Format: date-time */
+            at: string;
+            itemId?: string;
+            themeId?: string;
+            type: string;
         };
         ExportBundle: {
             /**
@@ -2422,6 +2525,28 @@ export interface components {
             code: string;
             mfaToken: string;
         };
+        OverviewFestival: {
+            id: string;
+            name: string;
+            nextDate: string;
+            /** Format: int64 */
+            nightsUntil: number;
+            /** Format: int64 */
+            publishedThemes: number;
+            warning?: string;
+        };
+        OverviewOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/OverviewOutputBody.json
+             */
+            readonly $schema?: string;
+            lastRelease: components["schemas"]["ReleaseView"];
+            nextFestivals: components["schemas"]["OverviewFestival"][] | null;
+            reviewQueue: components["schemas"]["ReviewQueueItem"][] | null;
+            topThemesWeek: components["schemas"]["TopTheme"][] | null;
+        };
         PageAdminUserView: {
             /**
              * Format: uri
@@ -2536,6 +2661,19 @@ export interface components {
              */
             readonly $schema?: string;
             password: string;
+        };
+        PostEventsInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/PostEventsInputBody.json
+             */
+            readonly $schema?: string;
+            appVersion: string;
+            /** @description Unknown types are dropped; 'at' must be within the last 7 days to 5 minutes ahead */
+            events: components["schemas"]["EventIn"][] | null;
+            /** Format: uuid */
+            installId: string;
         };
         PreviewRecipeBody: {
             /**
@@ -2657,6 +2795,13 @@ export interface components {
             /** @enum {string} */
             action: "request" | "approve" | "reject";
             note?: string;
+        };
+        ReviewQueueItem: {
+            id: string;
+            name: string;
+            type: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         Scene: {
             engine: string;
@@ -2784,6 +2929,34 @@ export interface components {
             body: string;
             display: string;
             labels: string;
+        };
+        ThemeStat: {
+            /** Format: int64 */
+            applies: number;
+            /** Format: int64 */
+            favourites: number;
+            /** Format: double */
+            popularity: number;
+            themeId: string;
+        };
+        ThemeStatsOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/ThemeStatsOutputBody.json
+             */
+            readonly $schema?: string;
+            items: components["schemas"]["ThemeStat"][] | null;
+        };
+        TopTheme: {
+            /** Format: int64 */
+            applies: number;
+            /** Format: int64 */
+            favourites: number;
+            name: string;
+            /** Format: double */
+            popularity: number;
+            themeId: string;
         };
         UpdateMeInputBody: {
             /**
@@ -5192,6 +5365,35 @@ export interface operations {
             };
         };
     };
+    overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "list-releases": {
         parameters: {
             query?: {
@@ -5339,6 +5541,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReleaseView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "stats-daily": {
+        parameters: {
+            query?: {
+                /** @description First day (UTC, YYYY-MM-DD). Default: 29 days before 'to' */
+                from?: string;
+                /** @description Last day, inclusive. Default: today */
+                to?: string;
+                themeId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyStatsOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "stats-themes": {
+        parameters: {
+            query?: {
+                /** @description First day (UTC, YYYY-MM-DD). Default: 29 days before 'to' */
+                from?: string;
+                /** @description Last day, inclusive. Default: today */
+                to?: string;
+                festivalId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThemeStatsOutputBody"];
                 };
             };
             /** @description Error */
@@ -6505,6 +6777,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AppSession"];
                 };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "post-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostEventsInputBody"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error */
             default: {

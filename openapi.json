@@ -909,6 +909,55 @@
         ],
         "type": "object"
       },
+      "DailyStatsOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/DailyStatsOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DayStat"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "DayStat": {
+        "additionalProperties": false,
+        "properties": {
+          "applies": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "day": {
+            "type": "string"
+          },
+          "favourites": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "day",
+          "applies",
+          "favourites"
+        ],
+        "type": "object"
+      },
       "Detail": {
         "additionalProperties": false,
         "properties": {
@@ -1042,6 +1091,32 @@
         "required": [
           "code",
           "message"
+        ],
+        "type": "object"
+      },
+      "EventIn": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "itemId": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "themeId": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 40,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "at"
         ],
         "type": "object"
       },
@@ -1939,6 +2014,90 @@
         ],
         "type": "object"
       },
+      "OverviewFestival": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nextDate": {
+            "type": "string"
+          },
+          "nightsUntil": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "publishedThemes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "warning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "nextDate",
+          "nightsUntil",
+          "publishedThemes"
+        ],
+        "type": "object"
+      },
+      "OverviewOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/OverviewOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "lastRelease": {
+            "$ref": "#/components/schemas/ReleaseView"
+          },
+          "nextFestivals": {
+            "items": {
+              "$ref": "#/components/schemas/OverviewFestival"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "reviewQueue": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewQueueItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "topThemesWeek": {
+            "items": {
+              "$ref": "#/components/schemas/TopTheme"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "nextFestivals",
+          "reviewQueue",
+          "lastRelease",
+          "topThemesWeek"
+        ],
+        "type": "object"
+      },
       "PageAdminUserView": {
         "additionalProperties": false,
         "properties": {
@@ -2266,6 +2425,45 @@
         },
         "required": [
           "password"
+        ],
+        "type": "object"
+      },
+      "PostEventsInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/PostEventsInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "appVersion": {
+            "maxLength": 40,
+            "type": "string"
+          },
+          "events": {
+            "description": "Unknown types are dropped; 'at' must be within the last 7 days to 5 minutes ahead",
+            "items": {
+              "$ref": "#/components/schemas/EventIn"
+            },
+            "maxItems": 100,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "installId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "installId",
+          "appVersion",
+          "events"
         ],
         "type": "object"
       },
@@ -2610,6 +2808,31 @@
         },
         "required": [
           "action"
+        ],
+        "type": "object"
+      },
+      "ReviewQueueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -3002,6 +3225,91 @@
           "display",
           "body",
           "labels"
+        ],
+        "type": "object"
+      },
+      "ThemeStat": {
+        "additionalProperties": false,
+        "properties": {
+          "applies": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "favourites": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "popularity": {
+            "format": "double",
+            "type": "number"
+          },
+          "themeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "themeId",
+          "applies",
+          "favourites",
+          "popularity"
+        ],
+        "type": "object"
+      },
+      "ThemeStatsOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/ThemeStatsOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ThemeStat"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "TopTheme": {
+        "additionalProperties": false,
+        "properties": {
+          "applies": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "favourites": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "popularity": {
+            "format": "double",
+            "type": "number"
+          },
+          "themeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "themeId",
+          "applies",
+          "favourites",
+          "popularity"
         ],
         "type": "object"
       },
@@ -7046,6 +7354,43 @@
         ]
       }
     },
+    "/admin/v1/overview": {
+      "get": {
+        "description": "Roles: admin, viewer, designer, reviewer",
+        "operationId": "overview",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard home: next festivals, review queue, last release, top themes",
+        "tags": [
+          "Statistics"
+        ]
+      }
+    },
     "/admin/v1/releases": {
       "get": {
         "operationId": "list-releases",
@@ -7303,6 +7648,146 @@
         "summary": "Make an earlier release live again",
         "tags": [
           "Releases"
+        ]
+      }
+    },
+    "/admin/v1/stats/daily": {
+      "get": {
+        "description": "Roles: admin, viewer, designer, reviewer",
+        "operationId": "stats-daily",
+        "parameters": [
+          {
+            "description": "First day (UTC, YYYY-MM-DD). Default: 29 days before 'to'",
+            "explode": false,
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "description": "First day (UTC, YYYY-MM-DD). Default: 29 days before 'to'",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Last day, inclusive. Default: today",
+            "explode": false,
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "description": "Last day, inclusive. Default: today",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "themeId",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyStatsOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Applies and favourites per day",
+        "tags": [
+          "Statistics"
+        ]
+      }
+    },
+    "/admin/v1/stats/themes": {
+      "get": {
+        "description": "Roles: admin, viewer, designer, reviewer",
+        "operationId": "stats-themes",
+        "parameters": [
+          {
+            "description": "First day (UTC, YYYY-MM-DD). Default: 29 days before 'to'",
+            "explode": false,
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "description": "First day (UTC, YYYY-MM-DD). Default: 29 days before 'to'",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Last day, inclusive. Default: today",
+            "explode": false,
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "description": "Last day, inclusive. Default: today",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "festivalId",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThemeStatsOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Applies, favourites and popularity per theme",
+        "tags": [
+          "Statistics"
         ]
       }
     },
@@ -9244,6 +9729,47 @@
         "summary": "Register a new app account",
         "tags": [
           "App accounts"
+        ]
+      }
+    },
+    "/v1/events": {
+      "post": {
+        "description": "Telemetry only: the app never depends on it. Max 100 events and 64 KB per request; 30 requests/hour per install and 120/hour per IP.",
+        "operationId": "post-events",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEventsInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {},
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload anonymous usage events",
+        "tags": [
+          "Events"
         ]
       }
     },
