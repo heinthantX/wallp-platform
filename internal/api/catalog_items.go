@@ -72,6 +72,39 @@ type ReorderFestivalsInput struct {
 	}
 }
 
+type ReorderBannersInput struct {
+	Body struct {
+		IDs []string `json:"ids"`
+	}
+}
+
+type ListWallpapersInput struct {
+	ListParams
+	Festival string `query:"festival"`
+	Status   string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
+	Kind     string `query:"kind" enum:"scene,image,"`
+}
+
+type ListFontsInput struct {
+	ListParams
+	Status   string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
+	Category string `query:"category"`
+	Family   string `query:"family"`
+}
+
+type ListIconPacksInput struct {
+	ListParams
+	Festival string `query:"festival"`
+	Status   string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
+	Kind     string `query:"kind" enum:"painted,images,"`
+}
+
+type ListBannersInput struct {
+	ListParams
+	Festival string `query:"festival"`
+	Status   string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
+}
+
 type ValidateInput struct {
 	Kind    string `path:"kind"`
 	RawBody []byte
@@ -181,11 +214,24 @@ func parseItemPayload(raw []byte) (data []byte, updatedAt *time.Time, generatedF
 func registerCatalogItems(h huma.API, d *Deps) {
 	festivals := items.NewStore(d.DB, items.FestivalKind)
 	themes := items.NewStore(d.DB, items.ThemeKind)
+	wallpapers := items.NewStore(d.DB, items.WallpaperKind)
+	fonts := items.NewStore(d.DB, items.FontKind)
+	iconPacks := items.NewStore(d.DB, items.IconPackKind)
+	banners := items.NewStore(d.DB, items.BannerKind)
 
 	festivalTags := []string{"Festivals"}
 	themeTags := []string{"Themes"}
+	wallpaperTags := []string{"Wallpapers"}
+	fontTags := []string{"Fonts"}
+	iconPackTags := []string{"Icon Packs"}
+	bannerTags := []string{"Banners"}
 	engineTags := []string{"Engines"}
 	validateTags := []string{"Validation"}
+
+	wp := adminPrefix + "/wallpapers"
+	fontp := adminPrefix + "/fonts"
+	ip := adminPrefix + "/icon-packs"
+	bp := adminPrefix + "/banners"
 
 	// --- Festivals ---
 	fp := adminPrefix + "/festivals"
@@ -550,6 +596,155 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		}, nil
 	})
 
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "delete-theme",
+		Method:      http.MethodDelete,
+		Path:        tp + "/{id}",
+		Summary:     "Archive a theme",
+		Tags:        themeTags,
+	}, model.RoleAdmin), func(ctx context.Context, in *ItemPathInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		res, err := themes.Archive(ctx, in.ID, updater)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// --- Wallpapers ---
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "list-wallpapers",
+		Method:      http.MethodGet,
+		Path:        wp,
+		Summary:     "List wallpapers",
+		Tags:        wallpaperTags,
+	}), func(ctx context.Context, in *ListWallpapersInput) (*ListItemsOutput, error) {
+		extras := map[string]string{}
+		if in.Kind != "" {
+			extras["kind"] = in.Kind
+		}
+		res, err := wallpapers.List(ctx, items.ListFilter{
+			Page:       in.Page,
+			PerPage:    in.PerPage,
+			Sort:       in.Sort,
+			Q:          in.Q,
+			Status:     in.Status,
+			FestivalID: in.Festival,
+			Extras:     extras,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ListItemsOutput{Body: *res}, nil
+	})
+	registerItemStandardRoutes(h, wallpapers, "wallpaper", wp, wallpaperTags)
+
+	// --- Fonts ---
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "list-fonts",
+		Method:      http.MethodGet,
+		Path:        fontp,
+		Summary:     "List fonts",
+		Tags:        fontTags,
+	}), func(ctx context.Context, in *ListFontsInput) (*ListItemsOutput, error) {
+		extras := map[string]string{}
+		if in.Category != "" {
+			extras["category"] = in.Category
+		}
+		if in.Family != "" {
+			extras["family"] = in.Family
+		}
+		res, err := fonts.List(ctx, items.ListFilter{
+			Page:    in.Page,
+			PerPage: in.PerPage,
+			Sort:    in.Sort,
+			Q:       in.Q,
+			Status:  in.Status,
+			Extras:  extras,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ListItemsOutput{Body: *res}, nil
+	})
+	registerItemStandardRoutes(h, fonts, "font", fontp, fontTags)
+	registerGoogleFonts(h, d, fonts)
+
+	// --- Icon Packs ---
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "list-icon-packs",
+		Method:      http.MethodGet,
+		Path:        ip,
+		Summary:     "List icon packs",
+		Tags:        iconPackTags,
+	}), func(ctx context.Context, in *ListIconPacksInput) (*ListItemsOutput, error) {
+		extras := map[string]string{}
+		if in.Kind != "" {
+			extras["kind"] = in.Kind
+		}
+		res, err := iconPacks.List(ctx, items.ListFilter{
+			Page:       in.Page,
+			PerPage:    in.PerPage,
+			Sort:       in.Sort,
+			Q:          in.Q,
+			Status:     in.Status,
+			FestivalID: in.Festival,
+			Extras:     extras,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ListItemsOutput{Body: *res}, nil
+	})
+	registerItemStandardRoutes(h, iconPacks, "icon-pack", ip, iconPackTags)
+
+	// --- Banners ---
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "reorder-banners",
+		Method:      http.MethodPut,
+		Path:        bp + "/order",
+		Summary:     "Reorder banners",
+		Tags:        bannerTags,
+	}, model.RoleAdmin), func(ctx context.Context, in *ReorderBannersInput) (*SimpleOKOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		if err := banners.Reorder(ctx, in.Body.IDs, updater); err != nil {
+			return nil, err
+		}
+		out := &SimpleOKOutput{}
+		out.Body.OK = true
+		return out, nil
+	})
+
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "list-banners",
+		Method:      http.MethodGet,
+		Path:        bp,
+		Summary:     "List banners",
+		Tags:        bannerTags,
+	}), func(ctx context.Context, in *ListBannersInput) (*ListItemsOutput, error) {
+		res, err := banners.List(ctx, items.ListFilter{
+			Page:       in.Page,
+			PerPage:    in.PerPage,
+			Sort:       in.Sort,
+			Q:          in.Q,
+			Status:     in.Status,
+			FestivalID: in.Festival,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ListItemsOutput{Body: *res}, nil
+	})
+	registerItemStandardRoutes(h, banners, "banner", bp, bannerTags)
+
 	// --- Engines ---
 	huma.Register(h, auth.Admin(huma.Operation{
 		OperationID: "get-engines",
@@ -795,4 +990,219 @@ func registerCatalogItems(h huma.API, d *Deps) {
 	})
 
 	registerImportExport(h, d)
+}
+
+func registerItemStandardRoutes(h huma.API, store *items.Store, singular, path string, tags []string) {
+	// Create
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID:   "create-" + singular,
+		Method:        http.MethodPost,
+		Path:          path,
+		Summary:       "Create a " + singular + " draft",
+		Tags:          tags,
+		DefaultStatus: http.StatusCreated,
+	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *CreateItemInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		creator := "system"
+		if me != nil {
+			creator = me.Name
+		}
+		data, _, gf, err := parseItemPayload(in.RawBody)
+		if err != nil {
+			return nil, err
+		}
+		res, err := store.CreateWithOptions(ctx, items.CreateOptions{
+			Data:          data,
+			CreatorName:   creator,
+			GeneratedFrom: gf,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Get
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "get-" + singular,
+		Method:      http.MethodGet,
+		Path:        path + "/{id}",
+		Summary:     "Get a " + singular,
+		Tags:        tags,
+	}), func(ctx context.Context, in *ItemPathInput) (*ItemOutput, error) {
+		res, err := store.Get(ctx, in.ID)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Update
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "update-" + singular,
+		Method:      http.MethodPatch,
+		Path:        path + "/{id}",
+		Summary:     "Update a " + singular,
+		Tags:        tags,
+	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *UpdateItemInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		data, updatedAt, gf, err := parseItemPayload(in.RawBody)
+		if err != nil {
+			return nil, err
+		}
+		res, err := store.UpdateWithOptions(ctx, in.ID, items.UpdateOptions{
+			Data:            data,
+			ClientUpdatedAt: updatedAt,
+			UpdaterName:     updater,
+			GeneratedFrom:   gf,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Duplicate
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID:   "duplicate-" + singular,
+		Method:        http.MethodPost,
+		Path:          path + "/{id}/duplicate",
+		Summary:       "Duplicate a " + singular + " as a new draft",
+		Tags:          tags,
+		DefaultStatus: http.StatusCreated,
+	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *ItemPathInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		creator := "system"
+		if me != nil {
+			creator = me.Name
+		}
+		res, err := store.Duplicate(ctx, in.ID, creator)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Review
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "review-" + singular,
+		Method:      http.MethodPost,
+		Path:        path + "/{id}/review",
+		Summary:     "Transition a " + singular + " review status",
+		Tags:        tags,
+	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *ReviewInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		if me == nil {
+			return nil, apierr.Unauthorized("Sign in required")
+		}
+		res, err := store.Transition(ctx, in.ID, in.Body.Action, in.Body.Note, me.Name, me.Role)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Schedule
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "schedule-" + singular,
+		Method:      http.MethodPost,
+		Path:        path + "/{id}/schedule",
+		Summary:     "Schedule or unschedule a " + singular,
+		Tags:        tags,
+	}, model.RoleReviewer), func(ctx context.Context, in *ScheduleInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		res, err := store.Schedule(ctx, in.ID, in.Body.At, updater)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Delete / Archive (DELETE)
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "delete-" + singular,
+		Method:      http.MethodDelete,
+		Path:        path + "/{id}",
+		Summary:     "Archive a " + singular,
+		Tags:        tags,
+	}, model.RoleAdmin), func(ctx context.Context, in *ItemPathInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		res, err := store.Archive(ctx, in.ID, updater)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Archive (POST /{id}/archive)
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "archive-" + singular,
+		Method:      http.MethodPost,
+		Path:        path + "/{id}/archive",
+		Summary:     "Archive a " + singular,
+		Tags:        tags,
+	}, model.RoleAdmin), func(ctx context.Context, in *ItemPathInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		res, err := store.Archive(ctx, in.ID, updater)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Restore (POST /{id}/restore)
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "restore-" + singular,
+		Method:      http.MethodPost,
+		Path:        path + "/{id}/restore",
+		Summary:     "Restore an archived " + singular,
+		Tags:        tags,
+	}, model.RoleAdmin), func(ctx context.Context, in *ItemPathInput) (*ItemOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		res, err := store.Restore(ctx, in.ID, updater)
+		if err != nil {
+			return nil, err
+		}
+		return &ItemOutput{Body: *res}, nil
+	})
+
+	// Export (GET /{id}/export)
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "export-" + singular,
+		Method:      http.MethodGet,
+		Path:        path + "/{id}/export",
+		Summary:     "Export raw " + singular + " data JSON",
+		Tags:        tags,
+	}), func(ctx context.Context, in *ItemPathInput) (*ExportOutput, error) {
+		res, err := store.Get(ctx, in.ID)
+		if err != nil {
+			return nil, err
+		}
+		filename := fmt.Sprintf("%s.%d.json", res.ID, res.Rev)
+		return &ExportOutput{
+			HeaderContentDisposition: fmt.Sprintf("attachment; filename=\"%s\"", filename),
+			HeaderContentType:        "application/json",
+			Body:                     json.RawMessage(res.Data),
+		}, nil
+	})
 }
