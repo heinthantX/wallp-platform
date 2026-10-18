@@ -34,6 +34,7 @@ type Input struct {
 	Recipe       *Recipe               `json:"recipe,omitempty"`
 	Locked       *Locked               `json:"locked,omitempty"`
 	Existing     []ExistingTheme       `json:"existing,omitempty"`
+	LearnBias    *HueBias              `json:"learnBias,omitempty"`
 }
 
 // Check represents a single contrast validation check.
@@ -173,6 +174,44 @@ func generateBase36(rng *rand.Rand, length int) string {
 }
 
 func pickBaseHue(in Input, rng *rand.Rand) float64 {
+	if in.LearnBias != nil {
+		if in.Recipe != nil && len(in.Recipe.HueRanges) > 0 {
+			return in.LearnBias.SampleRanges(in.Recipe.HueRanges, rng)
+		}
+
+		if in.Around != nil && in.Around.Background != "" {
+			lch, err := HexToOKLCH(in.Around.Background)
+			if err == nil {
+				jitter := (rng.Float64() * 40.0) - 20.0
+				return NormalizeHue(lch.H + jitter)
+			}
+		}
+
+		if in.BaseColor != "" {
+			lch, err := HexToOKLCH(in.BaseColor)
+			if err == nil {
+				h := NormalizeHue(lch.H)
+				if in.Mood == "cozy" {
+					return shiftHueTowards(h, 50.0, 0.4)
+				}
+				return h
+			}
+		}
+
+		if in.Mood == "classic" && in.FestivalLook != nil && in.FestivalLook.Brand != "" {
+			lch, err := HexToOKLCH(in.FestivalLook.Brand)
+			if err == nil {
+				return NormalizeHue(lch.H)
+			}
+		}
+
+		if in.Mood == "cozy" {
+			return in.LearnBias.SampleRange([2]float64{30, 70}, rng)
+		}
+
+		return in.LearnBias.Sample(rng)
+	}
+
 	if in.Recipe != nil && len(in.Recipe.HueRanges) > 0 {
 		hr := in.Recipe.HueRanges[rng.IntN(len(in.Recipe.HueRanges))]
 		return SampleHueRange(hr, rng.Float64())

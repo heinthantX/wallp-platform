@@ -578,6 +578,8 @@ func registerGeneratorRecipes(h huma.API, d *Deps) {
 		res := generator.Interpret(in.Body.Description, extra)
 		return &InterpretOutput{Body: res}, nil
 	})
+
+	registerGeneratorExtra(h, d)
 }
 
 func isStale(current, client time.Time) bool {

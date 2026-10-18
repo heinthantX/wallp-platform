@@ -120,6 +120,7 @@ type GenerateThemeInput struct {
 		Around      *catalog.Palette  `json:"around,omitempty"`
 		RecipeID    *string           `json:"recipeId,omitempty"`
 		Locked      *generator.Locked `json:"locked,omitempty"`
+		LearnBias   *bool             `json:"learnBias,omitempty" doc:"Enable learning bias from feedback (default true)"`
 	}
 }
 
@@ -744,6 +745,11 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			}
 		}
 
+		var learnBias *generator.HueBias
+		if in.Body.LearnBias == nil || *in.Body.LearnBias {
+			learnBias = GetCachedHueBias(ctx, d.DB, fest.ID, mood)
+		}
+
 		genIn := generator.Input{
 			FestivalID:   fest.ID,
 			FestivalName: fest.Name,
@@ -759,6 +765,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			Recipe:       recipe,
 			Locked:       in.Body.Locked,
 			Existing:     existingThemes,
+			LearnBias:    learnBias,
 		}
 
 		options, err := generator.Generate(genIn, count)
