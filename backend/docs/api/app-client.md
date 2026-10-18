@@ -77,6 +77,10 @@ curl -i -H 'If-None-Match: "<etag from the first call>"' http://localhost:8080/c
 
 Size limits the app already enforces (theme-api.md section 8): manifest 16 KB, catalog 2 MB, theme 512 KB, any single file 10 MB.
 
+### Banner image (optional, new)
+
+`banners[].look.image` may hold an asset (`{url, sha256, bytes, format}`, same shape as other assets). It is a new optional field: the app may ignore it and keep drawing the banner from `background`, `accent` and `artThemeId`. If the app shows it, cache it like any other asset (by sha256) and draw the title on top in `titleColor`.
+
 ### Immutability rules
 
 - Never overwrite a cached catalog, theme or asset file under the same name. A changed theme gets a new `rev` and a new file.

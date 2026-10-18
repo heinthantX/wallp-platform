@@ -1488,6 +1488,9 @@ func (b *Banner) Validate() []FieldError {
 			Message: "look.artThemeId must be lowercase kebab-case",
 		})
 	}
+	if b.Look.Image != nil {
+		errs = append(errs, b.Look.Image.ValidateWithPath("look.image")...)
+	}
 
 	var startTime, endTime time.Time
 	hasStart, hasEnd := false, false

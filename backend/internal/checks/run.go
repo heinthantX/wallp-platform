@@ -56,11 +56,12 @@ func Run(ctx context.Context, db bun.IDB, storageDir string) (Report, error) {
 // RunAt is Run with an explicit clock, for tests.
 func RunAt(ctx context.Context, db bun.IDB, storageDir string, now time.Time) (Report, error) {
 	r := &runner{
-		storageDir: storageDir,
-		now:        now,
-		rep:        Report{Errors: []Issue{}, Warnings: []Issue{}, Infos: []Issue{}},
-		fonts:      map[string]catalog.Font{},
-		wallpapers: map[string]catalog.Wallpaper{},
+		storageDir:  storageDir,
+		now:         now,
+		rep:         Report{Errors: []Issue{}, Warnings: []Issue{}, Infos: []Issue{}},
+		fonts:       map[string]catalog.Font{},
+		wallpapers:  map[string]catalog.Wallpaper{},
+		bannerTitle: map[string]string{},
 	}
 	if err := r.load(ctx, db); err != nil {
 		return Report{}, err
@@ -87,12 +88,13 @@ type runner struct {
 	now        time.Time
 	rep        Report
 
-	cat        catalog.Catalog
-	festivals  []catalog.Festival
-	themes     []catalog.ThemeDetail
-	fonts      map[string]catalog.Font
-	wallpapers map[string]catalog.Wallpaper
-	assetRefs  []assetRef
+	cat         catalog.Catalog
+	festivals   []catalog.Festival
+	themes      []catalog.ThemeDetail
+	fonts       map[string]catalog.Font
+	wallpapers  map[string]catalog.Wallpaper
+	assetRefs   []assetRef
+	bannerTitle map[string]string // banner id -> title colour, for banners with an image
 }
 
 func (r *runner) add(level, code, kind, id, field, format string, args ...any) {
@@ -279,6 +281,10 @@ func (r *runner) item(c cand) {
 		var v catalog.Banner
 		if err = json.Unmarshal(c.data, &v); err == nil {
 			r.cat.Banners = append(r.cat.Banners, v)
+			if v.Look.Image != nil {
+				r.assetRefs = append(r.assetRefs, assetRef{kind, v.ID, "look.image", *v.Look.Image})
+				r.bannerTitle[v.ID] = v.Look.TitleColor
+			}
 		}
 	}
 	if err != nil {
@@ -604,6 +610,12 @@ func (r *runner) assets(ctx context.Context, db bun.IDB) error {
 			r.add(levelError, "asset_over_10mb", ref.kind, ref.id, ref.field, "Asset is %.1f MB; the app rejects files over 10 MB", float64(size)/(1<<20))
 		case size > 1<<20:
 			r.add(levelWarning, "asset_over_1mb", ref.kind, ref.id, ref.field, "Asset is %.1f MB; over 1 MB slows downloads", float64(size)/(1<<20))
+		}
+		if ref.kind == items.BannerKind.Name && ref.field == "look.image" {
+			// ponytail: the image's dominant colour stands in for the area under the title.
+			if c, ok := ratio(r.bannerTitle[ref.id], row.Dominant); ok && c < minAccentContrast {
+				r.add(levelWarning, "banner_image_contrast", ref.kind, ref.id, ref.field, "The title on this image is %s:1, needs %.1f:1", fmtRatio(c), minAccentContrast)
+			}
 		}
 		if ref.kind == items.IconPackKind.Name && ref.field == "background" {
 			w, h := row.Width, row.Height

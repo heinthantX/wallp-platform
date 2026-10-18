@@ -277,6 +277,8 @@ type BannerLook struct {
 	TitleColor string  `json:"titleColor"`
 	Font       string  `json:"font"`
 	ArtThemeID *string `json:"artThemeId,omitempty"`
+	// Image is an optional banner picture; apps that predate it ignore the field.
+	Image *Asset `json:"image,omitempty"`
 }
 
 // Banner represents a store home carousel banner.

@@ -393,6 +393,10 @@ curl -s $API/banners -H "$AUTH" -H 'Content-Type: application/json' -d '{
            "font": "creepster", "artThemeId": "halloween-night"},
   "startsAt": "2027-10-01T00:00:00.000Z", "endsAt": "2027-11-01T00:00:00.000Z", "sort": 20 }'
 # -> 201, "status":"draft"
+# Optional picture: upload it (POST $API/assets, file field "file"), then add the result as
+#   "look": {..., "image": {"url": "...", "sha256": "...", "bytes": 48213, "format": "webp"}}
+# Release checks: missing asset = error, over 1 MB = warning, over 10 MB = error,
+# title colour under 3.0:1 on the image's dominant colour = warning (banner_image_contrast).
 
 # 3. Ask for review (designer or above)
 curl -s $API/banners/halloween-2027/review -H "$AUTH" -H 'Content-Type: application/json' -d '{"action":"request"}'
