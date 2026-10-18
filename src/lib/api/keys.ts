@@ -6,4 +6,11 @@ export const queryKeys = {
   allUsers: ["users"] as const,
   audit: (params?: Record<string, unknown>) => ["audit", params ?? {}] as const,
   allAudit: ["audit"] as const,
+  festivals: (params?: Record<string, unknown>) => ["festivals", params ?? {}] as const,
+  allFestivals: ["festivals"] as const,
+  festival: (id: string) => ["festivals", "detail", id] as const,
+  themes: (params?: Record<string, unknown>) => ["themes", params ?? {}] as const,
+  allThemes: ["themes"] as const,
+  theme: (id: string) => ["themes", "detail", id] as const,
+  engines: ["engines"] as const,
 };
