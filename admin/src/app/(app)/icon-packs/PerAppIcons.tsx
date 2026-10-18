@@ -169,6 +169,7 @@ export function PerAppIcons({ apps = {}, onChange, tile }: { apps?: Apps; onChan
               const r = srcOf(pkg);
               return (
                 <tr key={pkg} className="border-b" data-testid="app-row">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <td className="w-12 py-1"><img src={assetSrc(a.url)} alt="" className="h-8 w-8 rounded object-cover" /></td>
                   <td className="py-1 font-mono text-xs">{pkg}</td>
                   <td className="py-1 text-xs text-muted-foreground">{labelOf(pkg)}</td>
@@ -193,6 +194,7 @@ export function PerAppIcons({ apps = {}, onChange, tile }: { apps?: Apps; onChan
             return (
               <div key={app.pkg} className="flex flex-col items-center gap-0.5" title={app.label}>
                 {a ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={assetSrc(a.url)} alt={app.label} className="h-11 w-11 rounded-xl object-cover" />
                 ) : (
                   <div className="h-11 w-11 rounded-xl grid place-items-center text-sm font-semibold text-white opacity-40" style={{ background: tile || "#1b1b2f" }}>{app.label[0]}</div>
