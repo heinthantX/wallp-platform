@@ -1,0 +1,78 @@
+{
+  "id": "thingyan-water",
+  "rev": 2,
+  "festivalId": "thingyan",
+  "name": {
+    "en": "Water Splash"
+  },
+  "subtitle": {
+    "en": "သင်္ကြန်"
+  },
+  "style": "classic",
+  "tags": [
+    "water",
+    "myanmar",
+    "new year"
+  ],
+  "isLive": true,
+  "publishedAt": "2026-05-18T14:00:00.000Z",
+  "popularity": 1,
+  "minAppVersion": "1.0.0",
+  "scene": {
+    "engine": "thingyan",
+    "params": {}
+  },
+  "palette": {
+    "background": "#0A3D6B",
+    "deep": "#1477C2",
+    "surface": "#0F4F86",
+    "text": "#FFF8E7",
+    "textMuted": "#CFE6F7"
+  },
+  "accents": [
+    {
+      "id": "sun",
+      "name": {
+        "en": "Sun"
+      },
+      "type": "solid",
+      "colors": [
+        "#FFC20E"
+      ]
+    },
+    {
+      "id": "sky",
+      "name": {
+        "en": "Sky"
+      },
+      "type": "solid",
+      "colors": [
+        "#7CC6F0"
+      ]
+    },
+    {
+      "id": "lotus",
+      "name": {
+        "en": "Lotus"
+      },
+      "type": "solid",
+      "colors": [
+        "#FF8FA3"
+      ]
+    }
+  ],
+  "fonts": {
+    "display": "baloo-2",
+    "body": "padauk",
+    "labels": "baloo-2"
+  },
+  "clock": {
+    "useAccent": true
+  },
+  "eventIcon": "water_drop_rounded",
+  "iconPackId": "water-splash",
+  "wallpaperIds": [
+    "water-splash"
+  ],
+  "downloadBytes": 1681364
+}

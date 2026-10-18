@@ -20,6 +20,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/heinthant/wallp-backend/internal/api"
+	"github.com/heinthant/wallp-backend/internal/apierr"
 	"github.com/heinthant/wallp-backend/internal/auth"
 	"github.com/heinthant/wallp-backend/internal/config"
 	"github.com/heinthant/wallp-backend/internal/db"
@@ -31,7 +32,7 @@ import (
 func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
 	root := &cobra.Command{Use: "wallp", Short: "wallp API server and admin tasks", SilenceUsage: true}
-	root.AddCommand(serveCmd(), migrateCmd(), userCmd(), openapiCmd(), importCmd())
+	root.AddCommand(serveCmd(), migrateCmd(), userCmd(), openapiCmd(), importCmd(), publishCmd())
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -179,5 +180,44 @@ func importCmd() *cobra.Command {
 	}
 	c.Flags().StringVar(&dir, "dir", "", "path to catalog directory (required)")
 	_ = c.MarkFlagRequired("dir")
+	return c
+}
+
+func publishCmd() *cobra.Command {
+	var notes string
+	var ack bool
+	c := &cobra.Command{
+		Use:   "publish",
+		Short: "Run the pre-publish checks and publish a release",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			d, err := deps(cmd.Context(), true)
+			if err != nil {
+				return err
+			}
+			defer d.DB.Close()
+			rel, err := releases.Publish(cmd.Context(), d.DB, d.Cfg.StorageDir, "cli", notes, d.CheckerFunc(), ack)
+			if err != nil {
+				var ae *apierr.Error
+				if errors.As(err, &ae) {
+					fmt.Fprintf(cmd.ErrOrStderr(), "%s: %s\n", ae.Err.Code, ae.Err.Message)
+					for _, dt := range ae.Err.Details {
+						fmt.Fprintf(cmd.ErrOrStderr(), "  %s  %s\n", dt.Field, dt.Message)
+					}
+					if ae.Err.Code == "warnings_need_ack" {
+						fmt.Fprintln(cmd.ErrOrStderr(), "re-run with --ack-warnings to publish anyway")
+					}
+				}
+				return err
+			}
+			var sum struct {
+				Text string `json:"text"`
+			}
+			_ = json.Unmarshal(rel.Changes, &sum)
+			fmt.Fprintf(cmd.OutOrStdout(), "published %s: %s\n", rel.Version, sum.Text)
+			return nil
+		},
+	}
+	c.Flags().StringVar(&notes, "notes", "", "release notes")
+	c.Flags().BoolVar(&ack, "ack-warnings", false, "publish even if checks returned warnings")
 	return c
 }

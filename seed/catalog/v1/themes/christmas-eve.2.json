@@ -1,0 +1,106 @@
+{
+  "id": "christmas-eve",
+  "rev": 2,
+  "festivalId": "christmas",
+  "name": {
+    "en": "Snowy Pines"
+  },
+  "style": "classic",
+  "tags": [
+    "snow",
+    "tree",
+    "winter"
+  ],
+  "isLive": true,
+  "publishedAt": "2026-06-17T14:00:00.000Z",
+  "popularity": 1,
+  "minAppVersion": "1.0.0",
+  "scene": {
+    "engine": "christmas",
+    "params": {}
+  },
+  "palette": {
+    "background": "#0F3D2E",
+    "deep": "#0A2A20",
+    "surface": "#1A5C41",
+    "text": "#FFF6E5",
+    "textMuted": "#CFE0D7"
+  },
+  "accents": [
+    {
+      "id": "berry-red",
+      "name": {
+        "en": "Berry red"
+      },
+      "type": "solid",
+      "colors": [
+        "#F03F5C"
+      ]
+    },
+    {
+      "id": "gold",
+      "name": {
+        "en": "Gold"
+      },
+      "type": "solid",
+      "colors": [
+        "#B8862E"
+      ]
+    },
+    {
+      "id": "pine",
+      "name": {
+        "en": "Pine"
+      },
+      "type": "solid",
+      "colors": [
+        "#2C966B"
+      ]
+    }
+  ],
+  "variants": [
+    {
+      "id": "forest",
+      "name": {
+        "en": "Forest"
+      }
+    },
+    {
+      "id": "midnight",
+      "name": {
+        "en": "Midnight"
+      },
+      "palette": {
+        "background": "#10223D",
+        "deep": "#0A1628",
+        "surface": "#1B3557"
+      }
+    },
+    {
+      "id": "berry",
+      "name": {
+        "en": "Berry"
+      },
+      "palette": {
+        "background": "#4A1020",
+        "deep": "#2A0812",
+        "surface": "#6A1A30"
+      },
+      "accentId": "gold"
+    }
+  ],
+  "fonts": {
+    "display": "playfair-display",
+    "body": "dm-sans",
+    "labels": "playfair-display"
+  },
+  "clock": {
+    "useAccent": false
+  },
+  "eventIcon": "card_giftcard_rounded",
+  "iconPackId": "gold-ornament",
+  "wallpaperIds": [
+    "silent-night"
+  ],
+  "downloadBytes": 540888
+}

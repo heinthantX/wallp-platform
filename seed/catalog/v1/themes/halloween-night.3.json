@@ -1,0 +1,109 @@
+{
+  "id": "halloween-night",
+  "rev": 3,
+  "festivalId": "halloween",
+  "name": {
+    "en": "Haunted Moon"
+  },
+  "style": "classic",
+  "tags": [
+    "spooky",
+    "moon",
+    "bats"
+  ],
+  "isLive": true,
+  "publishedAt": "2026-06-17T14:00:00.000Z",
+  "popularity": 1,
+  "minAppVersion": "1.0.0",
+  "scene": {
+    "engine": "halloween",
+    "params": {}
+  },
+  "palette": {
+    "background": "#160C24",
+    "deep": "#0D0717",
+    "surface": "#2A1840",
+    "text": "#F4E9C9",
+    "textMuted": "#CDBFA0"
+  },
+  "accents": [
+    {
+      "id": "pumpkin",
+      "name": {
+        "en": "Pumpkin"
+      },
+      "type": "solid",
+      "colors": [
+        "#FF8A2A"
+      ]
+    },
+    {
+      "id": "slime",
+      "name": {
+        "en": "Slime"
+      },
+      "type": "solid",
+      "colors": [
+        "#9BE15D"
+      ]
+    },
+    {
+      "id": "witch",
+      "name": {
+        "en": "Witch"
+      },
+      "type": "solid",
+      "colors": [
+        "#B57BFF"
+      ]
+    },
+    {
+      "id": "pumpkin-glow",
+      "name": {
+        "en": "Pumpkin glow"
+      },
+      "type": "gradient",
+      "colors": [
+        "#FFB547",
+        "#FF4D2E"
+      ],
+      "angle": 135
+    }
+  ],
+  "variants": [
+    {
+      "id": "night",
+      "name": {
+        "en": "Night"
+      }
+    },
+    {
+      "id": "blood-moon",
+      "name": {
+        "en": "Blood moon"
+      },
+      "palette": {
+        "background": "#1A0A10",
+        "deep": "#0D0508",
+        "surface": "#3A1420"
+      }
+    }
+  ],
+  "fonts": {
+    "display": "creepster",
+    "body": "space-grotesk",
+    "labels": "creepster"
+  },
+  "clock": {
+    "useAccent": true
+  },
+  "labels": {
+    "color": "#FFD9A8"
+  },
+  "eventIcon": "nightlight_round",
+  "iconPackId": "spooky-glow",
+  "wallpaperIds": [
+    "harvest-moon"
+  ],
+  "downloadBytes": 199400
+}

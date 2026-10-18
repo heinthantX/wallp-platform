@@ -7,3 +7,5 @@
 | assets-and-media | sha256 asset library, WebP variants, blurhash, Google Fonts import, immutable static assets | docs/specs/assets-and-media.md | 2026-10-18 |
 | checks-and-releases | Release checks (dashboard section 6), versioned publish, manifest-last, rollback, scheduler, public catalog ETag | docs/specs/checks-and-releases.md | 2026-10-18 |
 | events-and-stats | Public events ingest (202, rate limited), 7-day decayed popularity, admin stats and overview | docs/specs/events-and-stats.md | 2026-10-18 |
+| app-client-api | Guide for the Flutter app: public catalog, optional accounts, events, error codes, local testing | docs/api/app-client.md | 2026-10-18 |
+| admin-api | Guide for the dashboard developer: auth/MFA, roles, item lifecycle, generator, assets, import/export, releases, stats, endpoint tables | docs/api/admin.md | 2026-10-18 |

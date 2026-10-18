@@ -1,4 +1,4 @@
-.PHONY: dev-db run test-sqlite test-pg test openapi lint
+.PHONY: seed dev-db run test-sqlite test-pg test openapi lint
 
 dev-db:
 	docker compose up -d --wait
@@ -22,3 +22,8 @@ openapi:
 
 lint:
 	go vet ./...
+
+seed:
+	go run ./cmd/wallp migrate up
+	go run ./cmd/wallp import --dir seed/catalog/v1
+	go run ./cmd/wallp publish --notes "seed" --ack-warnings

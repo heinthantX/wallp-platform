@@ -1,0 +1,4353 @@
+{
+  "catalogVersion": "2026-10-15.1-demo.11",
+  "festivals": [
+    {
+      "id": "halloween",
+      "name": {
+        "en": "Halloween",
+        "my": "ဟယ်လိုဝင်း"
+      },
+      "kind": "festival",
+      "sort": 10,
+      "fallbackDate": {
+        "month": 10,
+        "day": 31
+      },
+      "unit": "night",
+      "look": {
+        "background": "#120A1C",
+        "surface": "#1E1430",
+        "surface2": "#2A1D40",
+        "outline": "#3D2C57",
+        "nav": "#170E24",
+        "muted": "#B9AECB",
+        "brand": "#FF7A1A",
+        "displayFont": "creepster"
+      },
+      "coverThemeId": "halloween-night"
+    },
+    {
+      "id": "christmas",
+      "name": {
+        "en": "Christmas",
+        "my": "ခရစ္စမတ်"
+      },
+      "kind": "festival",
+      "sort": 20,
+      "fallbackDate": {
+        "month": 12,
+        "day": 25
+      },
+      "unit": "day",
+      "look": {
+        "background": "#0A2A1F",
+        "surface": "#11392B",
+        "surface2": "#184735",
+        "outline": "#255A44",
+        "nav": "#0D3225",
+        "muted": "#B4CEC1",
+        "brand": "#F2B33D",
+        "displayFont": "playfair-display"
+      },
+      "coverThemeId": "christmas-eve"
+    },
+    {
+      "id": "thingyan",
+      "name": {
+        "en": "Thingyan",
+        "my": "သင်္ကြန်"
+      },
+      "kind": "festival",
+      "tags": [
+        "myanmar"
+      ],
+      "sort": 30,
+      "occurrences": [
+        "2027-04-13",
+        "2028-04-13",
+        "2029-04-13"
+      ],
+      "fallbackDate": {
+        "month": 4,
+        "day": 13
+      },
+      "durationDays": 4,
+      "unit": "day",
+      "look": {
+        "background": "#062848",
+        "surface": "#0C375F",
+        "surface2": "#124570",
+        "outline": "#1E5A8C",
+        "nav": "#083054",
+        "muted": "#B6D0E8",
+        "brand": "#FFC21A",
+        "displayFont": "baloo-2"
+      },
+      "coverThemeId": "thingyan-water"
+    },
+    {
+      "id": "heroes",
+      "name": {
+        "en": "Heroes"
+      },
+      "kind": "collection",
+      "sort": 80,
+      "look": {
+        "background": "#0B1026",
+        "surface": "#151B36",
+        "surface2": "#1F2747",
+        "outline": "#2C3660",
+        "nav": "#0E1330",
+        "muted": "#A9B3CF",
+        "brand": "#CB3131",
+        "displayFont": "bebas-neue"
+      },
+      "coverThemeId": "spider-night"
+    },
+    {
+      "id": "neon",
+      "name": {
+        "en": "Neon"
+      },
+      "kind": "collection",
+      "sort": 85,
+      "look": {
+        "background": "#120326",
+        "surface": "#1E0838",
+        "surface2": "#2A0F4A",
+        "outline": "#3D1A63",
+        "nav": "#170530",
+        "muted": "#B9A6D6",
+        "brand": "#22E4FF",
+        "displayFont": "orbitron"
+      },
+      "coverThemeId": "neon-night"
+    }
+  ],
+  "themes": [
+    {
+      "id": "halloween-night",
+      "rev": 3,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Haunted Moon"
+      },
+      "style": "classic",
+      "tags": [
+        "spooky",
+        "moon",
+        "bats"
+      ],
+      "isLive": true,
+      "publishedAt": "2026-06-17T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#160C24",
+        "deep": "#0D0717",
+        "surface": "#2A1840",
+        "text": "#F4E9C9",
+        "textMuted": "#CDBFA0"
+      },
+      "accent": {
+        "id": "pumpkin",
+        "name": {
+          "en": "Pumpkin"
+        },
+        "type": "solid",
+        "colors": [
+          "#FF8A2A"
+        ]
+      },
+      "displayFont": "creepster",
+      "variantSwatches": [
+        "#160C24",
+        "#1A0A10"
+      ],
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 199400
+    },
+    {
+      "id": "christmas-eve",
+      "rev": 2,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Snowy Pines"
+      },
+      "style": "classic",
+      "tags": [
+        "snow",
+        "tree",
+        "winter"
+      ],
+      "isLive": true,
+      "publishedAt": "2026-06-17T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#0F3D2E",
+        "deep": "#0A2A20",
+        "surface": "#1A5C41",
+        "text": "#FFF6E5",
+        "textMuted": "#CFE0D7"
+      },
+      "accent": {
+        "id": "berry-red",
+        "name": {
+          "en": "Berry red"
+        },
+        "type": "solid",
+        "colors": [
+          "#F03F5C"
+        ]
+      },
+      "displayFont": "playfair-display",
+      "variantSwatches": [
+        "#0F3D2E",
+        "#10223D",
+        "#4A1020"
+      ],
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 540888
+    },
+    {
+      "id": "thingyan-water",
+      "rev": 2,
+      "festivalId": "thingyan",
+      "name": {
+        "en": "Water Splash"
+      },
+      "subtitle": {
+        "en": "သင်္ကြန်"
+      },
+      "style": "classic",
+      "tags": [
+        "water",
+        "myanmar",
+        "new year"
+      ],
+      "isLive": true,
+      "publishedAt": "2026-05-18T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "thingyan",
+        "params": {}
+      },
+      "palette": {
+        "background": "#0A3D6B",
+        "deep": "#1477C2",
+        "surface": "#0F4F86",
+        "text": "#FFF8E7",
+        "textMuted": "#CFE6F7"
+      },
+      "accent": {
+        "id": "sun",
+        "name": {
+          "en": "Sun"
+        },
+        "type": "solid",
+        "colors": [
+          "#FFC20E"
+        ]
+      },
+      "displayFont": "baloo-2",
+      "iconPackId": "water-splash",
+      "downloadBytes": 1681364
+    },
+    {
+      "id": "spider-night",
+      "rev": 4,
+      "festivalId": "heroes",
+      "name": {
+        "en": "Spider Night"
+      },
+      "subtitle": {
+        "en": "A red moon, city rain and a spider on a swing"
+      },
+      "style": "classic",
+      "tags": [
+        "spider",
+        "hero",
+        "city",
+        "red",
+        "web"
+      ],
+      "isLive": true,
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 0,
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "layers",
+        "params": {
+          "layers": [
+            {
+              "type": "gradient",
+              "colors": [
+                "@background",
+                "@surface",
+                "#3A1030"
+              ],
+              "angle": 180
+            },
+            {
+              "type": "particles",
+              "effect": "stars",
+              "count": 40,
+              "color": "@text",
+              "speed": 0.08,
+              "size": 0.25,
+              "opacity": 0.7
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.68,
+              "y": 0.26,
+              "width": 0.56,
+              "color": "@motif",
+              "glow": true,
+              "motion": "pulse",
+              "opacity": 0.92
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.6,
+              "y": 0.22,
+              "width": 0.16,
+              "color": "#FF8A7A",
+              "opacity": 0.25
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.78,
+              "y": 0.32,
+              "width": 0.1,
+              "color": "#FF8A7A",
+              "opacity": 0.2
+            },
+            {
+              "type": "image",
+              "image": {
+                "url": "assets/e1fb42cba2c4cb7c3f7676f20bb7ce63a128bcdc895e669ced82edc12189460f.png",
+                "sha256": "e1fb42cba2c4cb7c3f7676f20bb7ce63a128bcdc895e669ced82edc12189460f",
+                "bytes": 242400,
+                "format": "png"
+              },
+              "fit": "width",
+              "anchor": "top",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.493,
+                  0.0
+                ],
+                [
+                  0.493,
+                  0.875
+                ],
+                [
+                  0.507,
+                  0.875
+                ],
+                [
+                  0.507,
+                  0.0
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.63,
+                  0.895
+                ],
+                [
+                  0.6221600407021681,
+                  0.9095358560913409
+                ],
+                [
+                  0.5995857776054672,
+                  0.9223184734116779
+                ],
+                [
+                  0.5650000000000001,
+                  0.9318060796608386
+                ],
+                [
+                  0.522574263096701,
+                  0.9368543295030188
+                ],
+                [
+                  0.47742573690329904,
+                  0.9368543295030188
+                ],
+                [
+                  0.43500000000000005,
+                  0.9318060796608386
+                ],
+                [
+                  0.40041422239453284,
+                  0.9223184734116779
+                ],
+                [
+                  0.37783995929783193,
+                  0.9095358560913409
+                ],
+                [
+                  0.37,
+                  0.895
+                ],
+                [
+                  0.3778399592978319,
+                  0.8804641439086591
+                ],
+                [
+                  0.40041422239453284,
+                  0.8676815265883221
+                ],
+                [
+                  0.43499999999999994,
+                  0.8581939203391614
+                ],
+                [
+                  0.47742573690329904,
+                  0.8531456704969812
+                ],
+                [
+                  0.5225742630967009,
+                  0.8531456704969812
+                ],
+                [
+                  0.565,
+                  0.8581939203391613
+                ],
+                [
+                  0.5995857776054672,
+                  0.8676815265883221
+                ],
+                [
+                  0.6221600407021681,
+                  0.8804641439086591
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.585,
+                  0.9575
+                ],
+                [
+                  0.5798738727668022,
+                  0.9651954532248276
+                ],
+                [
+                  0.5651137776651132,
+                  0.9719627212179471
+                ],
+                [
+                  0.5425,
+                  0.9769855715851499
+                ],
+                [
+                  0.5147600951016891,
+                  0.9796581744427747
+                ],
+                [
+                  0.4852399048983109,
+                  0.9796581744427747
+                ],
+                [
+                  0.4575,
+                  0.9769855715851499
+                ],
+                [
+                  0.4348862223348869,
+                  0.9719627212179471
+                ],
+                [
+                  0.42012612723319775,
+                  0.9651954532248276
+                ],
+                [
+                  0.415,
+                  0.9575
+                ],
+                [
+                  0.42012612723319775,
+                  0.9498045467751725
+                ],
+                [
+                  0.43488622233488683,
+                  0.9430372787820529
+                ],
+                [
+                  0.45749999999999996,
+                  0.9380144284148502
+                ],
+                [
+                  0.4852399048983109,
+                  0.9353418255572253
+                ],
+                [
+                  0.5147600951016891,
+                  0.9353418255572253
+                ],
+                [
+                  0.5425,
+                  0.9380144284148502
+                ],
+                [
+                  0.5651137776651132,
+                  0.9430372787820529
+                ],
+                [
+                  0.5798738727668022,
+                  0.9498045467751725
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.5478262379212493,
+                  0.9739131189606246
+                ],
+                [
+                  0.7747801876201209,
+                  0.9441758499039032
+                ],
+                [
+                  0.8435536150889523,
+                  0.9964951259010043
+                ],
+                [
+                  0.8764463849110476,
+                  0.9935048740989957
+                ],
+                [
+                  0.7852198123798791,
+                  0.9358241500960967
+                ],
+                [
+                  0.5321737620787508,
+                  0.9660868810393753
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.4678262379212492,
+                  0.9660868810393753
+                ],
+                [
+                  0.2147801876201209,
+                  0.9358241500960967
+                ],
+                [
+                  0.12355361508895236,
+                  0.9935048740989957
+                ],
+                [
+                  0.15644638491104768,
+                  0.9964951259010043
+                ],
+                [
+                  0.22521981237987904,
+                  0.9441758499039032
+                ],
+                [
+                  0.4521737620787507,
+                  0.9739131189606246
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.5686277200096654,
+                  0.9663063470630877
+                ],
+                [
+                  0.8604267023679574,
+                  0.9243736992715634
+                ],
+                [
+                  0.955579266326511,
+                  0.9624785636001308
+                ],
+                [
+                  0.9844207336734889,
+                  0.9575214363998691
+                ],
+                [
+                  0.8595732976320426,
+                  0.9156263007284366
+                ],
+                [
+                  0.5513722799903347,
+                  0.9586936529369123
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.44862772000966533,
+                  0.9586936529369123
+                ],
+                [
+                  0.14042670236795743,
+                  0.9156263007284366
+                ],
+                [
+                  0.015579266326511102,
+                  0.9575214363998691
+                ],
+                [
+                  0.04442073367348895,
+                  0.9624785636001308
+                ],
+                [
+                  0.1395732976320426,
+                  0.9243736992715634
+                ],
+                [
+                  0.43137227999033456,
+                  0.9663063470630877
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.5721628866948308,
+                  0.9556455741452149
+                ],
+                [
+                  0.8672129377224703,
+                  0.8839860971624178
+                ],
+                [
+                  0.9687967730058715,
+                  0.9083609680982385
+                ],
+                [
+                  0.9912032269941284,
+                  0.9016390319017615
+                ],
+                [
+                  0.8527870622775297,
+                  0.8760139028375822
+                ],
+                [
+                  0.5478371133051693,
+                  0.9493544258547851
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.45216288669483073,
+                  0.9493544258547851
+                ],
+                [
+                  0.14721293772247032,
+                  0.8760139028375822
+                ],
+                [
+                  0.008796773005871615,
+                  0.9016390319017615
+                ],
+                [
+                  0.03120322699412842,
+                  0.9083609680982385
+                ],
+                [
+                  0.1327870622775297,
+                  0.8839860971624178
+                ],
+                [
+                  0.42783711330516916,
+                  0.9556455741452149
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.5549324320889093,
+                  0.9472813437913611
+                ],
+                [
+                  0.7751582477558505,
+                  0.8571862857340169
+                ],
+                [
+                  0.8556524758424985,
+                  0.8169565594803122
+                ],
+                [
+                  0.8243475241575015,
+                  0.8130434405196877
+                ],
+                [
+                  0.7448417522441495,
+                  0.8528137142659831
+                ],
+                [
+                  0.5250675679110908,
+                  0.9427186562086388
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "@deep",
+              "points": [
+                [
+                  0.47493243208890923,
+                  0.9427186562086388
+                ],
+                [
+                  0.2551582477558505,
+                  0.8528137142659831
+                ],
+                [
+                  0.17565247584249857,
+                  0.8130434405196877
+                ],
+                [
+                  0.1443475241575015,
+                  0.8169565594803122
+                ],
+                [
+                  0.22484175224414948,
+                  0.8571862857340169
+                ],
+                [
+                  0.4450675679110907,
+                  0.9472813437913611
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "image",
+              "image": {
+                "url": "assets/09d880fbd9ba43e1a9cdd5f031b070e97ce66c42ba4849aa7e7cdaabaca13618.png",
+                "sha256": "09d880fbd9ba43e1a9cdd5f031b070e97ce66c42ba4849aa7e7cdaabaca13618",
+                "bytes": 22169,
+                "format": "png"
+              },
+              "fit": "width",
+              "anchor": "bottom"
+            },
+            {
+              "type": "particles",
+              "effect": "rain",
+              "count": 50,
+              "color": "#9FB3C6",
+              "speed": 0.55,
+              "size": 0.25,
+              "opacity": 0.35
+            }
+          ]
+        }
+      },
+      "palette": {
+        "background": "#0B1026",
+        "deep": "#05070F",
+        "surface": "#1A2350",
+        "text": "#F5F1EA",
+        "textMuted": "#AFAEAF",
+        "motif": "#E23636"
+      },
+      "accent": {
+        "id": "spider-red",
+        "name": {
+          "en": "Spider red"
+        },
+        "type": "solid",
+        "colors": [
+          "#E23636"
+        ]
+      },
+      "displayFont": "bebas-neue",
+      "iconPackId": "web-slinger",
+      "downloadBytes": 485241
+    },
+    {
+      "id": "neon-night",
+      "rev": 1,
+      "festivalId": "neon",
+      "name": {
+        "en": "Neon Night"
+      },
+      "subtitle": {
+        "en": "A synthwave sun on a glowing grid"
+      },
+      "style": "minimal",
+      "tags": [
+        "neon",
+        "synthwave",
+        "retro",
+        "grid",
+        "night"
+      ],
+      "isLive": true,
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 0,
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "layers",
+        "params": {
+          "layers": [
+            {
+              "type": "gradient",
+              "colors": [
+                "@background",
+                "@surface",
+                "@surface"
+              ],
+              "angle": 180
+            },
+            {
+              "type": "particles",
+              "effect": "stars",
+              "count": 50,
+              "color": "@text",
+              "speed": 0.06,
+              "size": 0.2,
+              "opacity": 0.6
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.5,
+              "y": 0.47,
+              "width": 0.62,
+              "color": "@motif",
+              "glow": true,
+              "motion": "pulse"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.52,
+              "width": 0.5810048200492377,
+              "aspect": 0.0176528832506778,
+              "color": "@surface"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.55,
+              "width": 0.5143019525107253,
+              "aspect": 0.029913585413219975,
+              "color": "@surface"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.578,
+              "width": 0.40730098607103565,
+              "aspect": 0.050362805920737344,
+              "color": "@surface"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.602,
+              "width": 0.24081100841769662,
+              "aspect": 0.09583001719296488,
+              "color": "@surface"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 1.3,
+              "aspect": 0.6325838264299803,
+              "color": "@deep"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.635,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.655,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.685,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.725,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.78,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.855,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.95,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "@accent",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.4596,
+                  0.0
+                ],
+                [
+                  0.46040000000000003,
+                  0.0
+                ],
+                [
+                  0.051200000000000044,
+                  1.0
+                ],
+                [
+                  0.048800000000000045,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.46359999999999996,
+                  0.0
+                ],
+                [
+                  0.4644,
+                  0.0
+                ],
+                [
+                  0.09620000000000004,
+                  1.0
+                ],
+                [
+                  0.09380000000000002,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.46759999999999996,
+                  0.0
+                ],
+                [
+                  0.4684,
+                  0.0
+                ],
+                [
+                  0.14120000000000002,
+                  1.0
+                ],
+                [
+                  0.1388,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.47159999999999996,
+                  0.0
+                ],
+                [
+                  0.4724,
+                  0.0
+                ],
+                [
+                  0.1862,
+                  1.0
+                ],
+                [
+                  0.1838,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.47559999999999997,
+                  0.0
+                ],
+                [
+                  0.4764,
+                  0.0
+                ],
+                [
+                  0.2312,
+                  1.0
+                ],
+                [
+                  0.22879999999999998,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.47959999999999997,
+                  0.0
+                ],
+                [
+                  0.4804,
+                  0.0
+                ],
+                [
+                  0.2762,
+                  1.0
+                ],
+                [
+                  0.27380000000000004,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.4836,
+                  0.0
+                ],
+                [
+                  0.4844,
+                  0.0
+                ],
+                [
+                  0.3212,
+                  1.0
+                ],
+                [
+                  0.31880000000000003,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.4876,
+                  0.0
+                ],
+                [
+                  0.4884,
+                  0.0
+                ],
+                [
+                  0.36619999999999997,
+                  1.0
+                ],
+                [
+                  0.3638,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.4916,
+                  0.0
+                ],
+                [
+                  0.4924,
+                  0.0
+                ],
+                [
+                  0.4112,
+                  1.0
+                ],
+                [
+                  0.40880000000000005,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.4956,
+                  0.0
+                ],
+                [
+                  0.4964,
+                  0.0
+                ],
+                [
+                  0.4562,
+                  1.0
+                ],
+                [
+                  0.45380000000000004,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.4996,
+                  0.0
+                ],
+                [
+                  0.5004,
+                  0.0
+                ],
+                [
+                  0.5012,
+                  1.0
+                ],
+                [
+                  0.4988,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5036,
+                  0.0
+                ],
+                [
+                  0.5044,
+                  0.0
+                ],
+                [
+                  0.5462,
+                  1.0
+                ],
+                [
+                  0.5438000000000001,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5076,
+                  0.0
+                ],
+                [
+                  0.5084,
+                  0.0
+                ],
+                [
+                  0.5912,
+                  1.0
+                ],
+                [
+                  0.5888,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5116,
+                  0.0
+                ],
+                [
+                  0.5124,
+                  0.0
+                ],
+                [
+                  0.6362,
+                  1.0
+                ],
+                [
+                  0.6338,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5156000000000001,
+                  0.0
+                ],
+                [
+                  0.5164,
+                  0.0
+                ],
+                [
+                  0.6811999999999999,
+                  1.0
+                ],
+                [
+                  0.6788,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5196000000000001,
+                  0.0
+                ],
+                [
+                  0.5204,
+                  0.0
+                ],
+                [
+                  0.7262,
+                  1.0
+                ],
+                [
+                  0.7238,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5236000000000001,
+                  0.0
+                ],
+                [
+                  0.5244,
+                  0.0
+                ],
+                [
+                  0.7712,
+                  1.0
+                ],
+                [
+                  0.7688,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5276000000000001,
+                  0.0
+                ],
+                [
+                  0.5284,
+                  0.0
+                ],
+                [
+                  0.8161999999999999,
+                  1.0
+                ],
+                [
+                  0.8138,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5316000000000001,
+                  0.0
+                ],
+                [
+                  0.5324,
+                  0.0
+                ],
+                [
+                  0.8612,
+                  1.0
+                ],
+                [
+                  0.8588,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5356000000000001,
+                  0.0
+                ],
+                [
+                  0.5364,
+                  0.0
+                ],
+                [
+                  0.9062,
+                  1.0
+                ],
+                [
+                  0.9038,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "@accent",
+              "points": [
+                [
+                  0.5396000000000001,
+                  0.0
+                ],
+                [
+                  0.5404,
+                  0.0
+                ],
+                [
+                  0.9511999999999999,
+                  1.0
+                ],
+                [
+                  0.9488,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.62,
+              "width": 1.3,
+              "aspect": 0.005917159763313609,
+              "color": "@accent",
+              "glow": true,
+              "opacity": 0.9
+            },
+            {
+              "type": "particles",
+              "effect": "sparkles",
+              "count": 24,
+              "color": "@accent",
+              "speed": 0.3,
+              "size": 0.3,
+              "opacity": 0.7
+            }
+          ]
+        }
+      },
+      "palette": {
+        "background": "#120326",
+        "deep": "#07010F",
+        "surface": "#3A0B5C",
+        "text": "#F8F0FF",
+        "textMuted": "#B3A9BE",
+        "motif": "#FF3EA5"
+      },
+      "accent": {
+        "id": "neon-cyan",
+        "name": {
+          "en": "Neon cyan"
+        },
+        "type": "solid",
+        "colors": [
+          "#22E4FF"
+        ]
+      },
+      "displayFont": "orbitron",
+      "variantSwatches": [
+        "#120326",
+        "#2A0A2E"
+      ],
+      "iconPackId": "neon-glow",
+      "downloadBytes": 213510
+    }
+  ],
+  "wallpapers": [
+    {
+      "id": "harvest-moon",
+      "festivalId": "halloween",
+      "name": {
+        "en": "Harvest Moon"
+      },
+      "kind": "scene",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "isLive": true,
+      "tags": [
+        "moon",
+        "bats"
+      ],
+      "publishedAt": "2026-06-17T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "id": "silent-night",
+      "festivalId": "christmas",
+      "name": {
+        "en": "Silent Night"
+      },
+      "kind": "scene",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "isLive": true,
+      "tags": [
+        "snow",
+        "star",
+        "tree"
+      ],
+      "publishedAt": "2025-12-19T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "id": "water-splash",
+      "festivalId": "thingyan",
+      "name": {
+        "en": "Water Splash"
+      },
+      "kind": "scene",
+      "scene": {
+        "engine": "thingyan",
+        "params": {}
+      },
+      "isLive": true,
+      "tags": [
+        "water",
+        "myanmar"
+      ],
+      "publishedAt": "2026-05-18T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "id": "red-moon-swing",
+      "festivalId": "heroes",
+      "name": {
+        "en": "Red Moon Swing"
+      },
+      "kind": "scene",
+      "scene": {
+        "engine": "layers",
+        "params": {
+          "layers": [
+            {
+              "type": "gradient",
+              "colors": [
+                "#0B1026",
+                "#1A2350",
+                "#3A1030"
+              ],
+              "angle": 180
+            },
+            {
+              "type": "particles",
+              "effect": "stars",
+              "count": 40,
+              "color": "#F5F1EA",
+              "speed": 0.08,
+              "size": 0.25,
+              "opacity": 0.7
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.68,
+              "y": 0.26,
+              "width": 0.56,
+              "color": "#E23636",
+              "glow": true,
+              "motion": "pulse",
+              "opacity": 0.92
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.6,
+              "y": 0.22,
+              "width": 0.16,
+              "color": "#FF8A7A",
+              "opacity": 0.25
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.78,
+              "y": 0.32,
+              "width": 0.1,
+              "color": "#FF8A7A",
+              "opacity": 0.2
+            },
+            {
+              "type": "image",
+              "image": {
+                "url": "assets/e1fb42cba2c4cb7c3f7676f20bb7ce63a128bcdc895e669ced82edc12189460f.png",
+                "sha256": "e1fb42cba2c4cb7c3f7676f20bb7ce63a128bcdc895e669ced82edc12189460f",
+                "bytes": 242400,
+                "format": "png"
+              },
+              "fit": "width",
+              "anchor": "top",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.493,
+                  0.0
+                ],
+                [
+                  0.493,
+                  0.875
+                ],
+                [
+                  0.507,
+                  0.875
+                ],
+                [
+                  0.507,
+                  0.0
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.63,
+                  0.895
+                ],
+                [
+                  0.6221600407021681,
+                  0.9095358560913409
+                ],
+                [
+                  0.5995857776054672,
+                  0.9223184734116779
+                ],
+                [
+                  0.5650000000000001,
+                  0.9318060796608386
+                ],
+                [
+                  0.522574263096701,
+                  0.9368543295030188
+                ],
+                [
+                  0.47742573690329904,
+                  0.9368543295030188
+                ],
+                [
+                  0.43500000000000005,
+                  0.9318060796608386
+                ],
+                [
+                  0.40041422239453284,
+                  0.9223184734116779
+                ],
+                [
+                  0.37783995929783193,
+                  0.9095358560913409
+                ],
+                [
+                  0.37,
+                  0.895
+                ],
+                [
+                  0.3778399592978319,
+                  0.8804641439086591
+                ],
+                [
+                  0.40041422239453284,
+                  0.8676815265883221
+                ],
+                [
+                  0.43499999999999994,
+                  0.8581939203391614
+                ],
+                [
+                  0.47742573690329904,
+                  0.8531456704969812
+                ],
+                [
+                  0.5225742630967009,
+                  0.8531456704969812
+                ],
+                [
+                  0.565,
+                  0.8581939203391613
+                ],
+                [
+                  0.5995857776054672,
+                  0.8676815265883221
+                ],
+                [
+                  0.6221600407021681,
+                  0.8804641439086591
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.585,
+                  0.9575
+                ],
+                [
+                  0.5798738727668022,
+                  0.9651954532248276
+                ],
+                [
+                  0.5651137776651132,
+                  0.9719627212179471
+                ],
+                [
+                  0.5425,
+                  0.9769855715851499
+                ],
+                [
+                  0.5147600951016891,
+                  0.9796581744427747
+                ],
+                [
+                  0.4852399048983109,
+                  0.9796581744427747
+                ],
+                [
+                  0.4575,
+                  0.9769855715851499
+                ],
+                [
+                  0.4348862223348869,
+                  0.9719627212179471
+                ],
+                [
+                  0.42012612723319775,
+                  0.9651954532248276
+                ],
+                [
+                  0.415,
+                  0.9575
+                ],
+                [
+                  0.42012612723319775,
+                  0.9498045467751725
+                ],
+                [
+                  0.43488622233488683,
+                  0.9430372787820529
+                ],
+                [
+                  0.45749999999999996,
+                  0.9380144284148502
+                ],
+                [
+                  0.4852399048983109,
+                  0.9353418255572253
+                ],
+                [
+                  0.5147600951016891,
+                  0.9353418255572253
+                ],
+                [
+                  0.5425,
+                  0.9380144284148502
+                ],
+                [
+                  0.5651137776651132,
+                  0.9430372787820529
+                ],
+                [
+                  0.5798738727668022,
+                  0.9498045467751725
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5478262379212493,
+                  0.9739131189606246
+                ],
+                [
+                  0.7747801876201209,
+                  0.9441758499039032
+                ],
+                [
+                  0.8435536150889523,
+                  0.9964951259010043
+                ],
+                [
+                  0.8764463849110476,
+                  0.9935048740989957
+                ],
+                [
+                  0.7852198123798791,
+                  0.9358241500960967
+                ],
+                [
+                  0.5321737620787508,
+                  0.9660868810393753
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.4678262379212492,
+                  0.9660868810393753
+                ],
+                [
+                  0.2147801876201209,
+                  0.9358241500960967
+                ],
+                [
+                  0.12355361508895236,
+                  0.9935048740989957
+                ],
+                [
+                  0.15644638491104768,
+                  0.9964951259010043
+                ],
+                [
+                  0.22521981237987904,
+                  0.9441758499039032
+                ],
+                [
+                  0.4521737620787507,
+                  0.9739131189606246
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5686277200096654,
+                  0.9663063470630877
+                ],
+                [
+                  0.8604267023679574,
+                  0.9243736992715634
+                ],
+                [
+                  0.955579266326511,
+                  0.9624785636001308
+                ],
+                [
+                  0.9844207336734889,
+                  0.9575214363998691
+                ],
+                [
+                  0.8595732976320426,
+                  0.9156263007284366
+                ],
+                [
+                  0.5513722799903347,
+                  0.9586936529369123
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.44862772000966533,
+                  0.9586936529369123
+                ],
+                [
+                  0.14042670236795743,
+                  0.9156263007284366
+                ],
+                [
+                  0.015579266326511102,
+                  0.9575214363998691
+                ],
+                [
+                  0.04442073367348895,
+                  0.9624785636001308
+                ],
+                [
+                  0.1395732976320426,
+                  0.9243736992715634
+                ],
+                [
+                  0.43137227999033456,
+                  0.9663063470630877
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5721628866948308,
+                  0.9556455741452149
+                ],
+                [
+                  0.8672129377224703,
+                  0.8839860971624178
+                ],
+                [
+                  0.9687967730058715,
+                  0.9083609680982385
+                ],
+                [
+                  0.9912032269941284,
+                  0.9016390319017615
+                ],
+                [
+                  0.8527870622775297,
+                  0.8760139028375822
+                ],
+                [
+                  0.5478371133051693,
+                  0.9493544258547851
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.45216288669483073,
+                  0.9493544258547851
+                ],
+                [
+                  0.14721293772247032,
+                  0.8760139028375822
+                ],
+                [
+                  0.008796773005871615,
+                  0.9016390319017615
+                ],
+                [
+                  0.03120322699412842,
+                  0.9083609680982385
+                ],
+                [
+                  0.1327870622775297,
+                  0.8839860971624178
+                ],
+                [
+                  0.42783711330516916,
+                  0.9556455741452149
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5549324320889093,
+                  0.9472813437913611
+                ],
+                [
+                  0.7751582477558505,
+                  0.8571862857340169
+                ],
+                [
+                  0.8556524758424985,
+                  0.8169565594803122
+                ],
+                [
+                  0.8243475241575015,
+                  0.8130434405196877
+                ],
+                [
+                  0.7448417522441495,
+                  0.8528137142659831
+                ],
+                [
+                  0.5250675679110908,
+                  0.9427186562086388
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.47493243208890923,
+                  0.9427186562086388
+                ],
+                [
+                  0.2551582477558505,
+                  0.8528137142659831
+                ],
+                [
+                  0.17565247584249857,
+                  0.8130434405196877
+                ],
+                [
+                  0.1443475241575015,
+                  0.8169565594803122
+                ],
+                [
+                  0.22484175224414948,
+                  0.8571862857340169
+                ],
+                [
+                  0.4450675679110907,
+                  0.9472813437913611
+                ]
+              ],
+              "motion": "sway"
+            },
+            {
+              "type": "image",
+              "image": {
+                "url": "assets/09d880fbd9ba43e1a9cdd5f031b070e97ce66c42ba4849aa7e7cdaabaca13618.png",
+                "sha256": "09d880fbd9ba43e1a9cdd5f031b070e97ce66c42ba4849aa7e7cdaabaca13618",
+                "bytes": 22169,
+                "format": "png"
+              },
+              "fit": "width",
+              "anchor": "bottom"
+            },
+            {
+              "type": "particles",
+              "effect": "rain",
+              "count": 50,
+              "color": "#9FB3C6",
+              "speed": 0.55,
+              "size": 0.25,
+              "opacity": 0.35
+            }
+          ]
+        }
+      },
+      "isLive": true,
+      "tags": [
+        "spider",
+        "city",
+        "rain"
+      ],
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "id": "web-corner",
+      "festivalId": "heroes",
+      "name": {
+        "en": "Web Corner"
+      },
+      "kind": "scene",
+      "scene": {
+        "engine": "layers",
+        "params": {
+          "layers": [
+            {
+              "type": "gradient",
+              "colors": [
+                "#0B1026",
+                "#1A2350",
+                "#3A1030"
+              ],
+              "angle": 180
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.68,
+              "y": 0.26,
+              "width": 0.56,
+              "color": "#E23636",
+              "glow": true,
+              "opacity": 0.92
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.6,
+              "y": 0.22,
+              "width": 0.16,
+              "color": "#FF8A7A",
+              "opacity": 0.25
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.78,
+              "y": 0.32,
+              "width": 0.1,
+              "color": "#FF8A7A",
+              "opacity": 0.2
+            },
+            {
+              "type": "image",
+              "image": {
+                "url": "assets/e1fb42cba2c4cb7c3f7676f20bb7ce63a128bcdc895e669ced82edc12189460f.png",
+                "sha256": "e1fb42cba2c4cb7c3f7676f20bb7ce63a128bcdc895e669ced82edc12189460f",
+                "bytes": 242400,
+                "format": "png"
+              },
+              "fit": "width",
+              "anchor": "top",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.493,
+                  0.0
+                ],
+                [
+                  0.493,
+                  0.875
+                ],
+                [
+                  0.507,
+                  0.875
+                ],
+                [
+                  0.507,
+                  0.0
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.63,
+                  0.895
+                ],
+                [
+                  0.6221600407021681,
+                  0.9095358560913409
+                ],
+                [
+                  0.5995857776054672,
+                  0.9223184734116779
+                ],
+                [
+                  0.5650000000000001,
+                  0.9318060796608386
+                ],
+                [
+                  0.522574263096701,
+                  0.9368543295030188
+                ],
+                [
+                  0.47742573690329904,
+                  0.9368543295030188
+                ],
+                [
+                  0.43500000000000005,
+                  0.9318060796608386
+                ],
+                [
+                  0.40041422239453284,
+                  0.9223184734116779
+                ],
+                [
+                  0.37783995929783193,
+                  0.9095358560913409
+                ],
+                [
+                  0.37,
+                  0.895
+                ],
+                [
+                  0.3778399592978319,
+                  0.8804641439086591
+                ],
+                [
+                  0.40041422239453284,
+                  0.8676815265883221
+                ],
+                [
+                  0.43499999999999994,
+                  0.8581939203391614
+                ],
+                [
+                  0.47742573690329904,
+                  0.8531456704969812
+                ],
+                [
+                  0.5225742630967009,
+                  0.8531456704969812
+                ],
+                [
+                  0.565,
+                  0.8581939203391613
+                ],
+                [
+                  0.5995857776054672,
+                  0.8676815265883221
+                ],
+                [
+                  0.6221600407021681,
+                  0.8804641439086591
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.585,
+                  0.9575
+                ],
+                [
+                  0.5798738727668022,
+                  0.9651954532248276
+                ],
+                [
+                  0.5651137776651132,
+                  0.9719627212179471
+                ],
+                [
+                  0.5425,
+                  0.9769855715851499
+                ],
+                [
+                  0.5147600951016891,
+                  0.9796581744427747
+                ],
+                [
+                  0.4852399048983109,
+                  0.9796581744427747
+                ],
+                [
+                  0.4575,
+                  0.9769855715851499
+                ],
+                [
+                  0.4348862223348869,
+                  0.9719627212179471
+                ],
+                [
+                  0.42012612723319775,
+                  0.9651954532248276
+                ],
+                [
+                  0.415,
+                  0.9575
+                ],
+                [
+                  0.42012612723319775,
+                  0.9498045467751725
+                ],
+                [
+                  0.43488622233488683,
+                  0.9430372787820529
+                ],
+                [
+                  0.45749999999999996,
+                  0.9380144284148502
+                ],
+                [
+                  0.4852399048983109,
+                  0.9353418255572253
+                ],
+                [
+                  0.5147600951016891,
+                  0.9353418255572253
+                ],
+                [
+                  0.5425,
+                  0.9380144284148502
+                ],
+                [
+                  0.5651137776651132,
+                  0.9430372787820529
+                ],
+                [
+                  0.5798738727668022,
+                  0.9498045467751725
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5478262379212493,
+                  0.9739131189606246
+                ],
+                [
+                  0.7747801876201209,
+                  0.9441758499039032
+                ],
+                [
+                  0.8435536150889523,
+                  0.9964951259010043
+                ],
+                [
+                  0.8764463849110476,
+                  0.9935048740989957
+                ],
+                [
+                  0.7852198123798791,
+                  0.9358241500960967
+                ],
+                [
+                  0.5321737620787508,
+                  0.9660868810393753
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.4678262379212492,
+                  0.9660868810393753
+                ],
+                [
+                  0.2147801876201209,
+                  0.9358241500960967
+                ],
+                [
+                  0.12355361508895236,
+                  0.9935048740989957
+                ],
+                [
+                  0.15644638491104768,
+                  0.9964951259010043
+                ],
+                [
+                  0.22521981237987904,
+                  0.9441758499039032
+                ],
+                [
+                  0.4521737620787507,
+                  0.9739131189606246
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5686277200096654,
+                  0.9663063470630877
+                ],
+                [
+                  0.8604267023679574,
+                  0.9243736992715634
+                ],
+                [
+                  0.955579266326511,
+                  0.9624785636001308
+                ],
+                [
+                  0.9844207336734889,
+                  0.9575214363998691
+                ],
+                [
+                  0.8595732976320426,
+                  0.9156263007284366
+                ],
+                [
+                  0.5513722799903347,
+                  0.9586936529369123
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.44862772000966533,
+                  0.9586936529369123
+                ],
+                [
+                  0.14042670236795743,
+                  0.9156263007284366
+                ],
+                [
+                  0.015579266326511102,
+                  0.9575214363998691
+                ],
+                [
+                  0.04442073367348895,
+                  0.9624785636001308
+                ],
+                [
+                  0.1395732976320426,
+                  0.9243736992715634
+                ],
+                [
+                  0.43137227999033456,
+                  0.9663063470630877
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5721628866948308,
+                  0.9556455741452149
+                ],
+                [
+                  0.8672129377224703,
+                  0.8839860971624178
+                ],
+                [
+                  0.9687967730058715,
+                  0.9083609680982385
+                ],
+                [
+                  0.9912032269941284,
+                  0.9016390319017615
+                ],
+                [
+                  0.8527870622775297,
+                  0.8760139028375822
+                ],
+                [
+                  0.5478371133051693,
+                  0.9493544258547851
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.45216288669483073,
+                  0.9493544258547851
+                ],
+                [
+                  0.14721293772247032,
+                  0.8760139028375822
+                ],
+                [
+                  0.008796773005871615,
+                  0.9016390319017615
+                ],
+                [
+                  0.03120322699412842,
+                  0.9083609680982385
+                ],
+                [
+                  0.1327870622775297,
+                  0.8839860971624178
+                ],
+                [
+                  0.42783711330516916,
+                  0.9556455741452149
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.5549324320889093,
+                  0.9472813437913611
+                ],
+                [
+                  0.7751582477558505,
+                  0.8571862857340169
+                ],
+                [
+                  0.8556524758424985,
+                  0.8169565594803122
+                ],
+                [
+                  0.8243475241575015,
+                  0.8130434405196877
+                ],
+                [
+                  0.7448417522441495,
+                  0.8528137142659831
+                ],
+                [
+                  0.5250675679110908,
+                  0.9427186562086388
+                ]
+              ]
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.64,
+              "y": 0.1728341232227488,
+              "width": 0.2,
+              "aspect": 4.0,
+              "color": "#05070F",
+              "points": [
+                [
+                  0.47493243208890923,
+                  0.9427186562086388
+                ],
+                [
+                  0.2551582477558505,
+                  0.8528137142659831
+                ],
+                [
+                  0.17565247584249857,
+                  0.8130434405196877
+                ],
+                [
+                  0.1443475241575015,
+                  0.8169565594803122
+                ],
+                [
+                  0.22484175224414948,
+                  0.8571862857340169
+                ],
+                [
+                  0.4450675679110907,
+                  0.9472813437913611
+                ]
+              ]
+            },
+            {
+              "type": "image",
+              "image": {
+                "url": "assets/09d880fbd9ba43e1a9cdd5f031b070e97ce66c42ba4849aa7e7cdaabaca13618.png",
+                "sha256": "09d880fbd9ba43e1a9cdd5f031b070e97ce66c42ba4849aa7e7cdaabaca13618",
+                "bytes": 22169,
+                "format": "png"
+              },
+              "fit": "width",
+              "anchor": "bottom"
+            }
+          ]
+        }
+      },
+      "isLive": false,
+      "tags": [
+        "spider",
+        "web",
+        "still"
+      ],
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 2,
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "id": "neon-horizon",
+      "festivalId": "neon",
+      "name": {
+        "en": "Neon Horizon"
+      },
+      "kind": "scene",
+      "scene": {
+        "engine": "layers",
+        "params": {
+          "layers": [
+            {
+              "type": "gradient",
+              "colors": [
+                "#120326",
+                "#3A0B5C",
+                "#3A0B5C"
+              ],
+              "angle": 180
+            },
+            {
+              "type": "shape",
+              "shape": "circle",
+              "x": 0.5,
+              "y": 0.47,
+              "width": 0.62,
+              "color": "#FF3EA5",
+              "glow": true
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.52,
+              "width": 0.5810048200492377,
+              "aspect": 0.0176528832506778,
+              "color": "#3A0B5C"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.55,
+              "width": 0.5143019525107253,
+              "aspect": 0.029913585413219975,
+              "color": "#3A0B5C"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.578,
+              "width": 0.40730098607103565,
+              "aspect": 0.050362805920737344,
+              "color": "#3A0B5C"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.602,
+              "width": 0.24081100841769662,
+              "aspect": 0.09583001719296488,
+              "color": "#3A0B5C"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 1.3,
+              "aspect": 0.6325838264299803,
+              "color": "#07010F"
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.635,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.655,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.685,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.725,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.78,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.855,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.95,
+              "width": 1.3,
+              "aspect": 0.0039447731755424065,
+              "color": "#22E4FF",
+              "opacity": 0.55
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.4596,
+                  0.0
+                ],
+                [
+                  0.46040000000000003,
+                  0.0
+                ],
+                [
+                  0.051200000000000044,
+                  1.0
+                ],
+                [
+                  0.048800000000000045,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.46359999999999996,
+                  0.0
+                ],
+                [
+                  0.4644,
+                  0.0
+                ],
+                [
+                  0.09620000000000004,
+                  1.0
+                ],
+                [
+                  0.09380000000000002,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.46759999999999996,
+                  0.0
+                ],
+                [
+                  0.4684,
+                  0.0
+                ],
+                [
+                  0.14120000000000002,
+                  1.0
+                ],
+                [
+                  0.1388,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.47159999999999996,
+                  0.0
+                ],
+                [
+                  0.4724,
+                  0.0
+                ],
+                [
+                  0.1862,
+                  1.0
+                ],
+                [
+                  0.1838,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.47559999999999997,
+                  0.0
+                ],
+                [
+                  0.4764,
+                  0.0
+                ],
+                [
+                  0.2312,
+                  1.0
+                ],
+                [
+                  0.22879999999999998,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.47959999999999997,
+                  0.0
+                ],
+                [
+                  0.4804,
+                  0.0
+                ],
+                [
+                  0.2762,
+                  1.0
+                ],
+                [
+                  0.27380000000000004,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.4836,
+                  0.0
+                ],
+                [
+                  0.4844,
+                  0.0
+                ],
+                [
+                  0.3212,
+                  1.0
+                ],
+                [
+                  0.31880000000000003,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.4876,
+                  0.0
+                ],
+                [
+                  0.4884,
+                  0.0
+                ],
+                [
+                  0.36619999999999997,
+                  1.0
+                ],
+                [
+                  0.3638,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.4916,
+                  0.0
+                ],
+                [
+                  0.4924,
+                  0.0
+                ],
+                [
+                  0.4112,
+                  1.0
+                ],
+                [
+                  0.40880000000000005,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.4956,
+                  0.0
+                ],
+                [
+                  0.4964,
+                  0.0
+                ],
+                [
+                  0.4562,
+                  1.0
+                ],
+                [
+                  0.45380000000000004,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.4996,
+                  0.0
+                ],
+                [
+                  0.5004,
+                  0.0
+                ],
+                [
+                  0.5012,
+                  1.0
+                ],
+                [
+                  0.4988,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5036,
+                  0.0
+                ],
+                [
+                  0.5044,
+                  0.0
+                ],
+                [
+                  0.5462,
+                  1.0
+                ],
+                [
+                  0.5438000000000001,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5076,
+                  0.0
+                ],
+                [
+                  0.5084,
+                  0.0
+                ],
+                [
+                  0.5912,
+                  1.0
+                ],
+                [
+                  0.5888,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5116,
+                  0.0
+                ],
+                [
+                  0.5124,
+                  0.0
+                ],
+                [
+                  0.6362,
+                  1.0
+                ],
+                [
+                  0.6338,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5156000000000001,
+                  0.0
+                ],
+                [
+                  0.5164,
+                  0.0
+                ],
+                [
+                  0.6811999999999999,
+                  1.0
+                ],
+                [
+                  0.6788,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5196000000000001,
+                  0.0
+                ],
+                [
+                  0.5204,
+                  0.0
+                ],
+                [
+                  0.7262,
+                  1.0
+                ],
+                [
+                  0.7238,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5236000000000001,
+                  0.0
+                ],
+                [
+                  0.5244,
+                  0.0
+                ],
+                [
+                  0.7712,
+                  1.0
+                ],
+                [
+                  0.7688,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5276000000000001,
+                  0.0
+                ],
+                [
+                  0.5284,
+                  0.0
+                ],
+                [
+                  0.8161999999999999,
+                  1.0
+                ],
+                [
+                  0.8138,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5316000000000001,
+                  0.0
+                ],
+                [
+                  0.5324,
+                  0.0
+                ],
+                [
+                  0.8612,
+                  1.0
+                ],
+                [
+                  0.8588,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5356000000000001,
+                  0.0
+                ],
+                [
+                  0.5364,
+                  0.0
+                ],
+                [
+                  0.9062,
+                  1.0
+                ],
+                [
+                  0.9038,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "polygon",
+              "x": 0.5,
+              "y": 0.81,
+              "width": 3.0,
+              "aspect": 0.27411965811965816,
+              "color": "#22E4FF",
+              "points": [
+                [
+                  0.5396000000000001,
+                  0.0
+                ],
+                [
+                  0.5404,
+                  0.0
+                ],
+                [
+                  0.9511999999999999,
+                  1.0
+                ],
+                [
+                  0.9488,
+                  1.0
+                ]
+              ],
+              "opacity": 0.45
+            },
+            {
+              "type": "shape",
+              "shape": "rect",
+              "x": 0.5,
+              "y": 0.62,
+              "width": 1.3,
+              "aspect": 0.005917159763313609,
+              "color": "#22E4FF",
+              "glow": true,
+              "opacity": 0.9
+            }
+          ]
+        }
+      },
+      "isLive": false,
+      "tags": [
+        "neon",
+        "grid",
+        "still"
+      ],
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 1,
+      "minAppVersion": "1.0.0"
+    }
+  ],
+  "fonts": [
+    {
+      "id": "creepster",
+      "family": "Creepster",
+      "category": "display",
+      "scripts": [
+        "latin"
+      ],
+      "tags": [
+        "halloween",
+        "spooky"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 400,
+          "style": "normal",
+          "asset": {
+            "url": "assets/402aeb734586c74aecd3dbdc454589b1fb12e2e1c71f782fd019ae68066d9f44.ttf",
+            "sha256": "402aeb734586c74aecd3dbdc454589b1fb12e2e1c71f782fd019ae68066d9f44",
+            "bytes": 62724,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "playfair-display",
+      "family": "Playfair Display",
+      "category": "display",
+      "scripts": [
+        "latin"
+      ],
+      "tags": [
+        "christmas",
+        "serif",
+        "elegant"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 400,
+          "maxWeight": 900,
+          "style": "normal",
+          "asset": {
+            "url": "assets/c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6.ttf",
+            "sha256": "c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6",
+            "bytes": 300724,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "baloo-2",
+      "family": "Baloo 2",
+      "category": "display",
+      "scripts": [
+        "latin",
+        "devanagari"
+      ],
+      "tags": [
+        "thingyan",
+        "rounded"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 400,
+          "maxWeight": 800,
+          "style": "normal",
+          "asset": {
+            "url": "assets/d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2.ttf",
+            "sha256": "d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2",
+            "bytes": 683200,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "bebas-neue",
+      "family": "Bebas Neue",
+      "category": "display",
+      "scripts": [
+        "latin"
+      ],
+      "tags": [
+        "bold",
+        "tall"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 400,
+          "style": "normal",
+          "asset": {
+            "url": "assets/08e4623805102d819f58601e46e345648846075e363b2ceb23313c2d1c83ec73.ttf",
+            "sha256": "08e4623805102d819f58601e46e345648846075e363b2ceb23313c2d1c83ec73",
+            "bytes": 61400,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "orbitron",
+      "family": "Orbitron",
+      "category": "display",
+      "scripts": [
+        "latin"
+      ],
+      "tags": [
+        "neon",
+        "futuristic",
+        "wide"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 400,
+          "maxWeight": 900,
+          "style": "normal",
+          "asset": {
+            "url": "assets/f42db2dd16e642258e35782916eceb1dcdbea06fb958d77ad71dc5963587e8fd.ttf",
+            "sha256": "f42db2dd16e642258e35782916eceb1dcdbea06fb958d77ad71dc5963587e8fd",
+            "bytes": 38576,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "space-grotesk",
+      "family": "Space Grotesk",
+      "category": "clean",
+      "scripts": [
+        "latin"
+      ],
+      "tags": [
+        "clean",
+        "modern"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 300,
+          "maxWeight": 700,
+          "style": "normal",
+          "asset": {
+            "url": "assets/acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72.ttf",
+            "sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
+            "bytes": 136676,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "dm-sans",
+      "family": "DM Sans",
+      "category": "clean",
+      "scripts": [
+        "latin"
+      ],
+      "tags": [
+        "clean",
+        "friendly"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 100,
+          "maxWeight": 1000,
+          "style": "normal",
+          "asset": {
+            "url": "assets/8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d.ttf",
+            "sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+            "bytes": 240164,
+            "format": "ttf"
+          }
+        }
+      ],
+      "fallbackFor": {
+        "my": "padauk"
+      }
+    },
+    {
+      "id": "padauk",
+      "family": "Padauk",
+      "category": "myanmar",
+      "scripts": [
+        "myanmar",
+        "latin"
+      ],
+      "tags": [
+        "myanmar",
+        "burmese"
+      ],
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "weight": 400,
+          "style": "normal",
+          "asset": {
+            "url": "assets/c89cf56e572abda9652d9e54203bd729b0c59541c4b569046b9b61acd0b532f3.ttf",
+            "sha256": "c89cf56e572abda9652d9e54203bd729b0c59541c4b569046b9b61acd0b532f3",
+            "bytes": 498860,
+            "format": "ttf"
+          }
+        },
+        {
+          "weight": 700,
+          "style": "normal",
+          "asset": {
+            "url": "assets/9dbb46745ae4ed42d9030210e63f7aa53281861c7fa0be072980161f94927115.ttf",
+            "sha256": "9dbb46745ae4ed42d9030210e63f7aa53281861c7fa0be072980161f94927115",
+            "bytes": 499304,
+            "format": "ttf"
+          }
+        }
+      ],
+      "sampleText": {
+        "en": "ကြိုဆိုပါတယ်"
+      }
+    }
+  ],
+  "iconPacks": [
+    {
+      "id": "spooky-glow",
+      "festivalId": "halloween",
+      "name": {
+        "en": "Spooky Glow"
+      },
+      "style": {
+        "en": "Neon outline"
+      },
+      "kind": "painted",
+      "painter": "halloween",
+      "shape": "squircle",
+      "tile": "#1E1430",
+      "glyph": "#FF7A1A",
+      "ring": "#FF7A1A",
+      "publishedAt": "2026-06-17T14:00:00.000Z",
+      "popularity": 1
+    },
+    {
+      "id": "gold-ornament",
+      "festivalId": "christmas",
+      "name": {
+        "en": "Gold Ornament"
+      },
+      "style": {
+        "en": "Gold rim"
+      },
+      "kind": "painted",
+      "painter": "christmas",
+      "shape": "circle",
+      "tile": "#5A1420",
+      "glyph": "#F2B33D",
+      "ring": "#F2B33D",
+      "publishedAt": "2026-06-17T14:00:00.000Z",
+      "popularity": 2
+    },
+    {
+      "id": "water-splash",
+      "festivalId": "thingyan",
+      "name": {
+        "en": "Water Splash"
+      },
+      "style": {
+        "en": "Filled"
+      },
+      "kind": "painted",
+      "painter": "thingyan",
+      "shape": "leaf",
+      "tile": "#FFC21A",
+      "glyph": "#0A3D6B",
+      "ring": "#FFC21A",
+      "publishedAt": "2026-05-18T14:00:00.000Z",
+      "popularity": 3
+    },
+    {
+      "id": "web-slinger",
+      "festivalId": "heroes",
+      "name": {
+        "en": "Web Slinger"
+      },
+      "style": {
+        "en": "Comic"
+      },
+      "kind": "images",
+      "shape": "squircle",
+      "tile": "#D3202A",
+      "glyph": "#FFFFFF",
+      "ring": "#0A0A12",
+      "background": {
+        "url": "assets/3c5d137f449ecb0bbbcd95b9bedfdaf636cff1c54dc2a3d9b940120917a700bb.png",
+        "sha256": "3c5d137f449ecb0bbbcd95b9bedfdaf636cff1c54dc2a3d9b940120917a700bb",
+        "bytes": 22596,
+        "format": "png"
+      },
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 0
+    },
+    {
+      "id": "neon-glow",
+      "festivalId": "neon",
+      "name": {
+        "en": "Neon Glow"
+      },
+      "style": {
+        "en": "Glow"
+      },
+      "kind": "images",
+      "shape": "circle",
+      "tile": "#14062B",
+      "glyph": "#22E4FF",
+      "ring": "#FF3EA5",
+      "background": {
+        "url": "assets/586bf47a90ef15c7cfed7716da4fd2b8cddbd608340cffcb7b39efeb596bb766.png",
+        "sha256": "586bf47a90ef15c7cfed7716da4fd2b8cddbd608340cffcb7b39efeb596bb766",
+        "bytes": 38258,
+        "format": "png"
+      },
+      "publishedAt": "2026-10-14T14:00:00.000Z",
+      "popularity": 0
+    }
+  ],
+  "banners": [
+    {
+      "id": "halloween-2026",
+      "title": {
+        "en": "Halloween Night"
+      },
+      "subtitle": {
+        "en": "Wallpaper, icons and a spooky clock font."
+      },
+      "tag": {
+        "en": "THEME"
+      },
+      "cta": {
+        "en": "Get theme"
+      },
+      "action": {
+        "type": "theme",
+        "id": "halloween-night"
+      },
+      "look": {
+        "background": "#160C24",
+        "accent": "#FF7A1A",
+        "titleColor": "#FF7A1A",
+        "font": "creepster",
+        "artThemeId": "halloween-night"
+      },
+      "startsAt": "2026-10-01T00:00:00.000Z",
+      "endsAt": "2026-11-01T00:00:00.000Z",
+      "sort": 10
+    },
+    {
+      "id": "christmas-2026",
+      "title": {
+        "en": "Snowy Christmas"
+      },
+      "subtitle": {
+        "en": "Snowy pines, gold ornaments and cozy cabins."
+      },
+      "tag": {
+        "en": "WALLPAPERS"
+      },
+      "cta": {
+        "en": "Browse"
+      },
+      "action": {
+        "type": "wallpapers",
+        "id": "christmas"
+      },
+      "look": {
+        "background": "#0F3D2E",
+        "accent": "#F2B33D",
+        "titleColor": "#F5F1EA",
+        "font": "playfair-display",
+        "artThemeId": "christmas-eve"
+      },
+      "startsAt": "2026-10-10T00:00:00.000Z",
+      "endsAt": "2026-12-27T00:00:00.000Z",
+      "sort": 20
+    },
+    {
+      "id": "clock-fonts",
+      "title": {
+        "en": "Clock fonts"
+      },
+      "subtitle": {
+        "en": "Pick a font for the wallp Home and lock screen clock."
+      },
+      "tag": {
+        "en": "NEW · FONTS"
+      },
+      "cta": {
+        "en": "Try fonts"
+      },
+      "action": {
+        "type": "fonts"
+      },
+      "look": {
+        "background": "#26222E",
+        "accent": "#FFB547",
+        "titleColor": "#F5F1EA",
+        "font": "space-grotesk"
+      },
+      "sort": 30
+    },
+    {
+      "id": "thingyan-2027",
+      "title": {
+        "en": "Thingyan",
+        "my": "သင်္ကြန်"
+      },
+      "subtitle": {
+        "en": "Water festival themes with Padauk flowers."
+      },
+      "tag": {
+        "en": "THEME"
+      },
+      "cta": {
+        "en": "Explore"
+      },
+      "action": {
+        "type": "festival",
+        "id": "thingyan"
+      },
+      "look": {
+        "background": "#0A3D6B",
+        "accent": "#FFC21A",
+        "titleColor": "#FFC21A",
+        "font": "baloo-2",
+        "artThemeId": "thingyan-water"
+      },
+      "sort": 40
+    },
+    {
+      "id": "spider-night",
+      "title": {
+        "en": "Spider Night"
+      },
+      "subtitle": {
+        "en": "Live wallpaper, comic icons and a bold clock."
+      },
+      "tag": {
+        "en": "NEW · THEME"
+      },
+      "cta": {
+        "en": "Get theme"
+      },
+      "action": {
+        "type": "theme",
+        "id": "spider-night"
+      },
+      "look": {
+        "background": "#0B1026",
+        "accent": "#E23636",
+        "titleColor": "#F5F1EA",
+        "font": "bebas-neue",
+        "artThemeId": "spider-night"
+      },
+      "sort": 5
+    },
+    {
+      "id": "neon-night",
+      "title": {
+        "en": "Neon Night"
+      },
+      "subtitle": {
+        "en": "A synthwave sun, neon icons and a glowing clock."
+      },
+      "tag": {
+        "en": "NEW · THEME"
+      },
+      "cta": {
+        "en": "Get theme"
+      },
+      "action": {
+        "type": "theme",
+        "id": "neon-night"
+      },
+      "look": {
+        "background": "#120326",
+        "accent": "#22E4FF",
+        "titleColor": "#F8F0FF",
+        "font": "orbitron",
+        "artThemeId": "neon-night"
+      },
+      "sort": 6
+    }
+  ],
+  "accentPresets": {
+    "solids": [
+      {
+        "id": "pumpkin",
+        "name": {
+          "en": "Pumpkin"
+        },
+        "type": "solid",
+        "colors": [
+          "#FF7A1A"
+        ]
+      },
+      {
+        "id": "ember",
+        "name": {
+          "en": "Ember"
+        },
+        "type": "solid",
+        "colors": [
+          "#FF4D2E"
+        ]
+      },
+      {
+        "id": "candy",
+        "name": {
+          "en": "Candy"
+        },
+        "type": "solid",
+        "colors": [
+          "#FF5FA2"
+        ]
+      },
+      {
+        "id": "witch-purple",
+        "name": {
+          "en": "Witch purple"
+        },
+        "type": "solid",
+        "colors": [
+          "#A970FF"
+        ]
+      },
+      {
+        "id": "ghost-blue",
+        "name": {
+          "en": "Ghost blue"
+        },
+        "type": "solid",
+        "colors": [
+          "#7CC6FF"
+        ]
+      },
+      {
+        "id": "slime",
+        "name": {
+          "en": "Slime"
+        },
+        "type": "solid",
+        "colors": [
+          "#7BD44A"
+        ]
+      },
+      {
+        "id": "moon-cream",
+        "name": {
+          "en": "Moon cream"
+        },
+        "type": "solid",
+        "colors": [
+          "#F3E6C4"
+        ]
+      },
+      {
+        "id": "gold",
+        "name": {
+          "en": "Gold"
+        },
+        "type": "solid",
+        "colors": [
+          "#F2B33D"
+        ]
+      },
+      {
+        "id": "bone",
+        "name": {
+          "en": "Bone"
+        },
+        "type": "solid",
+        "colors": [
+          "#F5F1EA"
+        ]
+      },
+      {
+        "id": "blood",
+        "name": {
+          "en": "Blood"
+        },
+        "type": "solid",
+        "colors": [
+          "#D7263D"
+        ]
+      }
+    ],
+    "gradients": [
+      {
+        "id": "pumpkin-glow",
+        "name": {
+          "en": "Pumpkin glow"
+        },
+        "type": "gradient",
+        "colors": [
+          "#FFB547",
+          "#FF4D2E"
+        ],
+        "angle": 135
+      },
+      {
+        "id": "witching-hour",
+        "name": {
+          "en": "Witching hour"
+        },
+        "type": "gradient",
+        "colors": [
+          "#A970FF",
+          "#FF5FA2"
+        ],
+        "angle": 135
+      },
+      {
+        "id": "moonrise",
+        "name": {
+          "en": "Moonrise"
+        },
+        "type": "gradient",
+        "colors": [
+          "#F3E6C4",
+          "#FF7A1A"
+        ],
+        "angle": 180
+      },
+      {
+        "id": "potion",
+        "name": {
+          "en": "Potion"
+        },
+        "type": "gradient",
+        "colors": [
+          "#7BD44A",
+          "#2EC4B6"
+        ],
+        "angle": 90
+      },
+      {
+        "id": "frost",
+        "name": {
+          "en": "Frost"
+        },
+        "type": "gradient",
+        "colors": [
+          "#F5F1EA",
+          "#7CC6FF"
+        ],
+        "angle": 180
+      },
+      {
+        "id": "candle",
+        "name": {
+          "en": "Candle"
+        },
+        "type": "gradient",
+        "colors": [
+          "#FFE08A",
+          "#FF7A1A",
+          "#D7263D"
+        ],
+        "angle": 180
+      }
+    ]
+  },
+  "searchSuggestions": [
+    "Halloween",
+    "Christmas",
+    "Thingyan",
+    "moon",
+    "snow",
+    "spider",
+    "neon",
+    "live"
+  ]
+}

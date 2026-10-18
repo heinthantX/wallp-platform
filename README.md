@@ -57,8 +57,9 @@ With no `DATABASE_URL`, the server uses SQLite at `file:./data/wallp.db`. To use
 | `wallp user create --email <email> [--name <name>] [--role <role>]` | Creates a dashboard user. Roles: `admin`, `designer`, `reviewer`, `viewer`. |
 | `wallp openapi > ../admin/openapi.json` | Writes the OpenAPI 3.1 spec. The admin app uses this file to generate its types. |
 | `wallp import --dir <path>` | Imports catalog and themes from a directory. |
+| `wallp publish [--notes TEXT] [--ack-warnings]` | Runs the pre-publish checks and publishes a release. Exits non-zero on check errors, or on warnings without `--ack-warnings`. |
 
-Make targets: `make run`, `make test-sqlite`, `make test-pg`, `make test`, `make lint`, `make openapi`.
+Make targets: `make seed`, `make run`, `make test-sqlite`, `make test-pg`, `make test`, `make lint`, `make openapi`.
 
 ## Configuration
 
@@ -101,6 +102,10 @@ TEST_DATABASE_URL=postgres://wallp:wallp@localhost:5433/wallp_test?sslmode=disab
 ```
 
 Or run everything with `make test`, which runs `go vet`, the SQLite suite and the Postgres suite.
+
+## Seed data
+
+`make seed` migrates, imports `seed/catalog/v1` (5 festivals, 5 themes, 6 wallpapers, 8 fonts, 5 icon packs, 6 banners) and publishes it as a release. It uses the normal env (`DATABASE_URL`, `STORAGE_DIR`).
 
 ## Publishing runbook
 
