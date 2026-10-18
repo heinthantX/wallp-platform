@@ -33,6 +33,9 @@ type Config struct {
 	// Required in production to create the first admin over HTTP.
 	SetupToken string `env:"SETUP_TOKEN"`
 
+	// "off" disables the scheduled-publish ticker (tests).
+	Scheduler string `env:"SCHEDULER" envDefault:"on"`
+
 	// Requests per minute per IP on auth endpoints.
 	AuthRateLimit int `env:"AUTH_RATE_LIMIT" envDefault:"20"`
 

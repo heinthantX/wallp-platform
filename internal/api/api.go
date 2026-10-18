@@ -2,11 +2,14 @@
 package api
 
 import (
+	"context"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/uptrace/bun"
 
 	"github.com/heinthant/wallp-backend/internal/auth"
+	"github.com/heinthant/wallp-backend/internal/checks"
 	"github.com/heinthant/wallp-backend/internal/config"
 )
 
@@ -14,6 +17,8 @@ type Deps struct {
 	Cfg  config.Config
 	DB   *bun.DB
 	Auth *auth.Service
+	// Checker runs the pre-publish checks; nil means no checks.
+	Checker func(ctx context.Context) (checks.Report, error)
 }
 
 const (
@@ -33,4 +38,6 @@ func Register(h huma.API, r *gin.Engine, d *Deps) {
 	registerGeneratorRecipes(h, d)
 	registerAssets(h, r, d)
 	registerChecks(h, d)
+	registerReleases(h, d)
+	registerPublicCatalog(r, d)
 }

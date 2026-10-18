@@ -113,21 +113,24 @@ type cand struct {
 	data []byte
 }
 
-// candidates keeps published rows and approved/scheduled rows whose time has come.
+// candidates mirrors what releases.Publish ships, so nothing goes out unchecked:
+// approved rows and scheduled rows whose time has come use their current data, every
+// unarchived festival ships, and any other unarchived row with published data keeps it.
 // Times are compared at millisecond precision, as SQLite and Postgres round differently.
 func candidates(k *items.Kind, rows []model.Item, now time.Time) []cand {
 	var out []cand
 	for _, it := range rows {
-		data := []byte(it.Data)
-		switch it.Status {
-		case model.StatusPublished:
-			if len(it.PublishedData) > 0 {
-				data = it.PublishedData
-			}
-		case model.StatusApproved, model.StatusScheduled:
-			if it.ScheduledAt == nil || it.ScheduledAt.Truncate(time.Millisecond).After(now.Truncate(time.Millisecond)) {
-				continue
-			}
+		if it.Status == model.StatusArchived {
+			continue
+		}
+		due := it.Status == model.StatusScheduled && it.ScheduledAt != nil &&
+			!it.ScheduledAt.Truncate(time.Millisecond).After(now.Truncate(time.Millisecond))
+		var data []byte
+		switch {
+		case it.Status == model.StatusApproved || due || k == items.FestivalKind:
+			data = []byte(it.Data)
+		case len(it.PublishedData) > 0:
+			data = it.PublishedData
 		default:
 			continue
 		}
@@ -135,8 +138,6 @@ func candidates(k *items.Kind, rows []model.Item, now time.Time) []cand {
 	}
 	return out
 }
-
-var candidateStatuses = []string{model.StatusPublished, model.StatusApproved, model.StatusScheduled}
 
 func (r *runner) load(ctx context.Context, db bun.IDB) error {
 	var all []cand
@@ -158,7 +159,7 @@ func (r *runner) load(ctx context.Context, db bun.IDB) error {
 		{&ip, items.IconPackKind, func() []model.Item { return pick(ip, func(x model.IconPack) model.Item { return x.Item }) }},
 		{&ba, items.BannerKind, func() []model.Item { return pick(ba, func(x model.Banner) model.Item { return x.Item }) }},
 	} {
-		if err := db.NewSelect().Model(q.dst).Where("status IN (?)", bun.In(candidateStatuses)).Order("id").Scan(ctx); err != nil {
+		if err := db.NewSelect().Model(q.dst).Where("status <> ?", model.StatusArchived).Order("id").Scan(ctx); err != nil {
 			return fmt.Errorf("checks: load %s: %w", q.kind.Plural, err)
 		}
 		all = append(all, candidates(q.kind, q.item(), r.now)...)
