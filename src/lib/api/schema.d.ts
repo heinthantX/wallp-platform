@@ -350,6 +350,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/generator/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record telemetry feedback on theme generation
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["create-generator-feedback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/generator/recipes": {
         parameters: {
             query?: never;
@@ -471,6 +491,46 @@ export interface paths {
          * @description Roles: admin, designer, reviewer
          */
         post: operations["generate-themes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/themes/generate/breed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Breed two theme details into 6 child theme options
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["breed-themes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/themes/generate/from-image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate themes from an uploaded photo
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["generate-themes-from-image"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1103,6 +1163,29 @@ export interface components {
             userId?: string;
             userName: string;
         };
+        BreedThemeInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/BreedThemeInputBody.json
+             */
+            readonly $schema?: string;
+            a: components["schemas"]["ThemeDetail"];
+            b: components["schemas"]["ThemeDetail"];
+            /** Format: int64 */
+            seed?: number;
+        };
+        BreedThemeOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/BreedThemeOutputBody.json
+             */
+            readonly $schema?: string;
+            options: components["schemas"]["GeneratedOption"][] | null;
+            /** Format: int64 */
+            seed: number;
+        };
         Check: {
             field: string;
             level?: string;
@@ -1124,6 +1207,33 @@ export interface components {
              */
             readonly $schema?: string;
             code: string;
+        };
+        CreateFeedbackInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/CreateFeedbackInputBody.json
+             */
+            readonly $schema?: string;
+            action: string;
+            festivalId?: string;
+            /** Format: double */
+            hue?: number;
+            mood: string;
+            palette: components["schemas"]["Palette"];
+            recipeId?: string;
+            /** Format: int64 */
+            seed: number;
+        };
+        CreateFeedbackOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/CreateFeedbackOutputBody.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            id: number;
         };
         CreateUserInputBody: {
             /**
@@ -1197,6 +1307,18 @@ export interface components {
             field: string;
             message: string;
         };
+        FromImageOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/FromImageOutputBody.json
+             */
+            readonly $schema?: string;
+            options: components["schemas"]["GeneratedOption"][] | null;
+            /** Format: int64 */
+            seed: number;
+            swatches: components["schemas"]["Swatch"][] | null;
+        };
         GenerateThemeInputBody: {
             /**
              * Format: uri
@@ -1214,6 +1336,8 @@ export interface components {
             engine?: string;
             /** @description Festival ID (must exist) */
             festivalId: string;
+            /** @description Enable learning bias from feedback (default true) */
+            learnBias?: boolean;
             locked?: components["schemas"]["Locked"];
             /** @description Theme mood: classic, cozy, minimal, cute */
             mood?: string;
@@ -1643,6 +1767,11 @@ export interface components {
              */
             readonly $schema?: string;
             ok: boolean;
+        };
+        Swatch: {
+            hex: string;
+            /** Format: double */
+            share: number;
         };
         TOTPSetupOutputBody: {
             /**
@@ -2475,6 +2604,39 @@ export interface operations {
             };
         };
     };
+    "create-generator-feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFeedbackInputBody"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateFeedbackOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "list-generator-recipes": {
         parameters: {
             query?: {
@@ -2809,6 +2971,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GenerateThemeOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "breed-themes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BreedThemeInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BreedThemeOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "generate-themes-from-image": {
+        parameters: {
+            query?: never;
+            header?: {
+                "Content-Type"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FromImageOutputBody"];
                 };
             };
             /** @description Error */
