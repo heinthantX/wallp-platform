@@ -805,7 +805,7 @@ function ThemeGenerateContent() {
                         <SelectContent>
                           {festivalsData?.items?.map((fest) => (
                             <SelectItem key={fest.id} value={fest.id}>
-                              {fest.id}
+                              {festivalName(fest.data) ?? fest.id}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1287,4 +1287,14 @@ export default function ThemeGeneratePage() {
       <ThemeGenerateContent />
     </React.Suspense>
   );
+}
+
+// Festival item data arrives as an object or a JSON string; show its English name when present.
+function festivalName(data: unknown): string | undefined {
+  try {
+    const d = (typeof data === "string" ? JSON.parse(data) : data) as { name?: { en?: string } } | null;
+    return d?.name?.en || undefined;
+  } catch {
+    return undefined;
+  }
 }

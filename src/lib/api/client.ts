@@ -64,12 +64,22 @@ export function createApiClient(customFetch?: typeof fetch) {
   const client = createClient<paths>({
     baseUrl: BASE_PLACEHOLDER,
     fetch: fetchFn,
+    // Catalog hooks pass pre-serialized JSON strings; the default would quote them a second time.
+    bodySerializer: (body: unknown) =>
+      typeof body === "string" || body instanceof FormData ? (body as BodyInit) : JSON.stringify(body),
   });
 
   client.use({
     async onRequest({ request }) {
       if (request.url.startsWith(BASE_PLACEHOLDER)) {
-        request = new Request(currentApiUrl() + request.url.slice(BASE_PLACEHOLDER.length), request);
+        // Buffer the body: re-wrapping the Request would send a streamed upload, which Chromium rejects over plain HTTP/1.1.
+        const body = request.body ? await request.arrayBuffer() : undefined;
+        request = new Request(currentApiUrl() + request.url.slice(BASE_PLACEHOLDER.length), {
+          method: request.method,
+          headers: request.headers,
+          body,
+          signal: request.signal,
+        });
       }
       const token = useAuthStore.getState().accessToken;
       if (token && !request.headers.has("Authorization")) {

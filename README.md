@@ -45,3 +45,7 @@ The application is deployed to GitHub Pages as a static site via the GitHub Acti
    - `NEXT_PUBLIC_API_URL=${{ vars.API_URL }}`
 4. Static assets output to `out/` (including `public/.nojekyll`) are uploaded using `actions/upload-pages-artifact`.
 5. GitHub Pages is published using `actions/deploy-pages`.
+
+## End-to-end smoke test
+
+`pnpm e2e` builds the Go backend (SQLite in a temp dir, port 18080), builds the static export against it and serves it on port 13000, then drives setup, login, festival, theme generation, publish checks and logout in headless Chromium. Needs Go, the `sqlite3` CLI and `pnpm exec playwright install chromium` once.
