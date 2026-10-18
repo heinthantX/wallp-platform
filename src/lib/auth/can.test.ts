@@ -32,6 +32,15 @@ describe("can() role matrix", () => {
       "releases:rollback",
       "statistics:read",
       "read",
+      "items:save_draft",
+      "items:duplicate",
+      "items:request_review",
+      "items:approve",
+      "items:reject",
+      "items:schedule",
+      "items:archive",
+      "items:restore",
+      "items:export",
     ];
 
     for (const p of permissions) {
@@ -53,6 +62,16 @@ describe("can() role matrix", () => {
     expect(can(designer, "publish:approve")).toBe(false);
     expect(can(designer, "publish:manage")).toBe(false);
     expect(can(designer, "releases:rollback")).toBe(false);
+
+    // Items workflow permissions
+    expect(can(designer, "items:save_draft")).toBe(true);
+    expect(can(designer, "items:duplicate")).toBe(true);
+    expect(can(designer, "items:request_review")).toBe(true);
+    expect(can(designer, "items:export")).toBe(true);
+    expect(can(designer, "items:approve")).toBe(false);
+    expect(can(designer, "items:reject")).toBe(false);
+    expect(can(designer, "items:schedule")).toBe(false);
+    expect(can(designer, "items:archive")).toBe(false);
   });
 
   it("reviewer permissions", () => {
@@ -68,11 +87,22 @@ describe("can() role matrix", () => {
     expect(can(reviewer, "themes:edit")).toBe(false);
     expect(can(reviewer, "publish:manage")).toBe(false);
     expect(can(reviewer, "releases:rollback")).toBe(false);
+
+    // Items workflow permissions
+    expect(can(reviewer, "items:save_draft")).toBe(true);
+    expect(can(reviewer, "items:duplicate")).toBe(true);
+    expect(can(reviewer, "items:request_review")).toBe(true);
+    expect(can(reviewer, "items:approve")).toBe(true);
+    expect(can(reviewer, "items:reject")).toBe(true);
+    expect(can(reviewer, "items:schedule")).toBe(true);
+    expect(can(reviewer, "items:export")).toBe(true);
+    expect(can(reviewer, "items:archive")).toBe(false);
   });
 
   it("viewer permissions", () => {
     expect(can(viewer, "read")).toBe(true);
     expect(can(viewer, "statistics:read")).toBe(true);
+    expect(can(viewer, "items:export")).toBe(true);
 
     // Viewer cannot do anything modifying
     expect(can(viewer, "users:manage")).toBe(false);
@@ -82,6 +112,10 @@ describe("can() role matrix", () => {
     expect(can(viewer, "themes:review")).toBe(false);
     expect(can(viewer, "publish:schedule")).toBe(false);
     expect(can(viewer, "publish:manage")).toBe(false);
+    expect(can(viewer, "items:save_draft")).toBe(false);
+    expect(can(viewer, "items:request_review")).toBe(false);
+    expect(can(viewer, "items:approve")).toBe(false);
+    expect(can(viewer, "items:archive")).toBe(false);
   });
 
   it("handles null and undefined gracefully", () => {

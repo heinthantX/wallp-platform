@@ -12,14 +12,24 @@ export type Permission =
   | "publish:manage"
   | "releases:rollback"
   | "statistics:read"
-  | "read";
+  | "read"
+  // Item workflow permissions (B3 / dashboard §4.3)
+  | "items:save_draft"
+  | "items:duplicate"
+  | "items:request_review"
+  | "items:approve"
+  | "items:reject"
+  | "items:schedule"
+  | "items:archive"
+  | "items:restore"
+  | "items:export";
 
 /**
- * Role-based permission check mapping to dashboard doc §3:
- * - Admin: Everything, including users, publishing and rollback
- * - Designer: Create and edit drafts, generate themes, upload files, request review, read
- * - Reviewer: Approve or reject drafts, schedule publishing, audit log, read
- * - Viewer: Read only, see statistics
+ * Role-based permission check mapping to dashboard doc §3 and phase02 §B3:
+ * - Admin: Everything, including users, publishing, archiving and rollback
+ * - Designer+: Create, update, duplicate, request review, read
+ * - Reviewer+: Approve, reject, schedule, audit log, read
+ * - Viewer: Read only, see statistics, export
  */
 export function can(
   user: AdminUserView | { role?: Role } | null | undefined,
@@ -36,12 +46,17 @@ export function can(
     case "users:manage":
     case "publish:manage":
     case "releases:rollback":
+    case "items:archive":
+    case "items:restore":
       return false; // Admin only
 
     case "audit:read":
     case "themes:review":
     case "publish:schedule":
     case "publish:approve":
+    case "items:approve":
+    case "items:reject":
+    case "items:schedule":
       return role === "reviewer";
 
     case "drafts:edit":
@@ -49,8 +64,15 @@ export function can(
     case "themes:create":
       return role === "designer";
 
+    case "items:save_draft":
+    case "items:duplicate":
+    case "items:request_review":
+      // designer+
+      return role === "designer" || role === "reviewer";
+
     case "read":
     case "statistics:read":
+    case "items:export":
       return role === "designer" || role === "reviewer" || role === "viewer";
 
     default:
