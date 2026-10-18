@@ -35,3 +35,35 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
+// Mock HTMLCanvasElement getContext
+(HTMLCanvasElement.prototype as unknown as { getContext: unknown }).getContext = function () {
+  return {
+    fillRect: () => {},
+    clearRect: () => {},
+    getImageData: (_x = 0, _y = 0, w = 1, h = 1) => ({
+      data: new Array(w * h * 4).fill(0),
+    }),
+    putImageData: () => {},
+    createImageData: () => [],
+    setTransform: () => {},
+    drawImage: () => {},
+    save: () => {},
+    fillText: () => {},
+    restore: () => {},
+    beginPath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    closePath: () => {},
+    stroke: () => {},
+    fill: () => {},
+    arc: () => {},
+    createLinearGradient: () => ({
+      addColorStop: () => {},
+    }),
+    createRadialGradient: () => ({
+      addColorStop: () => {},
+    }),
+  } as unknown as RenderingContext;
+};
+
+

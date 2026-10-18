@@ -21,10 +21,149 @@ import { StatusBadge, ReviewBar, AuditTimeline } from "@/components/items";
 import { getNextFestivalRun } from "@/lib/festival/countdown";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import {
+  Stepper,
+  KeywordChips,
+  ImageDropZone,
+  SwatchPicker,
+  HueRangeWheel,
+  OptionsGrid,
+  type HueRange,
+} from "@/components/generator";
+import {
+  historyReducer,
+  useHistoryShortcuts,
+  createInitialHistory,
+  canUndo,
+  buildLocked,
+  createInitialLocks,
+  toggleLock,
+  type GeneratorOption,
+  type PaletteLocks,
+} from "@/lib/generator";
 
 const neonTheme = neonNightJson as unknown as ThemeDetail;
 const halloweenTheme = halloweenNightJson as unknown as ThemeDetail;
+
+const initialFixtureOptions: GeneratorOption[] = [
+  {
+    data: neonTheme,
+    seed: 101,
+    checks: [
+      { name: "contrast_text_bg", field: "text vs background", ratio: 15.4, min: 4.5, pass: true },
+      { name: "contrast_accent_bg", field: "accent vs background", ratio: 8.2, min: 3.0, pass: true },
+    ],
+  },
+  {
+    data: halloweenTheme,
+    seed: 202,
+    checks: [
+      { name: "contrast_text_bg", field: "text vs background", ratio: 12.1, min: 4.5, pass: true },
+      { name: "similar_to", field: "neon-night", ratio: 0.05, min: 0.08, pass: true },
+    ],
+  },
+  {
+    data: {
+      ...neonTheme,
+      id: "cozy-neon-hearth",
+      name: { en: "Cozy Hearth", my: "နွေးထွေးသော မီးဖို" },
+      style: "cozy",
+      palette: {
+        ...neonTheme.palette,
+        background: "#180a0a",
+        deep: "#0f0505",
+        surface: "#2b1212",
+        text: "#fff5f5",
+        textMuted: "#d4b8b8",
+        motif: "#ff6b6b",
+      },
+      accents: [
+        {
+          id: "warm-ember",
+          name: { en: "Warm Ember" },
+          type: "solid",
+          colors: ["#ffaa00"],
+        },
+      ],
+    },
+    seed: 303,
+    checks: [
+      { name: "contrast_text_bg", field: "text vs background", ratio: 13.8, min: 4.5, pass: true },
+      { name: "cvd_accents_close", field: "accents", ratio: 0.04, min: 0.06, pass: true },
+    ],
+  },
+  {
+    data: {
+      ...halloweenTheme,
+      id: "minimal-haunt",
+      name: { en: "Minimal Haunt", my: "ရိုးရှင်းသော သရဲခြောက်" },
+      style: "minimal",
+      palette: {
+        ...halloweenTheme.palette,
+        background: "#0d0f12",
+        surface: "#1a1f26",
+        text: "#f0f4f8",
+        textMuted: "#94a3b8",
+      },
+    },
+    seed: 404,
+    checks: [
+      { name: "contrast_text_bg", field: "text vs background", ratio: 16.0, min: 4.5, pass: true },
+      { name: "scene_cost", field: "budget", ratio: 185, min: 200, pass: true },
+    ],
+  },
+  {
+    data: {
+      ...neonTheme,
+      id: "cute-cyber-kitten",
+      name: { en: "Cute Cyber", my: "ချစ်စရာ ဆိုက်ဘာ" },
+      style: "cute",
+      palette: {
+        ...neonTheme.palette,
+        background: "#1a0f26",
+        surface: "#33184d",
+        text: "#fff0fa",
+        textMuted: "#c4a3d8",
+        motif: "#ff69b4",
+      },
+      accents: [
+        {
+          id: "cotton-candy",
+          name: { en: "Cotton Candy" },
+          type: "solid",
+          colors: ["#ff99cc"],
+        },
+      ],
+    },
+    seed: 505,
+    checks: [
+      { name: "contrast_text_bg", field: "text vs background", ratio: 11.2, min: 4.5, pass: true },
+    ],
+  },
+  {
+    data: {
+      ...halloweenTheme,
+      id: "classic-full-moon",
+      name: { en: "Classic Moonlight", my: "လပြည့်ည" },
+      style: "classic",
+      palette: {
+        ...halloweenTheme.palette,
+        background: "#080c14",
+        surface: "#121b2d",
+        text: "#e8effc",
+        textMuted: "#8fa0bc",
+      },
+    },
+    seed: 606,
+    checks: [
+      { name: "contrast_text_bg", field: "text vs background", ratio: 14.5, min: 4.5, pass: true },
+      { name: "similar_to", field: "thingyan-water", ratio: 0.07, min: 0.08, pass: true },
+    ],
+  },
+];
 
 export default function DevComponentsPage() {
   const [selectedThemeId, setSelectedThemeId] = React.useState<"neon" | "halloween">("neon");
@@ -67,6 +206,56 @@ export default function DevComponentsPage() {
   // Review bar mock state
   const [itemStatus, setItemStatus] = React.useState<string>("draft");
   const [mockRole, setMockRole] = React.useState<"admin" | "designer" | "reviewer" | "viewer">("admin");
+
+  // Generator UI Kit Showcase state
+  const [wizardStep, setWizardStep] = React.useState(2);
+  const [matchedKeywords, setMatchedKeywords] = React.useState<string[]>([
+    "snow",
+    "cozy",
+    "fire",
+    "မီး",
+    "lanterns",
+    "warm",
+  ]);
+  const [extractedSwatches, setExtractedSwatches] = React.useState([
+    { hex: "#120326", share: 0.38 },
+    { hex: "#FF3EA5", share: 0.24 },
+    { hex: "#22E4FF", share: 0.18 },
+    { hex: "#FFBE3B", share: 0.12 },
+    { hex: "#F8F0FF", share: 0.08 },
+  ]);
+  const [selectedSwatchHex, setSelectedSwatchHex] = React.useState("#FF3EA5");
+  const [hueRanges, setHueRanges] = React.useState<HueRange[]>([
+    [20, 80],
+    [330, 40],
+  ]);
+  const [generatorLocks, setGeneratorLocks] = React.useState<PaletteLocks>(
+    createInitialLocks()
+  );
+  const [historyState, dispatchHistory] = React.useReducer(
+    historyReducer<GeneratorOption>,
+    createInitialHistory(6, initialFixtureOptions)
+  );
+  const [activeSlot, setActiveSlot] = React.useState<number>(0);
+  const [selectedBreedSlots, setSelectedBreedSlots] = React.useState<number[]>([]);
+  const [simulatedLoading, setSimulatedLoading] = React.useState<boolean>(false);
+
+  // Keyboard shortcut listener for undo / redo
+  useHistoryShortcuts({
+    onUndo: (slot) => {
+      const s = slot ?? activeSlot;
+      if (canUndo(historyState, s)) {
+        dispatchHistory({ type: "UNDO", slot: s });
+        toast.info(`Undid slot #${s + 1}`);
+      }
+    },
+    onRedo: (slot) => {
+      const s = slot ?? activeSlot;
+      dispatchHistory({ type: "REDO", slot: s });
+      toast.info(`Redid slot #${s + 1}`);
+    },
+    activeSlot,
+  });
 
   // Countdown calculations
   const thingyanRun = React.useMemo(() => {
@@ -514,6 +703,303 @@ export default function DevComponentsPage() {
           </CardHeader>
           <CardContent>
             <AuditTimeline itemType="theme" itemId="neon-night" />
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Section 4: Theme Generator UI Kit (Phase 5a / 5c) */}
+      <section className="space-y-8 border-t pt-8">
+        <div>
+          <div className="inline-block rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2 py-0.5 text-xs font-mono font-semibold uppercase mb-2">
+            Phase 5a &amp; 5c Generator UI Kit
+          </div>
+          <h2 className="text-xl font-bold tracking-tight">4. Client-Only Theme Generator UI Kit</h2>
+          <p className="text-xs text-muted-foreground">
+            Modular, reusable components for wizard flow, OKLCH hue wheel, keywords, dropzone, swatches, locks, per-slot undo history, and 6-card option grid with shortcuts.
+          </p>
+        </div>
+
+        {/* 4.1 Stepper */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm">4.1 Stepper (Reduced-Motion Aware Framer-Motion Wizard)</CardTitle>
+                <CardDescription className="text-xs">
+                  Animated progress bar and step transition respecting prefers-reduced-motion
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={wizardStep <= 1}
+                  onClick={() => setWizardStep((s) => Math.max(1, s - 1))}
+                  className="h-7 text-xs"
+                >
+                  Previous Step
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  disabled={wizardStep >= 3}
+                  onClick={() => setWizardStep((s) => Math.min(3, s + 1))}
+                  className="h-7 text-xs"
+                >
+                  Next Step
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Stepper
+              currentStep={wizardStep}
+              onStepClick={(step) => setWizardStep(step)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* 4.2 Description Keyword Chips */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm">4.2 KeywordChips (Description Interpretation)</CardTitle>
+                <CardDescription className="text-xs">
+                  Matched keywords (English &amp; Myanmar) with individual remove buttons
+                </CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setMatchedKeywords(["snow", "cozy", "fire", "မီး", "lanterns", "warm"])
+                }
+                className="h-7 text-xs"
+              >
+                Reset Keywords
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <KeywordChips
+              matched={matchedKeywords}
+              onRemove={(kw) => {
+                setMatchedKeywords((prev) => prev.filter((k) => k !== kw));
+                toast.info(`Removed keyword "${kw}"`);
+              }}
+              emptyText="No keywords matched. Type in description to interpret."
+            />
+          </CardContent>
+        </Card>
+
+        {/* 4.3 ImageDropZone & SwatchPicker */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">4.3 ImageDropZone (Photo Palette Extraction)</CardTitle>
+              <CardDescription className="text-xs">
+                Drag/drop/paste/click image with client-side &le; 10 MB and format check
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ImageDropZone
+                onFile={(file) => {
+                  toast.success(`Loaded image "${file.name}" (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+                  setExtractedSwatches([
+                    { hex: "#0F172A", share: 0.35 },
+                    { hex: "#38BDF8", share: 0.25 },
+                    { hex: "#818CF8", share: 0.20 },
+                    { hex: "#F472B6", share: 0.12 },
+                    { hex: "#F8FAFC", share: 0.08 },
+                  ]);
+                }}
+                onError={(err) => toast.error(err)}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">4.4 SwatchPicker (Proportional Width Swatches)</CardTitle>
+              <CardDescription className="text-xs">
+                Proportional pixel share from photo extraction; click to set as base color
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SwatchPicker
+                swatches={extractedSwatches}
+                selectedHex={selectedSwatchHex}
+                onPick={(hex) => {
+                  setSelectedSwatchHex(hex);
+                  toast.success(`Picked base color ${hex.toUpperCase()}`);
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 4.4 HueRangeWheel */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">4.5 OKLCH HueRangeWheel (Accessible SVG Hue Ring)</CardTitle>
+            <CardDescription className="text-xs">
+              SVG hue wheel via culori with wrap-around support. Keyboard accessible: arrow keys shift by 1&deg; (or 10&deg; with Shift), Delete removes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center">
+            <HueRangeWheel
+              value={hueRanges}
+              onChange={setHueRanges}
+              size={300}
+            />
+          </CardContent>
+        </Card>
+
+        {/* 4.5 OptionsGrid & OptionCard 6-slot Showcase */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-sm">4.6 OptionsGrid (6 OptionCards with History &amp; Shortcuts)</CardTitle>
+                <CardDescription className="text-xs">
+                  Keyboard shortcuts: [1-6] select slot, [R] reshuffle all, [B] breed selected 2, [⌘Z] undo slot. Lock toggles per role build request locks.
+                </CardDescription>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="mock-grid-loading"
+                    checked={simulatedLoading}
+                    onCheckedChange={setSimulatedLoading}
+                  />
+                  <Label htmlFor="mock-grid-loading" className="text-xs">
+                    Slot Skeletons
+                  </Label>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const sampleOption = historyState.slots[activeSlot]?.present;
+                    if (sampleOption) {
+                      const lockedPayload = buildLocked(generatorLocks, sampleOption);
+                      toast.info(`Active Locks Payload: ${JSON.stringify(lockedPayload)}`);
+                    }
+                  }}
+                  className="text-xs h-7"
+                >
+                  Inspect Locked Payload
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <OptionsGrid
+              options={Array.from({ length: 6 }).map(
+                (_, i) => historyState.slots[i]?.present ?? null
+              )}
+              loadingSlots={simulatedLoading}
+              selectedSlot={activeSlot}
+              selectedBreedSlots={selectedBreedSlots}
+              onSelectSlot={(idx) => {
+                setActiveSlot(idx);
+                toast.info(`Selected Slot #${idx + 1}`);
+              }}
+              onToggleBreedSelect={(idx) => {
+                setSelectedBreedSlots((prev) => {
+                  if (prev.includes(idx)) {
+                    return prev.filter((i) => i !== idx);
+                  }
+                  if (prev.length >= 2) {
+                    toast.warning("Maximum 2 options can be selected for breeding");
+                    return [prev[1], idx];
+                  }
+                  return [...prev, idx];
+                });
+              }}
+              locks={generatorLocks}
+              onToggleLock={(role) => {
+                setGeneratorLocks((prev) => {
+                  const updated = toggleLock(prev, role);
+                  toast.info(`${role}: ${updated[role] ? "Locked" : "Unlocked"}`);
+                  return updated;
+                });
+              }}
+              canUndoSlots={Array.from({ length: 6 }).map((_, i) =>
+                canUndo(historyState, i)
+              )}
+              onShuffleSlot={(idx) => {
+                const current = historyState.slots[idx]?.present;
+                if (!current) return;
+                const newSeed = Math.floor(Math.random() * 9000) + 1000;
+                const shuffled: GeneratorOption = {
+                  ...current,
+                  seed: newSeed,
+                  data: {
+                    ...current.data,
+                    name: {
+                      en: `${current.data.name.en.split(" ")[0]} #${newSeed % 100}`,
+                    },
+                  },
+                };
+                dispatchHistory({ type: "PUSH", slot: idx, option: shuffled });
+                toast.success(`Shuffled slot #${idx + 1}`);
+              }}
+              onMoreLikeThisSlot={(idx) => {
+                const current = historyState.slots[idx]?.present;
+                if (!current) return;
+                const newOptions = Array.from({ length: 6 }).map((_, i) => ({
+                  ...current,
+                  seed: current.seed + i + 1,
+                  data: {
+                    ...current.data,
+                    id: `${current.data.id}-around-${i + 1}`,
+                    name: { en: `${current.data.name.en} Var ${i + 1}` },
+                  },
+                }));
+                dispatchHistory({ type: "REPLACE_ALL", options: newOptions });
+                toast.success(`Regenerated all 6 options around Slot #${idx + 1} palette`);
+              }}
+              onUndoSlot={(idx) => {
+                dispatchHistory({ type: "UNDO", slot: idx });
+                toast.info(`Undid slot #${idx + 1}`);
+              }}
+              onUseThisSlot={(idx) => {
+                const opt = historyState.slots[idx]?.present;
+                toast.success(`Used theme: "${opt?.data.name.en || `Option #${idx + 1}`}"!`);
+              }}
+              onReshuffleAll={() => {
+                const newOptions = Array.from({ length: 6 }).map((_, i) => {
+                  const base = historyState.slots[i]?.present || initialFixtureOptions[i];
+                  const seed = Math.floor(Math.random() * 90000) + 1000;
+                  return {
+                    ...base,
+                    seed,
+                    data: {
+                      ...base.data,
+                      name: { en: `${base.data.name.en.split(" ")[0]} Seed ${seed % 100}` },
+                    },
+                  };
+                });
+                dispatchHistory({ type: "REPLACE_ALL", options: newOptions });
+                toast.success("Reshuffled all 6 options (pushed to history)");
+              }}
+              onBreed={(slotsToBreed) => {
+                const parentA = historyState.slots[slotsToBreed[0]]?.present;
+                const parentB = historyState.slots[slotsToBreed[1]]?.present;
+                if (!parentA || !parentB) return;
+                toast.success(
+                  `Bred child themes from Slot #${slotsToBreed[0] + 1} (${parentA.data.name.en}) and Slot #${slotsToBreed[1] + 1} (${parentB.data.name.en})!`
+                );
+              }}
+            />
           </CardContent>
         </Card>
       </section>

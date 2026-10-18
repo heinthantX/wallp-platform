@@ -433,6 +433,34 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
   const { data: festivalsData } = useFestivals({ perPage: 100 });
   const { data: enginesData } = useEngines();
 
+  const generatedFromData = React.useMemo(() => {
+    if (!item?.generatedFrom) return null;
+    if (typeof item.generatedFrom === "string") {
+      try {
+        return JSON.parse(item.generatedFrom);
+      } catch {
+        return null;
+      }
+    }
+    return item.generatedFrom as Record<string, unknown>;
+  }, [item?.generatedFrom]);
+
+  const regenerateUrl = React.useMemo(() => {
+    if (!generatedFromData) return null;
+    const inputs =
+      (generatedFromData.inputs as Record<string, unknown>) || generatedFromData;
+    const params = new URLSearchParams();
+    if (inputs.festivalId) params.set("festivalId", String(inputs.festivalId));
+    if (inputs.mood) params.set("mood", String(inputs.mood));
+    if (inputs.baseColor) params.set("baseColor", String(inputs.baseColor));
+    if (inputs.engine) params.set("engine", String(inputs.engine));
+    if (inputs.description) params.set("description", String(inputs.description));
+    if (inputs.seed !== undefined && inputs.seed !== null) {
+      params.set("seed", String(inputs.seed));
+    }
+    return `/themes/generate/?${params.toString()}`;
+  }, [generatedFromData]);
+
   const saveMutation = useSaveTheme();
   const actionMutation = useThemeAction();
   const validateMutation = useValidate("theme");
@@ -687,6 +715,12 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                   {isNew ? "New Theme" : themeNameEn || themeId}
                 </h1>
                 {item && <StatusBadge status={item.status} />}
+                {generatedFromData && (
+                  <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    Generated
+                  </Badge>
+                )}
                 {watch("isLive") && (
                   <Badge variant="outline" className="text-[10px] uppercase font-mono border-emerald-500/40 text-emerald-500">
                     <Radio className="h-3 w-3 mr-1 animate-pulse" />
@@ -701,6 +735,14 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
           </div>
 
           <div className="flex items-center gap-3">
+            {regenerateUrl && (
+              <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs h-8">
+                <Link href={regenerateUrl}>
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <span>Regenerate from saved inputs</span>
+                </Link>
+              </Button>
+            )}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
               <TabsList className="grid w-40 grid-cols-2 h-8">
                 <TabsTrigger value="form" className="text-xs">Form</TabsTrigger>

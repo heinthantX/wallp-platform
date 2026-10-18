@@ -78,6 +78,10 @@ export function CommandPalette() {
             <Palette className="mr-2 h-4 w-4" />
             <span>Themes</span>
           </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/themes/generate"))}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            <span>Generate theme</span>
+          </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/wallpapers"))}>
             <ImageIcon className="mr-2 h-4 w-4" />
             <span>Wallpapers</span>
@@ -113,6 +117,12 @@ export function CommandPalette() {
             <CommandItem onSelect={() => runCommand(() => router.push("/settings/users"))}>
               <Users className="mr-2 h-4 w-4" />
               <span>Users</span>
+            </CommandItem>
+          )}
+          {can(user, "catalog:import") && (
+            <CommandItem onSelect={() => runCommand(() => router.push("/settings/import"))}>
+              <UploadCloud className="mr-2 h-4 w-4" />
+              <span>Import / Export</span>
             </CommandItem>
           )}
           <CommandItem onSelect={() => runCommand(() => router.push("/settings/engines"))}>

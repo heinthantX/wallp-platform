@@ -36,6 +36,11 @@ export type ReorderFestivalsInputBody = components["schemas"]["ReorderFestivalsI
 export type ReviewInputBody = components["schemas"]["ReviewInputBody"];
 export type ScheduleInputBody = components["schemas"]["ScheduleInputBody"];
 export type SimpleOKOutputBody = components["schemas"]["SimpleOKOutputBody"];
+export type GenerateThemeInputBody = components["schemas"]["GenerateThemeInputBody"];
+export type GenerateThemeOutputBody = components["schemas"]["GenerateThemeOutputBody"];
+export type GeneratedOption = components["schemas"]["GeneratedOption"];
+export type ImportOutputBody = components["schemas"]["ImportOutputBody"];
+export type ExportBundle = components["schemas"]["ExportBundle"];
 
 export type ListFestivalsQuery = NonNullable<paths["/admin/v1/festivals"]["get"]["parameters"]["query"]>;
 export type ListThemesQuery = NonNullable<paths["/admin/v1/themes"]["get"]["parameters"]["query"]>;

@@ -1,4 +1,4 @@
-import type { ThemeDetail, Palette, Accent } from "@/lib/catalog/types";
+import type { ThemeDetail, Accent } from "@/lib/catalog/types";
 
 export interface Check {
   name: string;

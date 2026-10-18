@@ -55,15 +55,22 @@ export interface SaveThemeInput {
   data: unknown;
   updatedAt?: string;
   isNew?: boolean;
+  generatedFrom?: unknown;
 }
 
 export function useSaveTheme() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data, updatedAt, isNew }: SaveThemeInput) => {
+    mutationFn: async ({ id, data, updatedAt, isNew, generatedFrom }: SaveThemeInput) => {
       const payloadString = JSON.stringify(
-        updatedAt ? { data, updatedAt } : data
+        updatedAt || generatedFrom
+          ? {
+              data,
+              ...(updatedAt ? { updatedAt } : {}),
+              ...(generatedFrom ? { generatedFrom } : {}),
+            }
+          : data
       );
 
       if (isNew) {

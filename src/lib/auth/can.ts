@@ -22,7 +22,8 @@ export type Permission =
   | "items:schedule"
   | "items:archive"
   | "items:restore"
-  | "items:export";
+  | "items:export"
+  | "catalog:import";
 
 /**
  * Role-based permission check mapping to dashboard doc §3 and phase02 §B3:
@@ -48,6 +49,7 @@ export function can(
     case "releases:rollback":
     case "items:archive":
     case "items:restore":
+    case "catalog:import":
       return false; // Admin only
 
     case "audit:read":

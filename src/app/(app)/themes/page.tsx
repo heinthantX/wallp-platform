@@ -33,7 +33,6 @@ import {
   LayoutGrid,
   List,
   Search,
-  Wand2,
   Edit,
   Radio,
 } from "lucide-react";
@@ -221,8 +220,8 @@ function ThemesView() {
 
         <div className="flex items-center gap-2.5 shrink-0">
           <Button variant="outline" asChild className="gap-2">
-            <Link href="/themes/generate">
-              <Wand2 className="h-4 w-4 text-primary" />
+            <Link href="/themes/generate/">
+              <Sparkles className="h-4 w-4 text-primary" />
               <span>Generate</span>
             </Link>
           </Button>

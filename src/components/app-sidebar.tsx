@@ -50,6 +50,7 @@ const mainNavItems: NavItem[] = [
 const settingsNavItems: NavItem[] = [
   { title: "Store", href: "/settings/store", icon: Store, phase: 3 },
   { title: "Users", href: "/settings/users", icon: Users, adminOnly: true },
+  { title: "Import / Export", href: "/settings/import", icon: UploadCloud, adminOnly: true },
   { title: "Engines", href: "/settings/engines", icon: Cpu, phase: 4 },
   { title: "Audit log", href: "/settings/audit", icon: FileText, reviewerOnly: true },
 ];

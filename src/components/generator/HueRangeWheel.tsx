@@ -3,7 +3,7 @@
 import * as React from "react";
 import { oklchToHex } from "@/lib/color";
 import { Button } from "@/components/ui/button";
-import { Plus, X, RotateCcw } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type HueRange = [number, number];
