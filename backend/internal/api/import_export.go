@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -291,6 +292,10 @@ func RunImportDir(ctx context.Context, d *Deps, dir, actor string) (*ImportResul
 }
 
 func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileEntry, assetFiles []items.AssetFile, actor, manifestPublishedAt string) (*ImportResult, error) {
+	// Hidden files (macOS "._*" AppleDouble, .DS_Store) are never catalog data.
+	themeFiles = slices.DeleteFunc(themeFiles, func(f FileEntry) bool { return isHidden(f.Name) })
+	assetFiles = slices.DeleteFunc(assetFiles, func(f items.AssetFile) bool { return isHidden(f.Name) })
+
 	var rawCatalog map[string]json.RawMessage
 	if err := json.Unmarshal(catBytes, &rawCatalog); err != nil {
 		var se *json.SyntaxError
@@ -581,3 +586,5 @@ func insideDir(dir, p string) bool {
 	rel, err := filepath.Rel(dir, p)
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
+
+func isHidden(name string) bool { return strings.HasPrefix(filepath.Base(name), ".") }

@@ -297,6 +297,25 @@ func TestImportSkipsUnknownAssetType(t *testing.T) {
 	}
 }
 
+// Hidden files from macOS archives ("._*", .DS_Store) are ignored, not imported or rejected.
+func TestImportIgnoresHiddenFiles(t *testing.T) {
+	s := newServer(t)
+	dir := importDir(t, map[string][]byte{"._ok.png": {0, 5, 22, 7}, ".DS_Store": {0, 0, 0, 1}})
+	if err := os.MkdirAll(filepath.Join(dir, "themes"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "themes", "._x.2.json"), []byte{0, 5, 22, 7}, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res, err := api.RunImportDir(context.Background(), s.deps, dir, "cli")
+	if err != nil {
+		t.Fatalf("import: %v", err)
+	}
+	if len(res.SkippedAssets) != 0 {
+		t.Fatalf("hidden files reported as skipped: %v", res.SkippedAssets)
+	}
+}
+
 // L4: symlinks in the import dir are skipped, not followed.
 func TestImportSkipsSymlinks(t *testing.T) {
 	s := newServer(t)
