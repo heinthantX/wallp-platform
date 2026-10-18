@@ -7,6 +7,8 @@ import { useForm, type FieldValues, type Path, type Resolver, type UseFormReturn
 import { zodResolver } from "@hookform/resolvers/zod";
 import type * as z from "zod";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/api/keys";
 import { AlertCircle, ArrowLeft, RotateCcw } from "lucide-react";
 import { useAutosaveEditor } from "@/lib/api/hooks/useAutosaveEditor";
 import type { FieldError, ItemView } from "@/lib/api/types";
@@ -51,6 +53,7 @@ function Shell<T extends FieldValues & { id: string }>({
   label, basePath, auditType, schema, defaults, isNew: forceNew, useItem, save, action, titleOf, children,
 }: Props<T>) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const idParam = useSearchParams().get("id");
   const isNew = forceNew || !idParam;
   const { data: item, isLoading, isError, error, refetch } = useItem(isNew ? null : idParam);
@@ -126,6 +129,7 @@ function Shell<T extends FieldValues & { id: string }>({
       });
       toast.success(ok);
       refetch();
+      queryClient.invalidateQueries({ queryKey: queryKeys.allAudit });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Action failed");
     }
