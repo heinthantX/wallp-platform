@@ -218,7 +218,19 @@ type Release struct {
 	Current     bool      `bun:",notnull"`
 	PublishedBy string    `bun:",notnull"`
 	PublishedAt time.Time `bun:",notnull"`
+	// Status is one of the ReleaseStatus* values.
+	Status        string `bun:",notnull"`
+	CatalogSHA256 string `bun:"catalog_sha256,notnull"`
 }
+
+// Release statuses.
+const (
+	ReleaseBuilding   = "building"
+	ReleaseLive       = "live"
+	ReleaseSuperseded = "superseded"
+	ReleaseRolledBack = "rolled_back"
+	ReleaseFailed     = "failed"
+)
 
 type Event struct {
 	bun.BaseModel `bun:"table:events"`

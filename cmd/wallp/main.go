@@ -24,6 +24,7 @@ import (
 	"github.com/heinthant/wallp-backend/internal/config"
 	"github.com/heinthant/wallp-backend/internal/db"
 	"github.com/heinthant/wallp-backend/internal/model"
+	"github.com/heinthant/wallp-backend/internal/releases"
 	"github.com/heinthant/wallp-backend/internal/server"
 )
 
@@ -65,6 +66,9 @@ func serveCmd() *cobra.Command {
 			}
 			defer d.DB.Close()
 			handler, _ := server.New(d)
+			if d.Cfg.Scheduler != "off" {
+				go releases.RunScheduler(ctx, d.DB, d.Cfg.StorageDir, d.CheckerFunc(), time.Minute)
+			}
 			srv := &http.Server{Addr: d.Cfg.HTTPAddr, Handler: handler, ReadHeaderTimeout: 10 * time.Second}
 			go func() {
 				<-ctx.Done()
