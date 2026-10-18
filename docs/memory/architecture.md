@@ -11,5 +11,8 @@ One codebase, dialect chosen by `DATABASE_URL`. Migrations are Go files with por
 - Self role-change/self-disable blocked; last-admin guard is only a backstop.
 - Optional app-user accounts under `/v1`; anonymous use always works.
 
+## Theme generator: no AI, deterministic
+Chose a seeded OKLCH generator plus DB recipes, embedded en+my keyword map, median-cut photo palettes, and hue-histogram feedback/breed over an LLM helper, because user locked zero AI/API cost (2026-10-18). Same input + seed gives identical output. Built-in rules live as 4 seed recipes. See specs/theme-generator.md.
+
 ## Catalog package
 `internal/catalog`: typed structs for validation/summary only; cross-ref `Catalog.Validate()` deferred to phase 4.
