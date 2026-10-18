@@ -65,7 +65,7 @@ const defaultLook: FestivalLook = {
   nav: "#0c0a1a",
   muted: "#9b92c4",
   brand: "#ff7700",
-  displayFont: "Creepster",
+  displayFont: "creepster",
 };
 
 const defaultFestival: Festival = {
@@ -115,7 +115,7 @@ const festivalSchema = z.object({
     nav: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be #RRGGBB"),
     muted: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be #RRGGBB"),
     brand: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be #RRGGBB"),
-    displayFont: z.string().min(1, "Display font is required"),
+    displayFont: z.string().min(1, "Display font is required").regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Pick a font (its id is lowercase-kebab-case)"),
   }),
   coverThemeId: z.string().optional(),
 });

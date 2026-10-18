@@ -84,7 +84,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const defaultTheme: ThemeDetail = {
+export const defaultTheme: ThemeDetail = {
   id: "",
   rev: 1,
   festivalId: "",
@@ -126,9 +126,9 @@ const defaultTheme: ThemeDetail = {
   ],
   variants: [],
   fonts: {
-    display: "Cinzel",
-    body: "Roboto",
-    labels: "Creepster",
+    display: "playfair-display",
+    body: "dm-sans",
+    labels: "creepster",
   },
   clock: {
     useAccent: false,
