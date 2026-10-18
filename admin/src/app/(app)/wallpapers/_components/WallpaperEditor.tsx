@@ -273,7 +273,7 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                     value={field.value}
                     onChange={field.onChange}
                     nameValue={nameEn}
-                    locked={Boolean(item?.firstPublishedAt)}
+                    locked={Boolean(item)}
                     error={errors.id?.message}
                   />
                 )}

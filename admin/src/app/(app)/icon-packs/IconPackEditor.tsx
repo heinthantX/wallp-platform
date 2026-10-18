@@ -56,7 +56,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                 <Controller name="name" control={control} render={({ field }) => <LocalizedField label="Name" value={field.value} onChange={field.onChange} error={errors.name?.en?.message} />} />
                 <Controller name="style" control={control} render={({ field }) => <LocalizedField label="Style label" value={{ en: "", ...(field.value ?? {}) }} onChange={field.onChange} />} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Controller name="id" control={control} render={({ field }) => <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={watch("name.en")} locked={Boolean(item?.firstPublishedAt)} error={errors.id?.message} />} />
+                  <Controller name="id" control={control} render={({ field }) => <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={watch("name.en")} locked={Boolean(item)} error={errors.id?.message} />} />
                   <div className="space-y-1.5">
                     <Label htmlFor="festivalId">Festival (id, optional)</Label>
                     <Controller name="festivalId" control={control} render={({ field }) => <Input id="festivalId" value={field.value ?? ""} onChange={field.onChange} />} />

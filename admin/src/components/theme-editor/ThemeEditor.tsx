@@ -829,7 +829,7 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                             value={field.value}
                             onChange={field.onChange}
                             nameValue={themeNameEn}
-                            locked={Boolean(item?.firstPublishedAt)}
+                            locked={Boolean(item)}
                             error={errors.id?.message}
                           />
                         )}

@@ -173,4 +173,63 @@ describe("useAutosaveEditor", () => {
     });
     expect(result.current.updatedAt).toBe("2026-10-18T02:00:00Z");
   });
+  // B2/B3 (loop-2 P1): autosave must not re-send identical values on every re-render.
+  it("does not auto-retry the same values after a failed save", async () => {
+    const onSave = vi.fn().mockRejectedValue(new ApiError(404, "not_found", "Wallpaper not found"));
+    // Editors pass a fresh getValues closure on every render, like `() => form.getValues()`.
+    const { rerender } = renderHook(() =>
+      useAutosaveEditor({
+        id: "fest-1",
+        isDirty: true,
+        getValues: () => ({ name: { en: "Same" } }),
+        onSave,
+        onReload: vi.fn(),
+        idleMs: 3000,
+      })
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+
+    for (let i = 0; i < 5; i++) {
+      rerender();
+      await act(async () => {
+        vi.advanceTimersByTime(3000);
+      });
+    }
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not autosave again after success while values are unchanged, but does when they change", async () => {
+    const onSave = vi.fn().mockResolvedValue({ ...mockItem, updatedAt: "2026-10-18T01:05:00Z" });
+    let values = { name: { en: "One" } };
+
+    const { rerender } = renderHook(() =>
+      useAutosaveEditor({
+        id: "fest-1",
+        isDirty: true,
+        getValues: () => values,
+        onSave,
+        onReload: vi.fn(),
+        idleMs: 3000,
+      })
+    );
+
+    for (let i = 0; i < 4; i++) {
+      rerender();
+      await act(async () => {
+        vi.advanceTimersByTime(3000);
+      });
+    }
+    expect(onSave).toHaveBeenCalledTimes(1);
+
+    values = { name: { en: "Two" } };
+    rerender();
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(onSave).toHaveBeenCalledTimes(2);
+  });
 });

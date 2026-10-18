@@ -14,7 +14,7 @@ export interface IdFieldProps {
   value?: string;
   onChange?: (value: string) => void;
   nameValue?: string; // English name to auto-derive slug from
-  locked?: boolean; // Locked after first publish
+  locked?: boolean; // Locked once the item exists (the API rejects ID changes)
   error?: string;
   helperText?: string;
   disabled?: boolean;
@@ -121,7 +121,7 @@ export function IdField({
 
       {locked ? (
         <p className="text-xs text-muted-foreground">
-          ID cannot be changed after initial publication.
+          The ID is fixed once the item is saved. Duplicate it to use a new ID.
         </p>
       ) : helperText && !error ? (
         <p className="text-xs text-muted-foreground">{helperText}</p>

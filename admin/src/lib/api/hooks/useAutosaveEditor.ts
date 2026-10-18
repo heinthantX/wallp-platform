@@ -42,6 +42,9 @@ export function useAutosaveEditor<TData>({
   const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
   const [conflictOpen, setConflictOpen] = React.useState(false);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Values of the last save attempt (ok or failed). Autosave skips identical values, so a failing
+  // save is not retried every render and a form that stays dirty after saving does not loop.
+  const lastAttemptRef = React.useRef<string | null>(null);
 
   // Keep updatedAt in sync if initialUpdatedAt updates from parent
   React.useEffect(() => {
@@ -58,13 +61,17 @@ export function useAutosaveEditor<TData>({
   }, []);
 
   const performSave = React.useCallback(
-    async (options?: { forceOverwrite?: boolean; silent?: boolean }) => {
+    async (options?: { forceOverwrite?: boolean; silent?: boolean; auto?: boolean }) => {
       clearTimer();
       if (!id || (!options?.forceOverwrite && conflictOpen) || isSaving) return;
 
+      const data = getValues();
+      const snapshot = JSON.stringify(data);
+      if (options?.auto && snapshot === lastAttemptRef.current) return;
+      lastAttemptRef.current = snapshot;
+
       setIsSaving(true);
       try {
-        const data = getValues();
         const sendUpdatedAt = options?.forceOverwrite ? undefined : updatedAt;
 
         const result = await onSave({
@@ -120,7 +127,7 @@ export function useAutosaveEditor<TData>({
 
     clearTimer();
     timerRef.current = setTimeout(() => {
-      performSave({ silent: true });
+      performSave({ silent: true, auto: true });
     }, idleMs);
 
     return () => {

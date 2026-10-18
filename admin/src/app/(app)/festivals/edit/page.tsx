@@ -442,7 +442,7 @@ function FestivalEditor() {
                             value={field.value}
                             onChange={field.onChange}
                             nameValue={festivalNameEn}
-                            locked={Boolean(item?.firstPublishedAt)}
+                            locked={Boolean(item)}
                             error={errors.id?.message}
                             helperText={
                               item?.firstPublishedAt

@@ -65,7 +65,7 @@ export function FontEditor({ isNew }: { isNew?: boolean }) {
                   name="id"
                   control={control}
                   render={({ field }) => (
-                    <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={family} locked={Boolean(item?.firstPublishedAt)} error={errors.id?.message} />
+                    <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={family} locked={Boolean(item)} error={errors.id?.message} />
                   )}
                 />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

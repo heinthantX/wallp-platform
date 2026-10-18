@@ -42,7 +42,7 @@ export function BannerEditor({ isNew }: { isNew?: boolean }) {
                 {(["title", "subtitle", "tag", "cta"] as const).map((k) => (
                   <Controller key={k} name={k} control={control} render={({ field }) => <LocalizedField label={k === "cta" ? "Button text" : k[0].toUpperCase() + k.slice(1)} value={field.value} onChange={field.onChange} error={errors[k]?.en?.message} />} />
                 ))}
-                <Controller name="id" control={control} render={({ field }) => <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={watch("title.en")} locked={Boolean(item?.firstPublishedAt)} error={errors.id?.message} />} />
+                <Controller name="id" control={control} render={({ field }) => <IdField label="Identifier (ID)" value={field.value} onChange={field.onChange} nameValue={watch("title.en")} locked={Boolean(item)} error={errors.id?.message} />} />
               </CardContent>
             </Card>
 
