@@ -286,9 +286,16 @@ func registerAssets(h huma.API, r *gin.Engine, d *Deps) {
 			CreatedAt: now,
 		}
 
+		deduped := false
 		err = d.DB.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-			if _, err := tx.NewInsert().Model(newAsset).Exec(ctx); err != nil {
+			// A parallel upload of the same bytes may have inserted it since the lookup above.
+			res, err := tx.NewInsert().Model(newAsset).On("CONFLICT (sha256) DO NOTHING").Exec(ctx)
+			if err != nil {
 				return err
+			}
+			if n, _ := res.RowsAffected(); n == 0 {
+				deduped = true
+				return nil
 			}
 			return audit.Record(ctx, tx, "create", "asset", newAsset.SHA256, nil, newAsset)
 		})
@@ -311,7 +318,7 @@ func registerAssets(h huma.API, r *gin.Engine, d *Deps) {
 				Height:   newAsset.Height,
 				Blurhash: newAsset.Blurhash,
 				Dominant: newAsset.Dominant,
-				Deduped:  false,
+				Deduped:  deduped,
 				Variants: variants,
 				Warnings: warnings,
 			},
