@@ -17,20 +17,22 @@ export interface AuthState {
   setHasHydrated: (state: boolean) => void;
 }
 
+// apiUrl holds only a user-chosen override; "" means "use the build's NEXT_PUBLIC_API_URL".
 const DEFAULT_API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      apiUrl: DEFAULT_API_URL,
+      apiUrl: "",
       accessToken: null,
       refreshToken: null,
       expiresAt: null,
       user: null,
       hasHydrated: false,
 
-      setApiUrl: (apiUrl: string) => set({ apiUrl }),
+      setApiUrl: (apiUrl: string) =>
+        set({ apiUrl: apiUrl.replace(/\/+$/, "") === DEFAULT_API_URL.replace(/\/+$/, "") ? "" : apiUrl }),
 
       setSession: (session: AdminSession) =>
         set({
@@ -54,6 +56,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "wallp_admin_auth",
+      // v1: older builds saved the build default as apiUrl, which pinned deployed
+      // dashboards to localhost; drop it so the build's API URL applies.
+      version: 1,
+      migrate: (persisted) => ({ ...(persisted as object), apiUrl: "" }) as AuthState,
       storage: createJSONStorage(() => {
         if (typeof window !== "undefined") {
           return window.localStorage;

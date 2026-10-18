@@ -515,7 +515,7 @@ function LoginForm() {
                     id="server-url"
                     value={serverUrlInput}
                     onChange={(e) => setServerUrlInput(e.target.value)}
-                    placeholder="http://localhost:8080"
+                    placeholder={process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}
                     className="h-8 text-xs font-mono"
                   />
                   <Button
