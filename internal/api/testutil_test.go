@@ -69,6 +69,7 @@ func newServer(t *testing.T) *testServer {
 		TOTPIssuer:      "wallp-test",
 		CORSOrigins:     []string{"*"},
 		AuthRateLimit:   1000,
+		StorageDir:      filepath.Join(t.TempDir(), "storage"),
 	}
 
 	authSvc := &auth.Service{
@@ -103,6 +104,16 @@ func (s *testServer) do(t *testing.T, method, path, token string, body any) (int
 
 func (s *testServer) doWithHeaders(t *testing.T, method, path, token string, body any, headers map[string]string) (int, map[string]any) {
 	t.Helper()
+	status, respBytes := s.doRaw(t, method, path, token, body, headers)
+	var jsonMap map[string]any
+	if len(respBytes) > 0 {
+		_ = json.Unmarshal(respBytes, &jsonMap)
+	}
+	return status, jsonMap
+}
+
+func (s *testServer) doRaw(t *testing.T, method, path, token string, body any, headers map[string]string) (int, []byte) {
+	t.Helper()
 
 	url := path
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
@@ -111,11 +122,18 @@ func (s *testServer) doWithHeaders(t *testing.T, method, path, token string, bod
 
 	var reqBody io.Reader
 	if body != nil {
-		b, err := json.Marshal(body)
-		if err != nil {
-			t.Fatalf("failed to marshal request body: %v", err)
+		switch b := body.(type) {
+		case []byte:
+			reqBody = bytes.NewReader(b)
+		case io.Reader:
+			reqBody = b
+		default:
+			jb, err := json.Marshal(body)
+			if err != nil {
+				t.Fatalf("failed to marshal request body: %v", err)
+			}
+			reqBody = bytes.NewReader(jb)
 		}
-		reqBody = bytes.NewReader(b)
 	}
 
 	req, err := http.NewRequest(method, url, reqBody)
@@ -123,7 +141,7 @@ func (s *testServer) doWithHeaders(t *testing.T, method, path, token string, bod
 		t.Fatalf("failed to create http request: %v", err)
 	}
 
-	if body != nil {
+	if body != nil && (headers == nil || headers["Content-Type"] == "") {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	if token != "" {
@@ -144,10 +162,5 @@ func (s *testServer) doWithHeaders(t *testing.T, method, path, token string, bod
 		t.Fatalf("failed to read response body: %v", err)
 	}
 
-	var jsonMap map[string]any
-	if len(respBytes) > 0 {
-		_ = json.Unmarshal(respBytes, &jsonMap)
-	}
-
-	return resp.StatusCode, jsonMap
+	return resp.StatusCode, respBytes
 }

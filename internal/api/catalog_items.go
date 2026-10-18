@@ -2,9 +2,14 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -12,9 +17,12 @@ import (
 	"github.com/heinthant/wallp-backend/internal/apierr"
 	"github.com/heinthant/wallp-backend/internal/auth"
 	"github.com/heinthant/wallp-backend/internal/catalog"
+	"github.com/heinthant/wallp-backend/internal/generator"
 	"github.com/heinthant/wallp-backend/internal/items"
 	"github.com/heinthant/wallp-backend/internal/model"
 )
+
+var hexColorRegex = regexp.MustCompile(`^#[0-9A-Fa-f]{6}$`)
 
 type ListFestivalsInput struct {
 	ListParams
@@ -23,10 +31,11 @@ type ListFestivalsInput struct {
 
 type ListThemesInput struct {
 	ListParams
-	Festival string `query:"festival"`
-	Status   string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
-	Style    string `query:"style"`
-	Engine   string `query:"engine"`
+	Festival  string `query:"festival"`
+	Status    string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
+	Style     string `query:"style"`
+	Engine    string `query:"engine"`
+	Generated string `query:"generated" enum:"true,false,"`
 }
 
 type CreateItemInput struct {
@@ -99,21 +108,52 @@ type SimpleOKOutput struct {
 	}
 }
 
-func parseItemPayload(raw []byte) (data []byte, updatedAt *time.Time, err error) {
+type GenerateThemeInput struct {
+	Body struct {
+		FestivalID  string           `json:"festivalId" doc:"Festival ID (must exist)"`
+		Mood        string           `json:"mood,omitempty" doc:"Theme mood: classic, cozy, minimal, cute"`
+		BaseColor   string           `json:"baseColor,omitempty" doc:"Hex color code"`
+		Engine      string           `json:"engine,omitempty" doc:"Engine (halloween, christmas, thingyan, layers)"`
+		Description string           `json:"description,omitempty"`
+		Seed        *int64           `json:"seed,omitempty"`
+		Count       *int             `json:"count,omitempty"`
+		Around      *catalog.Palette `json:"around,omitempty"`
+	}
+}
+
+type GeneratedOption struct {
+	Data   catalog.ThemeDetail `json:"data"`
+	Checks []generator.Check   `json:"checks"`
+	Seed   int64               `json:"seed"`
+}
+
+type GenerateThemeOutput struct {
+	Body struct {
+		Seed    int64             `json:"seed"`
+		Options []GeneratedOption `json:"options"`
+	}
+}
+
+func parseItemPayload(raw []byte) (data []byte, updatedAt *time.Time, generatedFrom []byte, err error) {
 	if len(raw) == 0 {
-		return nil, nil, apierr.Invalid("body", "Request body is required")
+		return nil, nil, nil, apierr.Invalid("body", "Request body is required")
 	}
 	var wrapper struct {
-		Data      json.RawMessage `json:"data"`
-		UpdatedAt *time.Time      `json:"updatedAt"`
+		Data          json.RawMessage `json:"data"`
+		UpdatedAt     *time.Time      `json:"updatedAt"`
+		GeneratedFrom json.RawMessage `json:"generatedFrom"`
 	}
 	if err := json.Unmarshal(raw, &wrapper); err == nil && len(wrapper.Data) > 0 && string(wrapper.Data) != "null" {
-		return wrapper.Data, wrapper.UpdatedAt, nil
+		var gf []byte
+		if len(wrapper.GeneratedFrom) > 0 && string(wrapper.GeneratedFrom) != "null" {
+			gf = wrapper.GeneratedFrom
+		}
+		return wrapper.Data, wrapper.UpdatedAt, gf, nil
 	}
 
 	var rawMap map[string]any
 	if err := json.Unmarshal(raw, &rawMap); err != nil {
-		return nil, nil, apierr.Invalid("data", "Invalid JSON")
+		return nil, nil, nil, apierr.Invalid("data", "Invalid JSON")
 	}
 	if uStr, ok := rawMap["updatedAt"].(string); ok {
 		if t, err := time.Parse(time.RFC3339Nano, uStr); err == nil {
@@ -122,12 +162,17 @@ func parseItemPayload(raw []byte) (data []byte, updatedAt *time.Time, err error)
 			updatedAt = &t
 		}
 		delete(rawMap, "updatedAt")
-		cleanData, err := json.Marshal(rawMap)
-		if err == nil {
-			return cleanData, updatedAt, nil
-		}
 	}
-	return raw, updatedAt, nil
+	var gf []byte
+	if gfVal, ok := rawMap["generatedFrom"]; ok && gfVal != nil {
+		gf, _ = json.Marshal(gfVal)
+		delete(rawMap, "generatedFrom")
+	}
+	cleanData, err := json.Marshal(rawMap)
+	if err == nil {
+		return cleanData, updatedAt, gf, nil
+	}
+	return raw, updatedAt, gf, nil
 }
 
 func registerCatalogItems(h huma.API, d *Deps) {
@@ -175,7 +220,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		if me != nil {
 			creator = me.Name
 		}
-		data, _, err := parseItemPayload(in.RawBody)
+		data, _, _, err := parseItemPayload(in.RawBody)
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +277,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		if me != nil {
 			updater = me.Name
 		}
-		data, updatedAt, err := parseItemPayload(in.RawBody)
+		data, updatedAt, _, err := parseItemPayload(in.RawBody)
 		if err != nil {
 			return nil, err
 		}
@@ -291,6 +336,14 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		Summary:     "List themes",
 		Tags:        themeTags,
 	}), func(ctx context.Context, in *ListThemesInput) (*ListItemsOutput, error) {
+		var genFilter *bool
+		if in.Generated == "true" {
+			v := true
+			genFilter = &v
+		} else if in.Generated == "false" {
+			v := false
+			genFilter = &v
+		}
 		res, err := themes.List(ctx, items.ListFilter{
 			Page:       in.Page,
 			PerPage:    in.PerPage,
@@ -298,6 +351,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			Q:          in.Q,
 			Status:     in.Status,
 			FestivalID: in.Festival,
+			Generated:  genFilter,
 			Extras: map[string]string{
 				"style":  in.Style,
 				"engine": in.Engine,
@@ -322,11 +376,15 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		if me != nil {
 			creator = me.Name
 		}
-		data, _, err := parseItemPayload(in.RawBody)
+		data, _, gf, err := parseItemPayload(in.RawBody)
 		if err != nil {
 			return nil, err
 		}
-		res, err := themes.Create(ctx, data, creator)
+		res, err := themes.CreateWithOptions(ctx, items.CreateOptions{
+			Data:          data,
+			CreatorName:   creator,
+			GeneratedFrom: gf,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -359,11 +417,16 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		if me != nil {
 			updater = me.Name
 		}
-		data, updatedAt, err := parseItemPayload(in.RawBody)
+		data, updatedAt, gf, err := parseItemPayload(in.RawBody)
 		if err != nil {
 			return nil, err
 		}
-		res, err := themes.Update(ctx, in.ID, data, updatedAt, updater)
+		res, err := themes.UpdateWithOptions(ctx, in.ID, items.UpdateOptions{
+			Data:            data,
+			ClientUpdatedAt: updatedAt,
+			UpdaterName:     updater,
+			GeneratedFrom:   gf,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -515,4 +578,140 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		}
 		return &ValidateOutput{Body: fieldErrors}, nil
 	})
+
+	// --- Generate Themes ---
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "generate-themes",
+		Method:      http.MethodPost,
+		Path:        tp + "/generate",
+		Summary:     "Generate theme options",
+		Tags:        themeTags,
+	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *GenerateThemeInput) (*GenerateThemeOutput, error) {
+		if strings.TrimSpace(in.Body.FestivalID) == "" {
+			return nil, apierr.Invalid("festivalId", "festivalId is required")
+		}
+
+		// 1. Festival must exist
+		var festRow items.ItemRow
+		err := d.DB.NewSelect().Table("festivals").
+			Where("id = ?", in.Body.FestivalID).
+			Column("data").
+			Scan(ctx, &festRow)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, apierr.NotFound("Festival " + in.Body.FestivalID)
+			}
+			return nil, err
+		}
+		var fest catalog.Festival
+		if err := json.Unmarshal(festRow.Data, &fest); err != nil {
+			return nil, err
+		}
+
+		// 2. Validate mood
+		mood := in.Body.Mood
+		if mood == "" {
+			mood = "classic"
+		}
+		switch mood {
+		case "classic", "cozy", "minimal", "cute":
+		default:
+			return nil, apierr.Invalid("mood", "Invalid mood: must be classic, cozy, minimal, or cute")
+		}
+
+		// 3. Validate baseColor
+		if in.Body.BaseColor != "" {
+			if !hexColorRegex.MatchString(in.Body.BaseColor) {
+				return nil, apierr.Invalid("baseColor", "Invalid baseColor: must be a 6-digit hex color like #RRGGBB")
+			}
+		}
+
+		// 4. Validate engine
+		engine := in.Body.Engine
+		if engine == "" {
+			engine = "layers"
+		}
+		if !catalog.IsValidEngine(engine) {
+			return nil, apierr.Invalid("engine", "Invalid engine: "+engine)
+		}
+
+		// 5. Count
+		count := 6
+		if in.Body.Count != nil {
+			count = *in.Body.Count
+			if count < 1 || count > 6 {
+				return nil, apierr.Invalid("count", "Count must be between 1 and 6")
+			}
+		}
+
+		// 6. Seed
+		var seed int64
+		if in.Body.Seed != nil {
+			seed = *in.Body.Seed
+		} else {
+			seed = rand.Int64()
+		}
+
+		// 7. Load fonts (status published or approved)
+		var fontRows []items.ItemRow
+		if err := d.DB.NewSelect().Table("fonts").
+			Where("status = ? OR status = ?", model.StatusPublished, model.StatusApproved).
+			Column("data").
+			Scan(ctx, &fontRows); err != nil {
+			return nil, err
+		}
+		var fontInfos []generator.FontInfo
+		for _, fr := range fontRows {
+			var f catalog.Font
+			if err := json.Unmarshal(fr.Data, &f); err == nil {
+				fontInfos = append(fontInfos, generator.FontInfo{
+					ID:       f.ID,
+					Category: f.Category,
+					Tags:     f.Tags,
+					Scripts:  f.Scripts,
+				})
+			}
+		}
+
+		genIn := generator.Input{
+			FestivalID:   fest.ID,
+			FestivalName: fest.Name,
+			FestivalTags: fest.Tags,
+			FestivalLook: &fest.Look,
+			Mood:         mood,
+			BaseColor:    in.Body.BaseColor,
+			Engine:       engine,
+			Description:  in.Body.Description,
+			Seed:         seed,
+			Around:       in.Body.Around,
+			Fonts:        fontInfos,
+		}
+
+		options, err := generator.Generate(genIn, count)
+		if err != nil {
+			if errors.Is(err, generator.ErrNoFonts) {
+				return nil, apierr.New(http.StatusUnprocessableEntity, "no_fonts", "Import or add fonts first")
+			}
+			if errors.Is(err, generator.ErrGenerationFailed) {
+				return nil, apierr.New(http.StatusInternalServerError, "generation_failed", "Theme generation failed")
+			}
+			return nil, apierr.Invalid("generator", err.Error())
+		}
+
+		outOpts := make([]GeneratedOption, len(options))
+		for i, opt := range options {
+			outOpts[i] = GeneratedOption{
+				Data:   opt.Theme,
+				Checks: opt.Checks,
+				Seed:   opt.Seed,
+			}
+		}
+
+		out := &GenerateThemeOutput{}
+		out.Body.Seed = seed
+		out.Body.Options = outOpts
+		return out, nil
+	})
+
+	registerImportExport(h, d)
 }

@@ -30,7 +30,7 @@ import (
 func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
 	root := &cobra.Command{Use: "wallp", Short: "wallp API server and admin tasks", SilenceUsage: true}
-	root.AddCommand(serveCmd(), migrateCmd(), userCmd(), openapiCmd())
+	root.AddCommand(serveCmd(), migrateCmd(), userCmd(), openapiCmd(), importCmd())
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -151,4 +151,29 @@ func openapiCmd() *cobra.Command {
 			enc.SetIndent("", "  ")
 			return enc.Encode(h.OpenAPI())
 		}}
+}
+
+func importCmd() *cobra.Command {
+	var dir string
+	c := &cobra.Command{
+		Use:   "import",
+		Short: "Import catalog and themes from a directory",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			d, err := deps(cmd.Context(), true)
+			if err != nil {
+				return err
+			}
+			defer d.DB.Close()
+			res, err := api.RunImportDir(cmd.Context(), d, dir, "cli")
+			if err != nil {
+				return err
+			}
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			return enc.Encode(res)
+		},
+	}
+	c.Flags().StringVar(&dir, "dir", "", "path to catalog directory (required)")
+	_ = c.MarkFlagRequired("dir")
+	return c
 }
