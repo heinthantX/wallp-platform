@@ -15,6 +15,7 @@ import { ConflictDialog } from "@/components/conflict-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/states";
+import { client } from "@/lib/api/client";
 
 export function parseItemData<T>(item: ItemView | null | undefined, defaults: T): T {
   if (!item?.data) return defaults;
@@ -111,6 +112,37 @@ function Shell<T extends FieldValues & { id: string }>({
     }
   };
 
+  // Review and duplicate share one URL shape for every item kind: /admin/v1{basePath}/{id}/...
+  type ReviewPath = "/admin/v1/fonts/{id}/review";
+  type DuplicatePath = "/admin/v1/fonts/{id}/duplicate";
+  const review = async (a: "request" | "approve" | "reject", ok: string, note?: string) => {
+    if (!idParam) return;
+    try {
+      await client.POST(`/admin/v1${basePath}/{id}/review` as ReviewPath, {
+        params: { path: { id: idParam } },
+        body: note ? { action: a, note } : { action: a },
+      });
+      toast.success(ok);
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Action failed");
+    }
+  };
+
+  const duplicate = async () => {
+    if (!idParam) return;
+    try {
+      const res = await client.POST(`/admin/v1${basePath}/{id}/duplicate` as DuplicatePath, {
+        params: { path: { id: idParam } },
+      });
+      const copy = res.data as ItemView | undefined;
+      toast.success("Duplicated as new draft");
+      if (copy?.id) router.push(`${basePath}/edit?id=${encodeURIComponent(copy.id)}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Duplicate failed");
+    }
+  };
+
   const saveDraft = async () => {
     if (!(await form.trigger())) {
       toast.error("Fix the highlighted fields before saving");
@@ -194,6 +226,10 @@ function Shell<T extends FieldValues & { id: string }>({
         status={item?.status || "draft"}
         isSaving={isSaving}
         onSaveDraft={saveDraft}
+        onRequestReview={() => review("request", "Review requested")}
+        onApprove={() => review("approve", "Approved")}
+        onReject={(note) => review("reject", "Rejected", note)}
+        onDuplicate={duplicate}
         onArchive={item && item.status !== "archived" ? () => run("archive") : undefined}
       />
       <ConflictDialog open={conflictOpen} onOpenChange={setConflictOpen} onReload={handleReload} onOverwrite={handleOverwrite} />

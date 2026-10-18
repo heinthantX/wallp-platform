@@ -45,6 +45,11 @@ export function useAutosaveEditor<TData>({
   // Values of the last save attempt (ok or failed). Autosave skips identical values, so a failing
   // save is not retried every render and a form that stays dirty after saving does not loop.
   const lastAttemptRef = React.useRef<string | null>(null);
+  // Values of the last successful save. RHF can report isDirty with equal values (e.g. a Select writes
+  // `undefined` into a key the reset data lacked), so "unsaved" also requires a real difference.
+  const lastSavedRef = React.useRef<string | null>(null);
+  const getValuesRef = React.useRef(getValues);
+  getValuesRef.current = getValues;
 
   // Keep updatedAt in sync if initialUpdatedAt updates from parent
   React.useEffect(() => {
@@ -82,6 +87,7 @@ export function useAutosaveEditor<TData>({
         });
 
         if (result) {
+          lastSavedRef.current = snapshot;
           if (result.updatedAt) {
             setUpdatedAt(result.updatedAt);
           }
@@ -138,7 +144,7 @@ export function useAutosaveEditor<TData>({
   // Unsaved changes guard (beforeunload)
   React.useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
+      if (isDirty && JSON.stringify(getValuesRef.current()) !== lastSavedRef.current) {
         e.preventDefault();
         e.returnValue = "";
       }

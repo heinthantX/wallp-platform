@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { client } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/auth/store";
@@ -54,5 +54,41 @@ describe("WallpaperEditor identifier", () => {
 
     const input = await screen.findByDisplayValue("loop-test");
     await waitFor(() => expect(input).toBeDisabled());
+  });
+
+  // B4 (loop-2 P1): after a successful save the editor must be clean, or leaving shows "Leave site?".
+  it("is not dirty after a successful save", async () => {
+    const image = {
+      sizes: [{ width: 1080, height: 2340, asset: { url: "/a.webp", sha256: "a".repeat(64), bytes: 10, format: "webp" } }],
+    };
+    let data: Record<string, unknown> = { id: "loop-test", name: { en: "Loop Test" }, kind: "image", tags: [], image };
+    let updatedAt = "2026-10-19T00:00:00Z";
+    const view = () => ({ id: "loop-test", status: "draft", data: JSON.stringify(data), firstPublishedAt: null, updatedAt });
+    vi.spyOn(client, "GET").mockImplementation((async (path: string) =>
+      path === "/admin/v1/wallpapers/{id}" ? { data: view() } : { data: { items: [], total: 0 } }) as never);
+    vi.spyOn(client, "PATCH").mockImplementation((async (_p: string, opts: { body: string }) => {
+      data = JSON.parse(opts.body).data;
+      updatedAt = "2026-10-19T00:01:00Z";
+      return { data: view() };
+    }) as never);
+
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <WallpaperEditor id="loop-test" />
+      </QueryClientProvider>
+    );
+    const name = await screen.findByDisplayValue("Loop Test");
+    fireEvent.change(name, { target: { value: "Loop Test Two" } });
+    fireEvent.click(screen.getByRole("button", { name: /save draft/i }));
+    await waitFor(() => expect(client.PATCH).toHaveBeenCalledTimes(1));
+    await screen.findByDisplayValue("Loop Test Two");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const ev = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(false);
   });
 });
