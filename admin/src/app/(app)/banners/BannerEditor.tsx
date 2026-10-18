@@ -2,6 +2,11 @@
 
 import * as React from "react";
 import { Controller } from "react-hook-form";
+import { toast } from "sonner";
+import { Upload } from "lucide-react";
+import { useUploadAsset } from "@/lib/api/hooks/useFonts";
+import { assetSrc } from "@/lib/api/hooks/useAssets";
+import { Button } from "@/components/ui/button";
 import { useBanner, useSaveBanner, useBannerAction } from "@/lib/api/hooks/useBanners";
 import { ColorField, IdField, LocalizedField, RelationSelect } from "@/components/fields";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +21,15 @@ import { bannerSchema, defaultBanner, ACTION_TYPES, type BannerForm } from "./sc
 const toLocal = (iso?: string) => (iso ? iso.slice(0, 16) : "");
 const toIso = (local: string) => (local ? `${local}:00Z` : undefined);
 
+const IMAGE_MAX = 10 * 1024 * 1024;
+const IMAGE_WARN = 1024 * 1024;
+const IMAGE_TYPES = ["image/png", "image/webp", "image/jpeg"];
+const kb = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(n / 1024)} KB`);
+
 export function BannerEditor({ isNew }: { isNew?: boolean }) {
   const save = useSaveBanner();
   const action = useBannerAction();
+  const upload = useUploadAsset();
   return (
     <ItemEditorShell<BannerForm>
       label="Banner"
@@ -32,8 +43,21 @@ export function BannerEditor({ isNew }: { isNew?: boolean }) {
       action={action.mutateAsync}
       titleOf={(v) => v.title?.en}
     >
-      {({ control, watch, formState: { errors } }, item) => {
+      {({ control, watch, setValue, formState: { errors } }, item) => {
         const type = watch("action.type");
+        const image = watch("look.image");
+        const onFile = async (file?: File) => {
+          if (!file) return;
+          if (!IMAGE_TYPES.includes(file.type)) return void toast.error("Banner image must be PNG, WebP or JPG");
+          if (file.size > IMAGE_MAX) return void toast.error("Banner image must be 10 MB or smaller");
+          try {
+            const a = await upload.mutateAsync(file);
+            if (a.format !== "png" && a.format !== "webp" && a.format !== "jpg") throw new Error("Banner image must be PNG, WebP or JPG");
+            setValue("look.image", { url: a.url, sha256: a.sha256, bytes: a.bytes, format: a.format }, { shouldDirty: true, shouldValidate: true });
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Upload failed");
+          }
+        };
         return (
           <>
             <Card>
@@ -94,6 +118,33 @@ export function BannerEditor({ isNew }: { isNew?: boolean }) {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle className="text-base">Banner image (optional)</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-3">
+                  {image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={assetSrc(image.url)} alt="Banner image" className="h-14 w-32 rounded-md object-cover border" />
+                  )}
+                  <Button asChild variant="outline" size="sm">
+                    <label className="cursor-pointer">
+                      <Upload className="h-4 w-4 mr-1" />
+                      {upload.isPending ? "Uploading..." : image ? "Replace" : "Upload"}
+                      <input type="file" accept="image/png,image/webp,image/jpeg" className="sr-only" aria-label="Upload banner image" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
+                    </label>
+                  </Button>
+                  {image && (
+                    <>
+                      <span className="text-xs text-muted-foreground">{kb(image.bytes)}</span>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setValue("look.image", undefined, { shouldDirty: true, shouldValidate: true })}>Remove</Button>
+                    </>
+                  )}
+                </div>
+                {image && image.bytes > IMAGE_WARN && <p role="status" className="text-xs text-amber-600">Over 1 MB; smaller images load faster.</p>}
+                <p className="text-xs text-muted-foreground">PNG, WebP or JPG, up to 10 MB.</p>
               </CardContent>
             </Card>
 

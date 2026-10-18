@@ -24,6 +24,7 @@ export const bannerSchema = z
       titleColor: hex,
       font: kebab,
       artThemeId: z.string().optional(),
+      image: z.object({ url: z.string(), sha256: z.string(), bytes: z.number(), format: z.enum(["png", "webp", "jpg"]) }).optional(),
     }),
     startsAt: z.string().optional(),
     endsAt: z.string().optional(),

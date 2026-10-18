@@ -279,6 +279,7 @@ export interface BannerLook {
   titleColor: string;
   font: string;
   artThemeId?: string;
+  image?: Asset;
 }
 
 export interface Banner {

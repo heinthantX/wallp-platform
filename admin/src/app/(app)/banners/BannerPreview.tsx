@@ -4,6 +4,7 @@ import * as React from "react";
 import type { Banner } from "@/lib/catalog/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { assetSrc } from "@/lib/api/hooks/useAssets";
 import { activeOn } from "./schema";
 
 function today() {
@@ -27,8 +28,12 @@ export function BannerPreview({ banners }: { banners: Banner[] }) {
             <div
               key={b.id}
               data-testid="preview-banner"
-              className="snap-center shrink-0 w-[300px] rounded-2xl p-4 space-y-1.5"
-              style={{ background: b.look.background, color: b.look.titleColor }}
+              className="snap-center shrink-0 w-[300px] aspect-[16/7] rounded-2xl p-4 space-y-1.5"
+              style={{
+                background: b.look.background,
+                color: b.look.titleColor,
+                ...(b.look.image ? { backgroundImage: `url(${assetSrc(b.look.image.url)})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
+              }}
             >
               <div className="text-[10px] uppercase tracking-wider opacity-80">{b.tag.en}</div>
               <div className="text-xl font-bold leading-tight">{b.title.en}</div>
