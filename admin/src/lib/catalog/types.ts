@@ -263,6 +263,8 @@ export interface IconPack {
   glyph?: string;
   ring?: string;
   background?: Asset;
+  apps?: Record<string, Asset>;
+  appsFallbackStyle?: string;
   publishedAt?: string;
   popularity?: number;
 }

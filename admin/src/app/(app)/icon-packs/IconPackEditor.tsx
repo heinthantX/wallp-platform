@@ -10,6 +10,7 @@ import { ColorField, IdField, LocalizedField, RelationSelect } from "@/component
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ItemEditorShell } from "../fonts/ItemEditorShell";
 import { IconPackPreview } from "./IconPackPreview";
+import { PerAppIcons } from "./PerAppIcons";
 import { iconPackSchema, defaultIconPack, type IconPackForm } from "./schema";
 
 export function IconPackEditor({ isNew }: { isNew?: boolean }) {
@@ -87,6 +88,17 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                 <IconPackPreview shape={watch("shape")} onShapeChange={(s) => setValue("shape", s, { shouldDirty: true })} tile={watch("tile")} glyph={watch("glyph")} ring={watch("ring")} background={bgAsset} />
               </CardContent>
             </Card>
+            {watch("kind") === "images" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Per-app icons</CardTitle>
+                  <CardDescription>Optional. Draw each app by its purpose (a chat bubble), never its logo.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PerAppIcons apps={watch("apps")} tile={watch("tile")} onChange={(next) => setValue("apps", next, { shouldDirty: true, shouldValidate: true })} />
+                </CardContent>
+              </Card>
+            )}
           </>
         );
       }}

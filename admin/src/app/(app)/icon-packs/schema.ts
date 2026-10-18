@@ -1,8 +1,11 @@
 import * as z from "zod";
+import type { AssetFormat } from "@/lib/catalog/types";
 
 export const TILE_SHAPES = ["squircle", "circle", "square", "leaf"] as const;
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be #RRGGBB");
 const optHex = z.union([z.literal(""), hex]).optional();
+
+const asset = z.object({ url: z.string(), sha256: z.string(), bytes: z.number(), format: z.custom<AssetFormat>((v) => typeof v === "string") });
 
 export const iconPackSchema = z.object({
   id: z
@@ -26,6 +29,8 @@ export const iconPackSchema = z.object({
     },
     { required_error: "Upload the background tile", invalid_type_error: "Upload the background tile" }
   ),
+  apps: z.record(asset).optional(),
+  appsFallbackStyle: z.string().optional(),
 });
 
 export type IconPackForm = z.infer<typeof iconPackSchema>;
