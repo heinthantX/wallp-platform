@@ -3,8 +3,10 @@ module github.com/heinthant/wallp-backend
 go 1.26.0
 
 require (
+	github.com/buckket/go-blurhash v1.1.0
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/danielgtaylor/huma/v2 v2.39.1
+	github.com/gen2brain/webp v0.6.4
 	github.com/gin-contrib/cors v1.7.9
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
@@ -17,13 +19,13 @@ require (
 	github.com/uptrace/bun/dialect/sqlitedialect v1.3.0
 	github.com/uptrace/bun/driver/pgdriver v1.3.0
 	golang.org/x/crypto v0.58.0
+	golang.org/x/image v0.47.0
 	golang.org/x/term v0.47.0
 	modernc.org/sqlite v1.60.1
 )
 
 require (
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
-	github.com/buckket/go-blurhash v1.1.0 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.2 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect
@@ -32,7 +34,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
-	github.com/gen2brain/webp v0.6.4 // indirect
 	github.com/gin-contrib/sse v1.1.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -65,7 +66,6 @@ require (
 	go.opentelemetry.io/otel v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	golang.org/x/arch v0.29.0 // indirect
-	golang.org/x/image v0.47.0 // indirect
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
