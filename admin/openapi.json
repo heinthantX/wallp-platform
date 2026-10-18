@@ -1,6 +1,74 @@
 {
   "components": {
     "schemas": {
+      "AIProvider": {
+        "additionalProperties": false,
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "envKeys": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "examples": [
+              "cloudflare"
+            ],
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "text",
+              "image"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "configured",
+          "envKeys"
+        ],
+        "type": "object"
+      },
+      "AIStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AIStatus.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "anyConfigured": {
+            "type": "boolean"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/AIProvider"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "anyConfigured",
+          "providers"
+        ],
+        "type": "object"
+      },
       "Accent": {
         "additionalProperties": false,
         "properties": {
@@ -3520,6 +3588,43 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/v1/ai/status": {
+      "get": {
+        "description": "Booleans and env key names only, never values. Any dashboard role may read it.",
+        "operationId": "ai-status",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIStatus"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Which optional AI providers have their env keys",
+        "tags": [
+          "AI"
+        ]
+      }
+    },
     "/admin/v1/assets": {
       "get": {
         "operationId": "list-assets",

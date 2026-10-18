@@ -619,3 +619,11 @@ Generated from the OpenAPI spec (`go run ./cmd/wallp openapi`). "Roles" lists th
 | Method | Path | What it does | Roles |
 |---|---|---|---|
 | GET | `/audit` | Audit log | admin, reviewer |
+
+### AI
+
+| Method | Path | What it does | Roles |
+|---|---|---|---|
+| GET | `/ai/status` | Which optional AI providers have their env keys (booleans and key names, never values) | admin, viewer, designer, reviewer |
+
+Providers and their env keys: `openrouter` (text) `OPENROUTER_API_KEY` (+ optional `OPENROUTER_MODEL`), `cloudflare` (image) `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_AI_TOKEN`, `gemini` (text) `GEMINI_API_KEY`. A provider is configured only when all its keys are non-empty. Future AI endpoints answer **501** `ai_not_configured` while their provider is off; `details[].field` names each missing key. The "Copy prompt kit" buttons never need a key.

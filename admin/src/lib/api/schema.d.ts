@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/admin/v1/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Which optional AI providers have their env keys
+         * @description Booleans and env key names only, never values. Any dashboard role may read it.
+         */
+        get: operations["ai-status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/assets": {
         parameters: {
             query?: never;
@@ -1880,6 +1900,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AIProvider: {
+            configured: boolean;
+            envKeys: string[] | null;
+            /** @example cloudflare */
+            id: string;
+            /** @enum {string} */
+            kind: "text" | "image";
+        };
+        AIStatus: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/AIStatus.json
+             */
+            readonly $schema?: string;
+            anyConfigured: boolean;
+            providers: components["schemas"]["AIProvider"][] | null;
+        };
         Accent: {
             /** Format: int64 */
             angle?: number;
@@ -3043,6 +3081,35 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "ai-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIStatus"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "list-assets": {
         parameters: {
             query?: {

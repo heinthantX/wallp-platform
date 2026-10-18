@@ -51,5 +51,6 @@ func Register(h huma.API, r *gin.Engine, d *Deps) {
 	registerReleases(h, d)
 	registerEvents(h, d)
 	registerStats(h, d)
+	registerAI(h, d)
 	registerPublicCatalog(r, d)
 }
