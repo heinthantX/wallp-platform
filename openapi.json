@@ -1,6 +1,71 @@
 {
   "components": {
     "schemas": {
+      "Accent": {
+        "additionalProperties": false,
+        "properties": {
+          "angle": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "colors": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "colors"
+        ],
+        "type": "object"
+      },
+      "AccentPresets": {
+        "additionalProperties": false,
+        "properties": {
+          "gradients": {
+            "items": {
+              "$ref": "#/components/schemas/Accent"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "solids": {
+            "items": {
+              "$ref": "#/components/schemas/Accent"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "solids",
+          "gradients"
+        ],
+        "type": "object"
+      },
       "AdminSession": {
         "additionalProperties": false,
         "properties": {
@@ -488,6 +553,31 @@
         ],
         "type": "object"
       },
+      "Asset": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "format": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "sha256",
+          "bytes",
+          "format"
+        ],
+        "type": "object"
+      },
       "AuditView": {
         "additionalProperties": false,
         "properties": {
@@ -524,6 +614,48 @@
           "itemType",
           "itemId",
           "at"
+        ],
+        "type": "object"
+      },
+      "Check": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "min": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pass": {
+            "type": "boolean"
+          },
+          "ratio": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "field",
+          "ratio",
+          "min",
+          "pass"
+        ],
+        "type": "object"
+      },
+      "Clock": {
+        "additionalProperties": false,
+        "properties": {
+          "useAccent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "useAccent"
         ],
         "type": "object"
       },
@@ -730,6 +862,85 @@
         ],
         "type": "object"
       },
+      "ExportBundle": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/ExportBundle.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "accentPresets": {
+            "$ref": "#/components/schemas/AccentPresets"
+          },
+          "banners": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "festivals": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "fonts": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "iconPacks": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "searchSuggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "themes": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "wallpapers": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "festivals",
+          "themes",
+          "wallpapers",
+          "fonts",
+          "iconPacks",
+          "banners",
+          "accentPresets",
+          "searchSuggestions"
+        ],
+        "type": "object"
+      },
       "FieldError": {
         "additionalProperties": false,
         "properties": {
@@ -747,6 +958,113 @@
           "field",
           "code",
           "message"
+        ],
+        "type": "object"
+      },
+      "GenerateThemeInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/GenerateThemeInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "around": {
+            "$ref": "#/components/schemas/Palette"
+          },
+          "baseColor": {
+            "description": "Hex color code",
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "engine": {
+            "description": "Engine (halloween, christmas, thingyan, layers)",
+            "type": "string"
+          },
+          "festivalId": {
+            "description": "Festival ID (must exist)",
+            "type": "string"
+          },
+          "mood": {
+            "description": "Theme mood: classic, cozy, minimal, cute",
+            "type": "string"
+          },
+          "seed": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "festivalId"
+        ],
+        "type": "object"
+      },
+      "GenerateThemeOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/GenerateThemeOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/GeneratedOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "seed": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "seed",
+          "options"
+        ],
+        "type": "object"
+      },
+      "GeneratedOption": {
+        "additionalProperties": false,
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/Check"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/ThemeDetail"
+          },
+          "seed": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "checks",
+          "seed"
         ],
         "type": "object"
       },
@@ -778,6 +1096,95 @@
         "required": [
           "status",
           "database"
+        ],
+        "type": "object"
+      },
+      "ImportOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/ImportOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "banners": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/ImportResult"
+          },
+          "festivals": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fonts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "iconPacks": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "themes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "wallpapers": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "counts",
+          "festivals",
+          "themes",
+          "wallpapers",
+          "fonts",
+          "iconPacks",
+          "banners"
+        ],
+        "type": "object"
+      },
+      "ImportResult": {
+        "additionalProperties": false,
+        "properties": {
+          "banners": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "festivals": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fonts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "iconPacks": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "themes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "wallpapers": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "festivals",
+          "themes",
+          "wallpapers",
+          "fonts",
+          "iconPacks",
+          "banners"
         ],
         "type": "object"
       },
@@ -816,6 +1223,10 @@
               "string",
               "null"
             ]
+          },
+          "generatedFrom": {
+            "contentEncoding": "base64",
+            "type": "string"
           },
           "hasUnpublishedChanges": {
             "type": "boolean"
@@ -873,6 +1284,112 @@
           "updatedAt",
           "hasUnpublishedChanges",
           "validation"
+        ],
+        "type": "object"
+      },
+      "Labels": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Layer": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "type": "string"
+          },
+          "angle": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "aspect": {
+            "format": "double",
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "colors": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "effect": {
+            "type": "string"
+          },
+          "fit": {
+            "type": "string"
+          },
+          "glow": {
+            "type": "boolean"
+          },
+          "image": {
+            "$ref": "#/components/schemas/Asset"
+          },
+          "motion": {
+            "type": "string"
+          },
+          "opacity": {
+            "format": "double",
+            "type": "number"
+          },
+          "points": {
+            "items": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "shape": {
+            "type": "string"
+          },
+          "size": {
+            "format": "double",
+            "type": "number"
+          },
+          "speed": {
+            "format": "double",
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "width": {
+            "format": "double",
+            "type": "number"
+          },
+          "x": {
+            "format": "double",
+            "type": "number"
+          },
+          "y": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "type"
         ],
         "type": "object"
       },
@@ -1086,6 +1603,61 @@
         ],
         "type": "object"
       },
+      "Palette": {
+        "additionalProperties": false,
+        "properties": {
+          "background": {
+            "type": "string"
+          },
+          "deep": {
+            "type": "string"
+          },
+          "motif": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "textMuted": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "background",
+          "deep",
+          "surface",
+          "text",
+          "textMuted"
+        ],
+        "type": "object"
+      },
+      "PaletteOverride": {
+        "additionalProperties": false,
+        "properties": {
+          "background": {
+            "type": "string"
+          },
+          "deep": {
+            "type": "string"
+          },
+          "motif": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "textMuted": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "PasswordInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1186,6 +1758,37 @@
         "required": [
           "action"
         ],
+        "type": "object"
+      },
+      "Scene": {
+        "additionalProperties": false,
+        "properties": {
+          "engine": {
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/SceneParams"
+          }
+        },
+        "required": [
+          "engine",
+          "params"
+        ],
+        "type": "object"
+      },
+      "SceneParams": {
+        "additionalProperties": false,
+        "properties": {
+          "layers": {
+            "items": {
+              "$ref": "#/components/schemas/Layer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
         "type": "object"
       },
       "ScheduleInputBody": {
@@ -1389,6 +1992,149 @@
         ],
         "type": "object"
       },
+      "ThemeDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "accents": {
+            "items": {
+              "$ref": "#/components/schemas/Accent"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "clock": {
+            "$ref": "#/components/schemas/Clock"
+          },
+          "downloadBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eventIcon": {
+            "type": "string"
+          },
+          "festivalId": {
+            "type": "string"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/ThemeFonts"
+          },
+          "iconPackId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isLive": {
+            "type": "boolean"
+          },
+          "labels": {
+            "$ref": "#/components/schemas/Labels"
+          },
+          "minAppVersion": {
+            "type": "string"
+          },
+          "name": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "palette": {
+            "$ref": "#/components/schemas/Palette"
+          },
+          "popularity": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "previewImage": {
+            "$ref": "#/components/schemas/Asset"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "rev": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scene": {
+            "$ref": "#/components/schemas/Scene"
+          },
+          "style": {
+            "type": "string"
+          },
+          "subtitle": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/Variant"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "wallpaperIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "rev",
+          "festivalId",
+          "name",
+          "style",
+          "publishedAt",
+          "scene",
+          "palette",
+          "accents",
+          "fonts",
+          "clock",
+          "iconPackId",
+          "downloadBytes"
+        ],
+        "type": "object"
+      },
+      "ThemeFonts": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "display": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "display",
+          "body",
+          "labels"
+        ],
+        "type": "object"
+      },
       "UpdateMeInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1457,6 +2203,31 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "Variant": {
+        "additionalProperties": false,
+        "properties": {
+          "accentId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "palette": {
+            "$ref": "#/components/schemas/PaletteOverride"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object"
       }
     },
@@ -2158,6 +2929,42 @@
         ]
       }
     },
+    "/admin/v1/export": {
+      "get": {
+        "operationId": "export-catalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportBundle"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export catalog bundle",
+        "tags": [
+          "Catalog"
+        ]
+      }
+    },
     "/admin/v1/festivals": {
       "get": {
         "operationId": "list-festivals",
@@ -2551,6 +3358,64 @@
         ]
       }
     },
+    "/admin/v1/import": {
+      "post": {
+        "description": "Roles: admin, admin",
+        "operationId": "import-catalog",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Content-Type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "contentMediaType": "application/octet-stream",
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Import catalog bundle or directory",
+        "tags": [
+          "Catalog"
+        ]
+      }
+    },
     "/admin/v1/themes": {
       "get": {
         "operationId": "list-themes",
@@ -2640,6 +3505,19 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "generated",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+                ""
+              ],
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2717,6 +3595,53 @@
           }
         ],
         "summary": "Create a theme draft",
+        "tags": [
+          "Themes"
+        ]
+      }
+    },
+    "/admin/v1/themes/generate": {
+      "post": {
+        "description": "Roles: admin, designer, reviewer",
+        "operationId": "generate-themes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateThemeInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateThemeOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate theme options",
         "tags": [
           "Themes"
         ]

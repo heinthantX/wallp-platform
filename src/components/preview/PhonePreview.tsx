@@ -39,6 +39,10 @@ export interface PhonePreviewProps {
   fontsMap?: Record<string, string>; // { fontId: url }
   className?: string;
   defaultTab?: "lock" | "home" | "card";
+  tab?: "lock" | "home" | "card";
+  onTabChange?: (tab: "lock" | "home" | "card") => void;
+  hideControls?: boolean;
+  compact?: boolean;
 }
 
 const EVENT_ICON_MAP: Record<string, LucideIcon> = {
@@ -76,9 +80,21 @@ export function PhonePreview({
   fontsMap,
   className,
   defaultTab = "lock",
+  tab,
+  onTabChange,
+  hideControls = false,
+  compact = false,
 }: PhonePreviewProps) {
   // Switchers state
-  const [activeTab, setActiveTab] = React.useState<"lock" | "home" | "card">(defaultTab);
+  const [internalTab, setInternalTab] = React.useState<"lock" | "home" | "card">(defaultTab);
+  const activeTab = tab !== undefined ? tab : internalTab;
+  const setActiveTab = React.useCallback(
+    (nextTab: "lock" | "home" | "card") => {
+      setInternalTab(nextTab);
+      onTabChange?.(nextTab);
+    },
+    [onTabChange]
+  );
   const [selectedAccentId, setSelectedAccentId] = React.useState<string>(
     theme.accents?.[0]?.id || ""
   );
@@ -174,7 +190,14 @@ export function PhonePreview({
   return (
     <div className={cn("flex flex-col xl:flex-row gap-6 items-start", className)}>
       {/* Phone container */}
-      <div className="relative mx-auto shrink-0 w-[320px] sm:w-[360px] md:w-[390px] aspect-[390/844] rounded-[48px] p-3 shadow-2xl bg-neutral-900 border-[6px] border-neutral-800 ring-1 ring-white/10 overflow-hidden select-none">
+      <div
+        className={cn(
+          "relative mx-auto shrink-0 aspect-[390/844] shadow-2xl bg-neutral-900 border-[6px] border-neutral-800 ring-1 ring-white/10 overflow-hidden select-none",
+          compact
+            ? "w-[240px] sm:w-[260px] rounded-[36px] p-2 border-[4px]"
+            : "w-[320px] sm:w-[360px] md:w-[390px] rounded-[48px] p-3"
+        )}
+      >
         {/* Dynamic island / notch */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-full z-30 flex items-center justify-between px-3">
           <div className="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-neutral-800" />
@@ -385,184 +408,186 @@ export function PhonePreview({
       </div>
 
       {/* Switchers & Controls Panel */}
-      <div className="flex-1 w-full max-w-md space-y-5 rounded-xl border bg-card p-5 text-card-foreground shadow-xs">
-        <div>
-          <h2 className="text-base font-semibold">Preview Controls</h2>
-          <p className="text-xs text-muted-foreground">
-            Simulate how the theme renders across user device settings
-          </p>
-        </div>
+      {!hideControls && (
+        <div className="flex-1 w-full max-w-md space-y-5 rounded-xl border bg-card p-5 text-card-foreground shadow-xs">
+          <div>
+            <h2 className="text-base font-semibold">Preview Controls</h2>
+            <p className="text-xs text-muted-foreground">
+              Simulate how the theme renders across user device settings
+            </p>
+          </div>
 
-        {/* Tab Switcher */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">Preview Mode</Label>
-          <Tabs
-            value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "lock" | "home" | "card")}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="lock">Lock Screen</TabsTrigger>
-              <TabsTrigger value="home">Home Screen</TabsTrigger>
-              <TabsTrigger value="card">Store Card</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+          {/* Tab Switcher */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Preview Mode</Label>
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as "lock" | "home" | "card")}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="lock">Lock Screen</TabsTrigger>
+                <TabsTrigger value="home">Home Screen</TabsTrigger>
+                <TabsTrigger value="card">Store Card</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-        {/* Accent Picker */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">Accent Color</Label>
-          <div className="flex flex-wrap gap-2">
-            {theme.accents?.map((acc) => {
-              const isSelected = acc.id === selectedAccentId;
-              const bg =
-                acc.type === "gradient" && acc.colors?.length >= 2
-                  ? `linear-gradient(${acc.angle ?? 90}deg, ${acc.colors.join(", ")})`
-                  : acc.colors?.[0] || "#fff";
+          {/* Accent Picker */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Accent Color</Label>
+            <div className="flex flex-wrap gap-2">
+              {theme.accents?.map((acc) => {
+                const isSelected = acc.id === selectedAccentId;
+                const bg =
+                  acc.type === "gradient" && acc.colors?.length >= 2
+                    ? `linear-gradient(${acc.angle ?? 90}deg, ${acc.colors.join(", ")})`
+                    : acc.colors?.[0] || "#fff";
 
-              return (
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => setSelectedAccentId(acc.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all",
+                      isSelected
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
+                        : "hover:bg-muted"
+                    )}
+                  >
+                    <span
+                      className="h-3 w-3 rounded-full border border-black/20"
+                      style={{ background: bg }}
+                    />
+                    <span>{acc.name?.[lang] || acc.name?.en || acc.id}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Language Switcher */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Device Language</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setLang("en")}
+                className={cn(
+                  "rounded-md border py-1.5 text-xs font-medium transition-colors",
+                  lang === "en" ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"
+                )}
+              >
+                English (en)
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang("my")}
+                className={cn(
+                  "rounded-md border py-1.5 text-xs font-medium transition-colors",
+                  lang === "my" ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"
+                )}
+              >
+                မြန်မာ (my)
+              </button>
+            </div>
+          </div>
+
+          {/* Tile Shape Switcher */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Icon Tile Shape</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {(["squircle", "circle", "square", "leaf"] as TileShape[]).map((shape) => (
                 <button
-                  key={acc.id}
+                  key={shape}
                   type="button"
-                  onClick={() => setSelectedAccentId(acc.id)}
+                  onClick={() => setTileShape(shape)}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all",
-                    isSelected
-                      ? "border-primary bg-primary/10 ring-1 ring-primary"
+                    "rounded-md border py-1.5 text-xs capitalize font-medium transition-colors",
+                    tileShape === shape
+                      ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
                       : "hover:bg-muted"
                   )}
                 >
-                  <span
-                    className="h-3 w-3 rounded-full border border-black/20"
-                    style={{ background: bg }}
-                  />
-                  <span>{acc.name?.[lang] || acc.name?.en || acc.id}</span>
+                  {shape}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Language Switcher */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">Device Language</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setLang("en")}
-              className={cn(
-                "rounded-md border py-1.5 text-xs font-medium transition-colors",
-                lang === "en" ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"
-              )}
-            >
-              English (en)
-            </button>
-            <button
-              type="button"
-              onClick={() => setLang("my")}
-              className={cn(
-                "rounded-md border py-1.5 text-xs font-medium transition-colors",
-                lang === "my" ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"
-              )}
-            >
-              မြန်မာ (my)
-            </button>
+          {/* App Name Color Switcher */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">App Name Colour</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {(["theme", "accent", "white", "dark"] as const).map((col) => (
+                <button
+                  key={col}
+                  type="button"
+                  onClick={() => setNameColorChoice(col)}
+                  className={cn(
+                    "rounded-md border py-1.5 text-xs capitalize font-medium transition-colors",
+                    nameColorChoice === col
+                      ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  {col}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Tile Shape Switcher */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">Icon Tile Shape</Label>
-          <div className="grid grid-cols-4 gap-2">
-            {(["squircle", "circle", "square", "leaf"] as TileShape[]).map((shape) => (
+          {/* App Name Font Switcher */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">App Name Font</Label>
+            <div className="grid grid-cols-2 gap-2">
               <button
-                key={shape}
                 type="button"
-                onClick={() => setTileShape(shape)}
+                onClick={() => setNameFontChoice("theme")}
                 className={cn(
-                  "rounded-md border py-1.5 text-xs capitalize font-medium transition-colors",
-                  tileShape === shape
+                  "rounded-md border py-1.5 text-xs font-medium transition-colors",
+                  nameFontChoice === "theme"
+                    ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
+                    : "hover:bg-muted"
+                  )}
+              >
+                Theme Font ({theme.fonts?.labels || "Default"})
+              </button>
+              <button
+                type="button"
+                onClick={() => setNameFontChoice("system")}
+                className={cn(
+                  "rounded-md border py-1.5 text-xs font-medium transition-colors",
+                  nameFontChoice === "system"
                     ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
                     : "hover:bg-muted"
                 )}
               >
-                {shape}
+                System Font
               </button>
-            ))}
+            </div>
           </div>
-        </div>
 
-        {/* App Name Color Switcher */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">App Name Colour</Label>
-          <div className="grid grid-cols-4 gap-2">
-            {(["theme", "accent", "white", "dark"] as const).map((col) => (
-              <button
-                key={col}
-                type="button"
-                onClick={() => setNameColorChoice(col)}
-                className={cn(
-                  "rounded-md border py-1.5 text-xs capitalize font-medium transition-colors",
-                  nameColorChoice === col
-                    ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
-                    : "hover:bg-muted"
-                )}
-              >
-                {col}
-              </button>
-            ))}
+          {/* Animate Toggle */}
+          <div className="flex items-center justify-between border-t pt-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="preview-animate" className="text-xs font-medium flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                Live Animation
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                Respects prefers-reduced-motion
+              </p>
+            </div>
+            <Switch
+              id="preview-animate"
+              checked={animate}
+              onCheckedChange={setAnimate}
+            />
           </div>
         </div>
-
-        {/* App Name Font Switcher */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">App Name Font</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setNameFontChoice("theme")}
-              className={cn(
-                "rounded-md border py-1.5 text-xs font-medium transition-colors",
-                nameFontChoice === "theme"
-                  ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
-                  : "hover:bg-muted"
-              )}
-            >
-              Theme Font ({theme.fonts?.labels || "Default"})
-            </button>
-            <button
-              type="button"
-              onClick={() => setNameFontChoice("system")}
-              className={cn(
-                "rounded-md border py-1.5 text-xs font-medium transition-colors",
-                nameFontChoice === "system"
-                  ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
-                  : "hover:bg-muted"
-              )}
-            >
-              System Font
-            </button>
-          </div>
-        </div>
-
-        {/* Animate Toggle */}
-        <div className="flex items-center justify-between border-t pt-3">
-          <div className="space-y-0.5">
-            <Label htmlFor="preview-animate" className="text-xs font-medium flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Live Animation
-            </Label>
-            <p className="text-[11px] text-muted-foreground">
-              Respects prefers-reduced-motion
-            </p>
-          </div>
-          <Switch
-            id="preview-animate"
-            checked={animate}
-            onCheckedChange={setAnimate}
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 }

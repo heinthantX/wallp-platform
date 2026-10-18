@@ -247,6 +247,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export catalog bundle */
+        get: operations["export-catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/festivals": {
         parameters: {
             query?: never;
@@ -333,6 +350,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import catalog bundle or directory
+         * @description Roles: admin, admin
+         */
+        post: operations["import-catalog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/themes": {
         parameters: {
             query?: never;
@@ -348,6 +385,26 @@ export interface paths {
          * @description Roles: admin, designer, reviewer
          */
         post: operations["create-theme"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/themes/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate theme options
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["generate-themes"];
         delete?: never;
         options?: never;
         head?: never;
@@ -748,6 +805,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Accent: {
+            /** Format: int64 */
+            angle?: number;
+            colors: string[] | null;
+            id: string;
+            name: {
+                [key: string]: string;
+            };
+            type: string;
+        };
+        AccentPresets: {
+            gradients: components["schemas"]["Accent"][] | null;
+            solids: components["schemas"]["Accent"][] | null;
+        };
         AdminSession: {
             /**
              * Format: uri
@@ -926,6 +997,13 @@ export interface components {
             email: string;
             id: string;
         };
+        Asset: {
+            /** Format: int64 */
+            bytes: number;
+            format: string;
+            sha256: string;
+            url: string;
+        };
         AuditView: {
             action: string;
             after?: unknown;
@@ -938,6 +1016,18 @@ export interface components {
             itemType: string;
             userId?: string;
             userName: string;
+        };
+        Check: {
+            field: string;
+            /** Format: double */
+            min: number;
+            name: string;
+            pass: boolean;
+            /** Format: double */
+            ratio: number;
+        };
+        Clock: {
+            useAccent: boolean;
         };
         CodeInputBody: {
             /**
@@ -999,10 +1089,65 @@ export interface components {
             /** @example Theme not found */
             message: string;
         };
+        ExportBundle: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/ExportBundle.json
+             */
+            readonly $schema?: string;
+            accentPresets: components["schemas"]["AccentPresets"];
+            banners: unknown[] | null;
+            festivals: unknown[] | null;
+            fonts: unknown[] | null;
+            iconPacks: unknown[] | null;
+            searchSuggestions: string[] | null;
+            themes: unknown[] | null;
+            wallpapers: unknown[] | null;
+        };
         FieldError: {
             code: string;
             field: string;
             message: string;
+        };
+        GenerateThemeInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/GenerateThemeInputBody.json
+             */
+            readonly $schema?: string;
+            around?: components["schemas"]["Palette"];
+            /** @description Hex color code */
+            baseColor?: string;
+            /** Format: int64 */
+            count?: number;
+            description?: string;
+            /** @description Engine (halloween, christmas, thingyan, layers) */
+            engine?: string;
+            /** @description Festival ID (must exist) */
+            festivalId: string;
+            /** @description Theme mood: classic, cozy, minimal, cute */
+            mood?: string;
+            /** Format: int64 */
+            seed?: number;
+        };
+        GenerateThemeOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/GenerateThemeOutputBody.json
+             */
+            readonly $schema?: string;
+            options: components["schemas"]["GeneratedOption"][] | null;
+            /** Format: int64 */
+            seed: number;
+        };
+        GeneratedOption: {
+            checks: components["schemas"]["Check"][] | null;
+            data: components["schemas"]["ThemeDetail"];
+            /** Format: int64 */
+            seed: number;
         };
         HealthOutputBody: {
             /**
@@ -1015,6 +1160,41 @@ export interface components {
             database: string;
             /** @example ok */
             status: string;
+        };
+        ImportOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/ImportOutputBody.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            banners: number;
+            counts: components["schemas"]["ImportResult"];
+            /** Format: int64 */
+            festivals: number;
+            /** Format: int64 */
+            fonts: number;
+            /** Format: int64 */
+            iconPacks: number;
+            /** Format: int64 */
+            themes: number;
+            /** Format: int64 */
+            wallpapers: number;
+        };
+        ImportResult: {
+            /** Format: int64 */
+            banners: number;
+            /** Format: int64 */
+            festivals: number;
+            /** Format: int64 */
+            fonts: number;
+            /** Format: int64 */
+            iconPacks: number;
+            /** Format: int64 */
+            themes: number;
+            /** Format: int64 */
+            wallpapers: number;
         };
         ItemView: {
             /**
@@ -1030,6 +1210,7 @@ export interface components {
             festivalId: string | null;
             /** Format: date-time */
             firstPublishedAt: string | null;
+            generatedFrom?: string;
             hasUnpublishedChanges: boolean;
             id: string;
             /** Format: int64 */
@@ -1043,6 +1224,40 @@ export interface components {
             updatedAt: string;
             updatedBy: string;
             validation: components["schemas"]["FieldError"][] | null;
+        };
+        Labels: {
+            color?: string;
+        };
+        Layer: {
+            anchor?: string;
+            /** Format: int64 */
+            angle?: number;
+            /** Format: double */
+            aspect?: number;
+            color?: string;
+            colors?: string[] | null;
+            /** Format: int64 */
+            count?: number;
+            effect?: string;
+            fit?: string;
+            glow?: boolean;
+            image?: components["schemas"]["Asset"];
+            motion?: string;
+            /** Format: double */
+            opacity?: number;
+            points?: (number[] | null)[] | null;
+            shape?: string;
+            /** Format: double */
+            size?: number;
+            /** Format: double */
+            speed?: number;
+            type: string;
+            /** Format: double */
+            width?: number;
+            /** Format: double */
+            x?: number;
+            /** Format: double */
+            y?: number;
         };
         LoginInputBody: {
             /**
@@ -1122,6 +1337,22 @@ export interface components {
             /** Format: int64 */
             total: number;
         };
+        Palette: {
+            background: string;
+            deep: string;
+            motif?: string;
+            surface: string;
+            text: string;
+            textMuted: string;
+        };
+        PaletteOverride: {
+            background?: string;
+            deep?: string;
+            motif?: string;
+            surface?: string;
+            text?: string;
+            textMuted?: string;
+        };
         PasswordInputBody: {
             /**
              * Format: uri
@@ -1159,6 +1390,13 @@ export interface components {
             /** @enum {string} */
             action: "request" | "approve" | "reject";
             note?: string;
+        };
+        Scene: {
+            engine: string;
+            params: components["schemas"]["SceneParams"];
+        };
+        SceneParams: {
+            layers?: components["schemas"]["Layer"][] | null;
         };
         ScheduleInputBody: {
             /**
@@ -1238,6 +1476,43 @@ export interface components {
             otpauthUrl: string;
             secret: string;
         };
+        ThemeDetail: {
+            accents: components["schemas"]["Accent"][] | null;
+            clock: components["schemas"]["Clock"];
+            /** Format: int64 */
+            downloadBytes: number;
+            eventIcon?: string;
+            festivalId: string;
+            fonts: components["schemas"]["ThemeFonts"];
+            iconPackId: string;
+            id: string;
+            isLive?: boolean;
+            labels?: components["schemas"]["Labels"];
+            minAppVersion?: string;
+            name: {
+                [key: string]: string;
+            };
+            palette: components["schemas"]["Palette"];
+            /** Format: int64 */
+            popularity?: number;
+            previewImage?: components["schemas"]["Asset"];
+            publishedAt: string;
+            /** Format: int64 */
+            rev: number;
+            scene: components["schemas"]["Scene"];
+            style: string;
+            subtitle?: {
+                [key: string]: string;
+            };
+            tags?: string[] | null;
+            variants?: components["schemas"]["Variant"][] | null;
+            wallpaperIds?: string[] | null;
+        };
+        ThemeFonts: {
+            body: string;
+            display: string;
+            labels: string;
+        };
         UpdateMeInputBody: {
             /**
              * Format: uri
@@ -1264,6 +1539,14 @@ export interface components {
             resetTotp?: boolean;
             /** @enum {string} */
             role?: "admin" | "designer" | "reviewer" | "viewer";
+        };
+        Variant: {
+            accentId?: string;
+            id: string;
+            name: {
+                [key: string]: string;
+            };
+            palette?: components["schemas"]["PaletteOverride"];
         };
     };
     responses: never;
@@ -1753,6 +2036,35 @@ export interface operations {
             };
         };
     };
+    "export-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportBundle"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "list-festivals": {
         parameters: {
             query?: {
@@ -1984,6 +2296,41 @@ export interface operations {
             };
         };
     };
+    "import-catalog": {
+        parameters: {
+            query?: never;
+            header?: {
+                "Content-Type"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "list-themes": {
         parameters: {
             query?: {
@@ -1997,6 +2344,7 @@ export interface operations {
                 status?: "draft" | "in_review" | "approved" | "scheduled" | "published" | "archived" | "";
                 style?: string;
                 engine?: string;
+                generated?: "true" | "false" | "";
             };
             header?: never;
             path?: never;
@@ -2044,6 +2392,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "generate-themes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateThemeInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerateThemeOutputBody"];
                 };
             };
             /** @description Error */
