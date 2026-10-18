@@ -1528,7 +1528,71 @@ func (b *Banner) Validate() []FieldError {
 	return errs
 }
 
-// Validate is stubbed as TODO-free for phase 2.
+// Validate checks references between items: every id a catalog entry points at must
+// exist (hard references the app would drop, soft ones it would silently fall back
+// from) and ids must be unique per kind. Field is a path into the catalog document.
 func (c *Catalog) Validate() []FieldError {
-	return nil
+	var errs []FieldError
+	ids := func(coll string, n int, id func(int) string) map[string]struct{} {
+		m := make(map[string]struct{}, n)
+		for i := 0; i < n; i++ {
+			if _, dup := m[id(i)]; dup {
+				errs = append(errs, FieldError{Field: fmt.Sprintf("%s[%d].id", coll, i), Code: "duplicate_id", Message: fmt.Sprintf("duplicate id %q", id(i))})
+			}
+			m[id(i)] = struct{}{}
+		}
+		return m
+	}
+	festivals := ids("festivals", len(c.Festivals), func(i int) string { return c.Festivals[i].ID })
+	themes := ids("themes", len(c.Themes), func(i int) string { return c.Themes[i].ID })
+	ids("wallpapers", len(c.Wallpapers), func(i int) string { return c.Wallpapers[i].ID })
+	fonts := ids("fonts", len(c.Fonts), func(i int) string { return c.Fonts[i].ID })
+	packs := ids("iconPacks", len(c.IconPacks), func(i int) string { return c.IconPacks[i].ID })
+	ids("banners", len(c.Banners), func(i int) string { return c.Banners[i].ID })
+
+	ref := func(set map[string]struct{}, id, field, what string) {
+		if _, ok := set[id]; !ok {
+			errs = append(errs, FieldError{Field: field, Code: "ref_missing", Message: fmt.Sprintf("%s %q does not exist in the catalog", what, id)})
+		}
+	}
+	for i, f := range c.Festivals {
+		p := fmt.Sprintf("festivals[%d]", i)
+		ref(fonts, f.Look.DisplayFont, p+".look.displayFont", "font")
+		if f.CoverThemeID != nil && *f.CoverThemeID != "" {
+			ref(themes, *f.CoverThemeID, p+".coverThemeId", "cover theme")
+		}
+	}
+	for i, t := range c.Themes {
+		p := fmt.Sprintf("themes[%d]", i)
+		ref(festivals, t.FestivalID, p+".festivalId", "festival")
+		ref(packs, t.IconPackID, p+".iconPackId", "icon pack")
+		ref(fonts, t.DisplayFont, p+".displayFont", "font")
+	}
+	for i, w := range c.Wallpapers {
+		ref(festivals, w.FestivalID, fmt.Sprintf("wallpapers[%d].festivalId", i), "festival")
+	}
+	for i, ip := range c.IconPacks {
+		ref(festivals, ip.FestivalID, fmt.Sprintf("iconPacks[%d].festivalId", i), "festival")
+	}
+	for i, f := range c.Fonts {
+		for lang, id := range f.FallbackFor {
+			ref(fonts, id, fmt.Sprintf("fonts[%d].fallbackFor.%s", i, lang), "fallback font")
+		}
+	}
+	for i, b := range c.Banners {
+		p := fmt.Sprintf("banners[%d]", i)
+		if b.Action.ID != nil && *b.Action.ID != "" {
+			switch b.Action.Type {
+			case "festival":
+				ref(festivals, *b.Action.ID, p+".action.id", "festival")
+			case "theme":
+				ref(themes, *b.Action.ID, p+".action.id", "theme")
+			}
+		}
+		ref(fonts, b.Look.Font, p+".look.font", "font")
+		if b.Look.ArtThemeID != nil && *b.Look.ArtThemeID != "" {
+			ref(themes, *b.Look.ArtThemeID, p+".look.artThemeId", "art theme")
+		}
+	}
+	return errs
 }
