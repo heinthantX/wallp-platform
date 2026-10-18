@@ -1,3 +1,4 @@
+import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { SETUP_TOKEN } from "./global-setup";
 
@@ -81,15 +82,10 @@ test("setup, login, festival, generate theme, publish checks, logout", async ({ 
   // P4: quick theme wizard (upload -> palette -> icons/font -> draft theme)
   await page.goto("/themes/quick/");
   await pick(/^Festival$/, /E2E Festival/);
-  const png = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFklEQVR4nGP8z8Dwn4EIwESMolGFFFEIAD/yAhGRPa9CAAAAAElFTkSuQmCC",
-    "base64"
-  );
-  await page.getByTestId("quick-image-input").setInputFiles({ name: "quick.png", mimeType: "image/png", buffer: png });
+  await page.getByTestId("quick-image-input").setInputFiles(path.join(__dirname, "fixtures", "quick.png"));
   await page.getByRole("button", { name: "Next" }).click();
-  const cards = page.getByRole("button", { pressed: false });
-  await expect(page.getByText(/^Pick a palette$/)).toBeVisible({ timeout: 60_000 });
-  await cards.first().click();
+  await expect(page.getByRole("heading", { name: "Pick a palette" })).toBeVisible({ timeout: 60_000 });
+  await page.getByRole("button", { name: /E2E Festival/ }).first().click();
   await page.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Next" }).click();
   await pick(/Icon pack/, /E2E Pack/);
@@ -98,9 +94,10 @@ test("setup, login, festival, generate theme, publish checks, logout", async ({ 
   const quickSaved = page.waitForResponse((r) => r.url().endsWith("/admin/v1/themes") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Create draft theme" }).click();
   const qr = await quickSaved;
-  expect(qr.ok(), await qr.text()).toBe(true);
-  const quickBody = JSON.parse(qr.request().postData()!);
-  const quick = quickBody.data ?? quickBody;
+  const quickText = await qr.text(); // read before the redirect drops the body
+  expect(qr.ok(), quickText).toBe(true);
+  const { data: rawQuick } = JSON.parse(quickText);
+  const quick = typeof rawQuick === "string" ? JSON.parse(rawQuick) : rawQuick;
   expect(quick.wallpaperIds?.length).toBe(1);
   expect(quick.palette?.background).toBeTruthy();
   expect(quick.iconPackId).toBe("e2e-pack");
