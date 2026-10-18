@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
   Grid,
   Flag,
   UploadCloud,
+  ShieldCheck,
   BarChart3,
   Store,
   Users,
@@ -40,6 +41,7 @@ import { can } from "@/lib/auth/can";
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { setTheme } = useTheme();
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
@@ -107,6 +109,20 @@ export function CommandPalette() {
             <UploadCloud className="mr-2 h-4 w-4" />
             <span>Publish</span>
           </CommandItem>
+          {can(user, "publish:approve") && (
+            <CommandItem
+              onSelect={() =>
+                runCommand(() =>
+                  pathname?.startsWith("/publish")
+                    ? window.dispatchEvent(new Event("wallp:run-checks"))
+                    : router.push("/publish/?run=1")
+                )
+              }
+            >
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              <span>Run checks</span>
+            </CommandItem>
+          )}
           <CommandItem onSelect={() => runCommand(() => router.push("/statistics"))}>
             <BarChart3 className="mr-2 h-4 w-4" />
             <span>Statistics</span>

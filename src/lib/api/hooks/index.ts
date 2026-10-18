@@ -21,3 +21,4 @@ export * from "./useAssets";
 export * from "./useFonts";
 export * from "./useIconPacks";
 export * from "./useBanners";
+export * from "./useReleases";

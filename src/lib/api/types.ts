@@ -67,3 +67,9 @@ export type ListWallpapersQuery = NonNullable<paths["/admin/v1/wallpapers"]["get
 export type AssetItem = components["schemas"]["AssetItem"];
 export type PageAssetItem = components["schemas"]["PageAssetItem"];
 export type UploadAssetResult = components["schemas"]["UploadAssetResult"];
+
+export type Issue = components["schemas"]["Issue"];
+export type ReleaseReport = components["schemas"]["Report"];
+export type ReleaseView = components["schemas"]["ReleaseView"];
+export type PageReleaseView = components["schemas"]["PageReleaseView"];
+export type PublishInputBody = components["schemas"]["PublishInputBody"];
