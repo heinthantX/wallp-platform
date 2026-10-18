@@ -23,7 +23,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
     <ItemEditorShell<IconPackForm>
       label="Icon pack"
       basePath="/icon-packs"
-      auditType="icon-pack"
+      auditType="icon_pack"
       schema={iconPackSchema}
       defaults={defaultIconPack}
       isNew={isNew}
