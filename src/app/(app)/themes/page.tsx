@@ -35,6 +35,7 @@ import {
   Search,
   Edit,
   Radio,
+  Dna,
 } from "lucide-react";
 
 function parseThemeData(item: ItemView): Partial<ThemeDetail> {
@@ -160,6 +161,22 @@ function ThemesView() {
 
   const [viewMode, setViewMode] = React.useState<"grid" | "table">("grid");
   const [searchInput, setSearchInput] = React.useState(qParam);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+
+  const toggleSelectId = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 2) return [prev[1], id]; // keep max 2, roll oldest out
+      return [...prev, id];
+    });
+  };
+
+  const canBreedSelected = selectedIds.length === 2;
+
+  const handleBreedSelected = () => {
+    if (!canBreedSelected) return;
+    router.push(`/themes/generate/?breed=${encodeURIComponent(selectedIds.join(","))}`);
+  };
 
   // Sync state with URL params
   React.useEffect(() => {
@@ -219,6 +236,17 @@ function ThemesView() {
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
+          {canBreedSelected && (
+            <Button
+              variant="outline"
+              onClick={handleBreedSelected}
+              className="gap-2 border-purple-500/50 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950"
+            >
+              <Dna className="h-4 w-4" />
+              <span>Breed Selected</span>
+            </Button>
+          )}
+
           <Button variant="outline" asChild className="gap-2">
             <Link href="/themes/generate/">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -409,6 +437,9 @@ function ThemesView() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]">
+                  <span className="sr-only">Select (max 2 for breeding)</span>
+                </TableHead>
                 <TableHead className="w-[260px]">Theme</TableHead>
                 <TableHead className="w-[140px]">Festival</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
@@ -423,8 +454,21 @@ function ThemesView() {
               {items.map((item) => {
                 const theme = parseThemeData(item);
                 const nameEn = theme.name?.en || item.id;
+                const isChecked = selectedIds.includes(item.id);
                 return (
-                  <TableRow key={item.id} className="hover:bg-muted/40 transition-colors">
+                  <TableRow
+                    key={item.id}
+                    className={`hover:bg-muted/40 transition-colors ${isChecked ? "bg-primary/5" : ""}`}
+                  >
+                    <TableCell className="pr-0">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${nameEn} for breeding`}
+                        checked={isChecked}
+                        onChange={() => toggleSelectId(item.id)}
+                        className="h-4 w-4 rounded border-input accent-primary cursor-pointer"
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm">{nameEn}</span>

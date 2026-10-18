@@ -55,3 +55,10 @@ export type Locked = components["schemas"]["Locked"];
 export type Check = components["schemas"]["Check"];
 export type ListRecipesQuery = NonNullable<paths["/admin/v1/generator/recipes"]["get"]["parameters"]["query"]>;
 
+export type Swatch = components["schemas"]["Swatch"];
+export type FromImageOutputBody = components["schemas"]["FromImageOutputBody"];
+export type BreedThemeInputBody = components["schemas"]["BreedThemeInputBody"];
+export type BreedThemeOutputBody = components["schemas"]["BreedThemeOutputBody"];
+export type CreateFeedbackInputBody = components["schemas"]["CreateFeedbackInputBody"];
+export type ThemeDetailApi = components["schemas"]["ThemeDetail"];
+export type Palette = components["schemas"]["Palette"];

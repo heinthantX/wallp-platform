@@ -13,4 +13,6 @@ export * from "./useGenerate";
 export * from "./useImportExport";
 export * from "./useRecipes";
 export * from "./useInterpret";
-
+export * from "./useFromImage";
+export * from "./useBreed";
+export * from "./useFeedback";

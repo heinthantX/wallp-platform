@@ -15,11 +15,14 @@ import {
   AlertCircle,
   RefreshCw,
   ExternalLink,
+  Image as ImageIcon,
+  Brain,
 } from "lucide-react";
 
 import { Stepper } from "@/components/generator/Stepper";
 import { OptionsGrid } from "@/components/generator/OptionsGrid";
 import { KeywordChips } from "@/components/generator/KeywordChips";
+import { ImageDropZone, SwatchPicker } from "@/components/generator/ImageDropZone";
 import { PhonePreview } from "@/components/preview";
 import { ColorField, EngineSelect } from "@/components/fields";
 import { Button } from "@/components/ui/button";
@@ -42,7 +45,11 @@ import {
   useSaveTheme,
   useRecipes,
   useInterpret,
+  useFromImage,
+  useBreed,
+  useFeedback,
 } from "@/lib/api/hooks";
+import { useTheme } from "@/lib/api/hooks/useThemes";
 import { ApiError } from "@/lib/api/client";
 import {
   historyReducer,
@@ -60,7 +67,7 @@ import {
 } from "@/lib/generator/locks";
 import type { GeneratorOption } from "@/lib/generator/types";
 import type { Accent } from "@/lib/catalog/types";
-import type { Locked } from "@/lib/api/types";
+import type { Locked, Swatch, ThemeDetailApi } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
 function toApiLocked(locked?: LockedPalette | null): Locked | undefined {
@@ -101,6 +108,7 @@ const step1Schema = z.object({
   recipeId: z.string().optional(),
   description: z.string().optional(),
   seed: z.number().optional(),
+  learnBias: z.boolean(),
 });
 
 type Step1FormData = z.infer<typeof step1Schema>;
@@ -119,6 +127,9 @@ function ThemeGenerateContent() {
   const { data: recipesData } = useRecipes({ perPage: 100 });
   const generateMutation = useGenerate();
   const saveThemeMutation = useSaveTheme();
+  const fromImageMutation = useFromImage();
+  const breedMutation = useBreed();
+  const { sendFeedback } = useFeedback();
 
   // History state for the 6 slots
   const [historyState, dispatch] = React.useReducer(
@@ -138,6 +149,14 @@ function ThemeGenerateContent() {
   ]);
   const [selectedSlot, setSelectedSlot] = React.useState<number>(0);
 
+  // Breed selection (up to 2 slots)
+  const breedSeeds = React.useRef<Set<number>>(new Set());
+  const [selectedBreedSlots, setSelectedBreedSlots] = React.useState<number[]>([]);
+
+  // Photo from-image state
+  const [photoSwatches, setPhotoSwatches] = React.useState<Swatch[]>([]);
+  const [selectedSwatchHex, setSelectedSwatchHex] = React.useState<string | undefined>();
+
   // Locks state (kept in UI kit, wired into request)
   const [locks, setLocks] = React.useState<PaletteLocks>(createInitialLocks);
 
@@ -149,9 +168,11 @@ function ThemeGenerateContent() {
     engine?: string;
     recipeId?: string;
     description?: string;
+    learnBias?: boolean;
   }>({
     festivalId: "",
     mood: "cozy",
+    learnBias: true,
   });
   const [mainSeed, setMainSeed] = React.useState<number>(() =>
     Math.floor(Math.random() * 2147483647)
@@ -173,6 +194,8 @@ function ThemeGenerateContent() {
   const paramSeed = searchParams.get("seed")
     ? parseInt(searchParams.get("seed")!, 10)
     : undefined;
+  // breed=<idA>,<idB> query param — handled via useTheme queries below
+  const paramBreed = searchParams.get("breed") || "";
 
   const form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
@@ -187,6 +210,7 @@ function ThemeGenerateContent() {
       recipeId: paramRecipeId || "auto",
       description: paramDescription,
       seed: paramSeed,
+      learnBias: true,
     },
   });
 
@@ -222,7 +246,70 @@ function ThemeGenerateContent() {
     return matched.filter((kw) => !removedKeywords.includes(kw));
   }, [interpretation, removedKeywords]);
 
+  // -------------------------------------------------------------------
+  // breed=<idA>,<idB> from themes list — load both and auto-breed
+  // -------------------------------------------------------------------
+  const breedIds = React.useMemo(() => {
+    if (!paramBreed) return [null, null] as [null, null];
+    const [a, b] = paramBreed.split(",");
+    return [a || null, b || null] as [string | null, string | null];
+  }, [paramBreed]);
+
+  const { data: breedThemeA } = useTheme(breedIds[0]);
+  const { data: breedThemeB } = useTheme(breedIds[1]);
+
+  const breedAutoTriggered = React.useRef(false);
+
+  React.useEffect(() => {
+    if (breedAutoTriggered.current) return;
+    if (!breedThemeA || !breedThemeB) return;
+
+    const parseData = (item: typeof breedThemeA): ThemeDetailApi | null => {
+      if (!item) return null;
+      if (typeof item.data === "string") {
+        try {
+          return JSON.parse(item.data) as ThemeDetailApi;
+        } catch {
+          return null;
+        }
+      }
+      return (item.data as ThemeDetailApi) ?? null;
+    };
+
+    const dataA = parseData(breedThemeA);
+    const dataB = parseData(breedThemeB);
+    if (!dataA || !dataB) return;
+
+    breedAutoTriggered.current = true;
+    setApiError(null);
+
+    const seed = Math.floor(Math.random() * 2147483647);
+    setMainSeed(seed);
+
+    breedMutation.mutateAsync({ a: dataA, b: dataB, seed }).then((res) => {
+      if (res?.options && res.options.length > 0) {
+        res.options.forEach((o) => breedSeeds.current.add(o.seed));
+        dispatch({
+          type: "RESET",
+          count: 6,
+          initialOptions: res.options as unknown as GeneratorOption[],
+        });
+        setCurrentStep(2);
+      }
+    }).catch((err) => {
+      if (err instanceof ApiError) {
+        setApiError({ code: err.code, message: err.message });
+      } else if (err instanceof Error) {
+        setApiError({ message: err.message });
+      } else {
+        setApiError({ message: "Breed failed" });
+      }
+    });
+  }, [breedThemeA, breedThemeB]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -------------------------------------------------------------------
   // Keyboard navigation for step 2: Esc to go back to step 1
+  // -------------------------------------------------------------------
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (currentStep !== 2) return;
@@ -245,7 +332,9 @@ function ThemeGenerateContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentStep]);
 
+  // -------------------------------------------------------------------
   // Handle generation call
+  // -------------------------------------------------------------------
   const runGeneration = async (
     inputs: {
       festivalId: string;
@@ -254,6 +343,7 @@ function ThemeGenerateContent() {
       engine?: string;
       description?: string;
       recipeId?: string;
+      learnBias?: boolean;
     },
     seed: number,
     aroundPalette?: GeneratorOption["data"]["palette"]
@@ -267,6 +357,7 @@ function ThemeGenerateContent() {
         engine: inputs.engine || undefined,
         description: inputs.description || undefined,
         recipeId: inputs.recipeId || undefined,
+        learnBias: inputs.learnBias ?? true,
         seed,
         count: 6,
         around: aroundPalette,
@@ -295,7 +386,9 @@ function ThemeGenerateContent() {
     }
   };
 
+  // -------------------------------------------------------------------
   // Step 1 Submission
+  // -------------------------------------------------------------------
   const onStep1Submit = async (data: Step1FormData) => {
     const seed = data.seed ?? Math.floor(Math.random() * 2147483647);
     const inputs = {
@@ -305,6 +398,7 @@ function ThemeGenerateContent() {
       engine: data.engine || "layers",
       description: data.description,
       recipeId: data.recipeId && data.recipeId !== "auto" ? data.recipeId : undefined,
+      learnBias: data.learnBias,
     };
 
     setSavedInputs(inputs);
@@ -312,7 +406,66 @@ function ThemeGenerateContent() {
     await runGeneration(inputs, seed);
   };
 
-  // Shuffle a single slot
+  // -------------------------------------------------------------------
+  // Photo upload handler
+  // -------------------------------------------------------------------
+  const handlePhotoFile = async (file: File) => {
+    setApiError(null);
+    const formValues = form.getValues();
+    try {
+      const res = await fromImageMutation.mutateAsync({
+        image: file,
+        festivalId: formValues.festivalId || undefined,
+        mood: formValues.mood,
+        engine: formValues.engine || undefined,
+        recipeId:
+          formValues.recipeId && formValues.recipeId !== "auto"
+            ? formValues.recipeId
+            : undefined,
+        learnBias: formValues.learnBias,
+      });
+
+      if (res?.swatches && res.swatches.length > 0) {
+        setPhotoSwatches(res.swatches);
+      }
+
+      if (res?.options && res.options.length > 0) {
+        const inputs = {
+          festivalId: formValues.festivalId,
+          mood: formValues.mood,
+          baseColor: formValues.baseColor,
+          engine: formValues.engine || "layers",
+          description: formValues.description,
+          recipeId:
+            formValues.recipeId && formValues.recipeId !== "auto"
+              ? formValues.recipeId
+              : undefined,
+          learnBias: formValues.learnBias,
+        };
+        setSavedInputs(inputs);
+        const seed = res.seed ?? Math.floor(Math.random() * 2147483647);
+        setMainSeed(seed);
+        dispatch({
+          type: "RESET",
+          count: 6,
+          initialOptions: res.options as unknown as GeneratorOption[],
+        });
+        setCurrentStep(2);
+      }
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setApiError({ code: err.code, message: err.message });
+      } else if (err instanceof Error) {
+        setApiError({ message: err.message });
+      } else {
+        setApiError({ message: "Photo upload failed" });
+      }
+    }
+  };
+
+  // -------------------------------------------------------------------
+  // Shuffle a single slot — sends "shuffled" feedback for old option
+  // -------------------------------------------------------------------
   const handleShuffleSlot = async (slotIndex: number) => {
     setLoadingSlots((prev) => {
       const copy = [...prev];
@@ -333,10 +486,23 @@ function ThemeGenerateContent() {
         engine: savedInputs.engine || undefined,
         description: savedInputs.description || undefined,
         recipeId: savedInputs.recipeId || undefined,
+        learnBias: savedInputs.learnBias ?? true,
         seed: subSeed,
         count: 1,
         locked: apiLocked,
       });
+
+      // Fire-and-forget: "shuffled" feedback for the replaced option (after generate so request order stays stable)
+      if (currentOpt?.data?.palette) {
+        sendFeedback({
+          festivalId: savedInputs.festivalId || undefined,
+          mood: savedInputs.mood,
+          recipeId: savedInputs.recipeId,
+          seed: currentOpt.seed,
+          palette: currentOpt.data.palette,
+          action: "shuffled",
+        });
+      }
 
       if (res?.options && res.options[0]) {
         dispatch({
@@ -376,6 +542,7 @@ function ThemeGenerateContent() {
         engine: savedInputs.engine || undefined,
         description: savedInputs.description || undefined,
         recipeId: savedInputs.recipeId || undefined,
+        learnBias: savedInputs.learnBias ?? true,
         seed: newSeed,
         count: 6,
         around: currentOpt.data.palette,
@@ -413,6 +580,7 @@ function ThemeGenerateContent() {
         engine: savedInputs.engine || undefined,
         description: savedInputs.description || undefined,
         recipeId: savedInputs.recipeId || undefined,
+        learnBias: savedInputs.learnBias ?? true,
         seed: newSeed,
         count: 6,
         locked: apiLocked,
@@ -431,12 +599,73 @@ function ThemeGenerateContent() {
     }
   };
 
-  // Step 3: Save theme to catalog
+  // -------------------------------------------------------------------
+  // Breed two selected slots
+  // -------------------------------------------------------------------
+  const handleBreed = async (slots: [number, number]) => {
+    const optA = getCurrentOption(historyState, slots[0]);
+    const optB = getCurrentOption(historyState, slots[1]);
+    if (!optA || !optB) return;
+
+    setLoadingSlots([true, true, true, true, true, true]);
+    const seed = Math.floor(Math.random() * 2147483647);
+
+    try {
+      const res = await breedMutation.mutateAsync({
+        a: optA.data as ThemeDetailApi,
+        b: optB.data as ThemeDetailApi,
+        seed,
+      });
+
+      if (res?.options && res.options.length > 0) {
+        res.options.forEach((o) => breedSeeds.current.add(o.seed));
+        dispatch({
+          type: "REPLACE_ALL",
+          options: res.options as unknown as GeneratorOption[],
+        });
+        setSelectedBreedSlots([]);
+      }
+    } catch {
+      toast.error("Breed failed");
+    } finally {
+      setLoadingSlots([false, false, false, false, false, false]);
+    }
+  };
+
+  // Toggle breed slot selection (max 2)
+  const handleToggleBreedSelect = (index: number) => {
+    setSelectedBreedSlots((prev) => {
+      if (prev.includes(index)) {
+        return prev.filter((i) => i !== index);
+      }
+      if (prev.length >= 2) {
+        // Replace oldest with new
+        return [prev[1], index];
+      }
+      return [...prev, index];
+    });
+  };
+
+  // -------------------------------------------------------------------
+  // Step 3: Save theme to catalog — sends "accepted" feedback
+  // -------------------------------------------------------------------
   const handleUseThisTheme = async () => {
     const chosen = getCurrentOption(historyState, selectedSlot);
     if (!chosen) {
       toast.error("No theme selected");
       return;
+    }
+
+    // Fire-and-forget accepted feedback
+    if (chosen.data?.palette) {
+      sendFeedback({
+        festivalId: savedInputs.festivalId || undefined,
+        mood: savedInputs.mood,
+        recipeId: savedInputs.recipeId,
+        seed: chosen.seed,
+        palette: chosen.data.palette,
+        action: breedSeeds.current.has(chosen.seed) ? "bred" : "accepted",
+      });
     }
 
     try {
@@ -460,6 +689,8 @@ function ThemeGenerateContent() {
   };
 
   const chosenTheme = getCurrentOption(historyState, selectedSlot);
+
+  const isBreedingFromUrl = Boolean(paramBreed && (!breedThemeA || !breedThemeB));
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -527,6 +758,14 @@ function ThemeGenerateContent() {
               Retry Generation
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Breed-from-URL loading state */}
+      {isBreedingFromUrl && (
+        <div className="flex items-center gap-3 rounded-xl border p-4 bg-muted/20 text-sm text-muted-foreground">
+          <RefreshCw className="h-4 w-4 animate-spin shrink-0" />
+          <span>Loading themes for breeding…</span>
         </div>
       )}
 
@@ -730,10 +969,69 @@ function ThemeGenerateContent() {
                 )}
               </div>
 
+              {/* Learn from my choices switch */}
+              <div className="flex items-center justify-between rounded-xl border p-3 bg-muted/10">
+                <div className="space-y-0.5">
+                  <Label htmlFor="learnBias" className="text-sm font-medium flex items-center gap-1.5">
+                    <Brain className="h-3.5 w-3.5 text-primary" />
+                    Learn from my choices
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Bias generation towards hues you&apos;ve accepted previously.
+                  </p>
+                </div>
+                <Controller
+                  control={control}
+                  name="learnBias"
+                  render={({ field }) => (
+                    <Switch
+                      id="learnBias"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              {/* From a Photo section */}
+              <div className="space-y-3 rounded-xl border p-4 bg-muted/10">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-semibold">From a photo</Label>
+                  <span className="text-[11px] text-muted-foreground">(optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Drop a photo to extract its palette and generate themes inspired by it.
+                  Clicking a swatch sets it as base colour.
+                </p>
+                <ImageDropZone
+                  onFile={handlePhotoFile}
+                  onError={(msg) => toast.error(msg)}
+                  disabled={fromImageMutation.isPending || generateMutation.isPending}
+                />
+                {fromImageMutation.isPending && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    <span>Extracting palette from photo…</span>
+                  </div>
+                )}
+                {photoSwatches.length > 0 && (
+                  <SwatchPicker
+                    swatches={photoSwatches}
+                    selectedHex={selectedSwatchHex}
+                    onPick={(hex) => {
+                      setSelectedSwatchHex(hex);
+                      setValue("pickForMe", false);
+                      setValue("baseColor", hex);
+                    }}
+                  />
+                )}
+              </div>
+
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={generateMutation.isPending}
+                disabled={generateMutation.isPending || fromImageMutation.isPending}
                 className="w-full h-10 gap-2"
               >
                 {generateMutation.isPending ? (
@@ -756,6 +1054,17 @@ function ThemeGenerateContent() {
       {/* STEP 2: PICK & REFINE */}
       {currentStep === 2 && (
         <div className="space-y-6">
+          {photoSwatches.length > 0 && (
+            <SwatchPicker
+              swatches={photoSwatches}
+              selectedHex={selectedSwatchHex}
+              onPick={(hex) => {
+                setSelectedSwatchHex(hex);
+                setValue("pickForMe", false);
+                setValue("baseColor", hex);
+              }}
+            />
+          )}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border bg-card text-card-foreground">
             <div>
               <h2 className="text-lg font-bold">Pick & Refine Options</h2>
@@ -791,7 +1100,9 @@ function ThemeGenerateContent() {
             options={[0, 1, 2, 3, 4, 5].map((i) => historyState.slots[i]?.present ?? null)}
             loadingSlots={loadingSlots}
             selectedSlot={selectedSlot}
+            selectedBreedSlots={selectedBreedSlots}
             onSelectSlot={(idx) => setSelectedSlot(idx)}
+            onToggleBreedSelect={handleToggleBreedSelect}
             locks={locks}
             onToggleLock={(role: PaletteRole) => setLocks((prev) => toggleLock(prev, role))}
             canUndoSlots={[0, 1, 2, 3, 4, 5].map((i) => canUndo(historyState, i))}
@@ -799,6 +1110,7 @@ function ThemeGenerateContent() {
             onMoreLikeThisSlot={handleMoreLikeThis}
             onUndoSlot={(idx) => dispatch({ type: "UNDO", slot: idx })}
             onReshuffleAll={handleReshuffleAll}
+            onBreed={handleBreed}
             onUseThisSlot={(idx) => {
               setSelectedSlot(idx);
               setCurrentStep(3);
