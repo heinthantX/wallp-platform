@@ -64,7 +64,13 @@ func withMeta(op huma.Operation, mode string, roles []string) huma.Operation {
 // Admin requires a dashboard login; with roles, only those roles (admin always passes).
 func Admin(op huma.Operation, roles ...string) huma.Operation {
 	if len(roles) > 0 {
-		op.Description = strings.TrimSpace(op.Description + "\n\nRoles: " + strings.Join(append([]string{model.RoleAdmin}, roles...), ", "))
+		names := []string{model.RoleAdmin}
+		for _, r := range roles {
+			if r != model.RoleAdmin {
+				names = append(names, r)
+			}
+		}
+		op.Description = strings.TrimSpace(op.Description + "\n\nRoles: " + strings.Join(names, ", "))
 	}
 	return withMeta(op, modeAdmin, roles)
 }

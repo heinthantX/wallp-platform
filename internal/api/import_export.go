@@ -37,6 +37,8 @@ type ImportResult struct {
 	Fonts      int `json:"fonts"`
 	IconPacks  int `json:"iconPacks"`
 	Banners    int `json:"banners"`
+	// SkippedAssets lists asset files left out because their type is not supported.
+	SkippedAssets []string `json:"skippedAssets,omitempty"`
 }
 
 type ImportOutput struct {
@@ -331,14 +333,14 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 		defaultPublishedAt = time.Now().UTC()
 	}
 
-	var createdFiles []string
+	var createdFiles, skippedAssets []string
 	err := d.DB.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		// 1. Assets
-		cf, err := items.VerifyAndCopyAssets(ctx, tx, d.Cfg.StorageDir, assetFiles, actor)
+		cf, skipped, err := items.VerifyAndCopyAssets(ctx, tx, d.Cfg.StorageDir, assetFiles, actor)
 		if err != nil {
 			return err
 		}
-		createdFiles = cf
+		createdFiles, skippedAssets = cf, skipped
 
 		// 2. Store Settings
 		accentPresetsRaw := rawCatalog["accentPresets"]
@@ -450,12 +452,13 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 	}
 
 	return &ImportResult{
-		Festivals:  len(rawFestivals),
-		Themes:     len(themeFiles),
-		Wallpapers: len(rawWallpapers),
-		Fonts:      len(rawFonts),
-		IconPacks:  len(rawIconPacks),
-		Banners:    len(rawBanners),
+		Festivals:     len(rawFestivals),
+		Themes:        len(themeFiles),
+		Wallpapers:    len(rawWallpapers),
+		Fonts:         len(rawFonts),
+		IconPacks:     len(rawIconPacks),
+		Banners:       len(rawBanners),
+		SkippedAssets: skippedAssets,
 	}, nil
 }
 

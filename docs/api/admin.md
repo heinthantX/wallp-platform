@@ -161,7 +161,7 @@ Role changes and disabling take effect on the next request, not when the access 
 | Import a catalog | yes | no | no | no |
 | Manage users | yes | no | no | no |
 
-Note: the review endpoint is open to admin, designer and reviewer, but `approve` and `reject` are re-checked inside and return 403 for a designer.
+Note: designers can call the review endpoint only with `request`; `approve` and `reject` return 403 for a designer (this is also in the endpoint description).
 
 ## Conventions
 
@@ -304,7 +304,7 @@ curl -s localhost:8080/admin/v1/assets?variants=wallpaper -H "Authorization: Bea
 - `POST /import` (admin, body limit 64 MB) takes either:
   - `multipart/form-data` with `catalog` (the catalog JSON), and optional `themes` and `assets` files (repeat the field for each file), or
   - JSON `{ "dir": "seed/catalog/v1" }` to read a folder on the server. Not allowed in production (403).
-- Imported items are stored as already `published` (this is how `make seed` loads the demo catalog). The response is `{ festivals, themes, wallpapers, fonts, iconPacks, banners, counts: {…} }` with the number of items.
+- Imported items are stored as already `published` (this is how `make seed` loads the demo catalog). The response is `{ festivals, themes, wallpapers, fonts, iconPacks, banners, counts: {…} }` with the number of items. Asset files whose content is not png, jpg, webp, ttf, otf or json are not stored; their names come back in `skippedAssets`, and the rest of the import still runs. A theme that points to a skipped asset fails checks (`asset_missing`) at publish.
 
 ## Checks and releases
 

@@ -1216,9 +1216,9 @@ func MimeForFormat(format string) string {
 	}
 }
 
-func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, assetFiles []AssetFile, actor string) ([]string, error) {
+func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, assetFiles []AssetFile, actor string) (created, skipped []string, err error) {
 	if len(assetFiles) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	type verifiedAsset struct {
@@ -1238,18 +1238,20 @@ func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, asse
 		hashStr := hex.EncodeToString(h[:])
 
 		if len(a.Bytes) > assets.MaxAssetSize {
-			return nil, apierr.Invalid("assets", "Asset "+filepath.Base(a.Name)+" is larger than 10 MB")
+			return nil, nil, apierr.Invalid("assets", "Asset "+filepath.Base(a.Name)+" is larger than 10 MB")
 		}
 		// The type comes from the content, never from the uploaded name.
 		format, mime, err := assets.Sniff(a.Bytes)
 		if err != nil {
-			return nil, apierr.Invalid("assets", "Asset "+filepath.Base(a.Name)+" has an unsupported file type")
+			// Unknown types are skipped, not fatal; references to them fail checks at publish.
+			skipped = append(skipped, filepath.Base(a.Name))
+			continue
 		}
 		stem := strings.TrimSuffix(a.Name, filepath.Ext(a.Name))
 
 		if len(stem) == 64 {
 			if !strings.EqualFold(stem, hashStr) {
-				return nil, fmt.Errorf("asset sha256 mismatch: file %s has sha256 %s, expected %s", a.Name, hashStr, stem)
+				return nil, nil, fmt.Errorf("asset sha256 mismatch: file %s has sha256 %s, expected %s", a.Name, hashStr, stem)
 			}
 		}
 
@@ -1266,7 +1268,7 @@ func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, asse
 
 	// 2. All verified. Ensure destination directory exists.
 	if err := os.MkdirAll(destAssetsDir, 0755); err != nil {
-		return nil, fmt.Errorf("create storage assets dir: %w", err)
+		return nil, nil, fmt.Errorf("create storage assets dir: %w", err)
 	}
 
 	// 3. Copy files, tracking newly created files so we can clean them up on failure.
@@ -1277,7 +1279,7 @@ func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, asse
 				for _, f := range createdFiles {
 					_ = os.Remove(f)
 				}
-				return nil, fmt.Errorf("write asset file %s: %w", va.destPath, err)
+				return nil, nil, fmt.Errorf("write asset file %s: %w", va.destPath, err)
 			}
 			createdFiles = append(createdFiles, va.destPath)
 		}
@@ -1289,11 +1291,11 @@ func VerifyAndCopyAssets(ctx context.Context, tx bun.Tx, storageDir string, asse
 			for _, f := range createdFiles {
 				_ = os.Remove(f)
 			}
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
-	return createdFiles, nil
+	return createdFiles, skipped, nil
 }
 
 func (s *Store) Transition(ctx context.Context, id, action string, note *string, callerName, callerRole string) (*ItemView, error) {

@@ -279,12 +279,21 @@ func importDir(t *testing.T, files map[string][]byte) string {
 	return dir
 }
 
-// L4: asset type comes from content; unknown types are rejected.
-func TestImportRejectsUnknownAssetType(t *testing.T) {
+// L4: asset type comes from content; unknown types are skipped (never stored) without failing the batch.
+func TestImportSkipsUnknownAssetType(t *testing.T) {
 	s := newServer(t)
-	dir := importDir(t, map[string][]byte{"payload.png": []byte("MZ\x90\x00 not an image")})
-	if _, err := api.RunImportDir(context.Background(), s.deps, dir, "cli"); err == nil || !strings.Contains(err.Error(), "payload.png") {
-		t.Fatalf("want per-file rejection, got %v", err)
+	png := []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR")
+	dir := importDir(t, map[string][]byte{"payload.png": []byte("MZ\x90\x00 not an image"), "ok.png": png})
+	res, err := api.RunImportDir(context.Background(), s.deps, dir, "cli")
+	if err != nil {
+		t.Fatalf("import: %v", err)
+	}
+	if len(res.SkippedAssets) != 1 || res.SkippedAssets[0] != "payload.png" {
+		t.Fatalf("skipped = %v", res.SkippedAssets)
+	}
+	entries, _ := os.ReadDir(filepath.Join(s.deps.Cfg.StorageDir, "assets"))
+	if len(entries) != 1 || !strings.HasSuffix(entries[0].Name(), ".png") {
+		t.Fatalf("stored assets = %v", entries)
 	}
 }
 
