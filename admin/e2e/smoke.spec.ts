@@ -48,6 +48,36 @@ test("setup, login, festival, generate theme, publish checks, logout", async ({ 
 
   await expect(page.getByText(/not found|failed to load/i)).toHaveCount(0);
 
+  // P2: pick related items by name, not by typing ids
+  const packStatus = await page.evaluate(async () => {
+    const tok = JSON.parse(localStorage.getItem("wallp_admin_auth")!).state.accessToken;
+    const res = await fetch("http://127.0.0.1:18080/admin/v1/icon-packs", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ id: "e2e-pack", name: { en: "E2E Pack" }, style: {}, kind: "images", shape: "squircle", tile: "#1b1b2f", glyph: "#ffffff", ring: "#ffffff" }),
+    });
+    return res.status;
+  });
+  expect(packStatus).toBeLessThan(300);
+  await page.reload();
+  const pick = async (label: string | RegExp, option: RegExp) => {
+    await page.getByRole("combobox", { name: label }).click();
+    await page.getByRole("option", { name: option }).click();
+  };
+  await pick(/^Festival$/, /E2E Festival/);
+  await pick(/Display \/ Clock Font/, /creepster/);
+  await pick(/Bundled Icon Pack/, /E2E Pack/);
+  await expect(page.getByRole("combobox", { name: /Bundled Icon Pack/ })).toContainText("E2E Pack");
+  const themeSaved = page.waitForResponse((r) => r.url().includes("/admin/v1/themes/") && r.request().method() === "PATCH");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  const tr = await themeSaved;
+  expect(tr.ok(), await tr.text()).toBe(true);
+  const { data: rawTheme } = await tr.json();
+  const savedTheme = typeof rawTheme === "string" ? JSON.parse(rawTheme) : rawTheme;
+  expect(savedTheme.iconPackId).toBe("e2e-pack");
+  expect(savedTheme.fonts.display).toBe("creepster");
+  expect(savedTheme.festivalId).toBeTruthy();
+
   // Publish checks
   await page.goto("/publish/");
   await page.getByRole("button", { name: "Run checks" }).click();
