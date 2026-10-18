@@ -50,6 +50,11 @@ func sRGBToLinear(c float64) float64 {
 	return math.Pow((c+0.055)/1.055, 2.4)
 }
 
+// SRGBToLinear converts an sRGB channel [0, 1] to linear light.
+func SRGBToLinear(c float64) float64 {
+	return sRGBToLinear(c)
+}
+
 // linearToSRGB converts a linear channel to sRGB [0, 1].
 func linearToSRGB(c float64) float64 {
 	if c <= 0.0031308 {

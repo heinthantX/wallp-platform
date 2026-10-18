@@ -193,6 +193,8 @@ type Asset struct {
 	Bytes     int64     `bun:",notnull"`
 	Width     int       `bun:",notnull"`
 	Height    int       `bun:",notnull"`
+	Blurhash  string    `bun:",nullzero"`
+	Dominant  string    `bun:",nullzero"`
 	Meta      JSON      `bun:"meta"` // blurhash, dominant colour, source name
 	CreatedBy string    `bun:",notnull"`
 	CreatedAt time.Time `bun:",notnull"`

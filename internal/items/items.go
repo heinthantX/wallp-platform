@@ -902,6 +902,15 @@ func (s *Store) Duplicate(ctx context.Context, id string, creatorName string) (*
 			}
 			dataMap["name"] = nameMap
 		}
+		if titleMap, ok := dataMap["title"].(map[string]any); ok {
+			for lang, val := range titleMap {
+				titleMap[lang] = fmt.Sprintf("%v (copy)", val)
+			}
+			dataMap["title"] = titleMap
+		}
+		if fam, ok := dataMap["family"].(string); ok && fam != "" {
+			dataMap["family"] = fmt.Sprintf("%s (copy)", fam)
+		}
 		newData, err := json.Marshal(dataMap)
 		if err != nil {
 			return err

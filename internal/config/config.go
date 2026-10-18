@@ -35,6 +35,10 @@ type Config struct {
 
 	// Requests per minute per IP on auth endpoints.
 	AuthRateLimit int `env:"AUTH_RATE_LIMIT" envDefault:"20"`
+
+	// Google Fonts metadata and download URLs.
+	GoogleFontsMetadataURL string `env:"GOOGLE_FONTS_METADATA_URL" envDefault:"https://fonts.google.com/metadata/fonts"`
+	GoogleFontsDownloadURL string `env:"GOOGLE_FONTS_DOWNLOAD_URL" envDefault:"https://fonts.google.com/download/list"`
 }
 
 func (c Config) IsProd() bool { return c.Env == "production" }
