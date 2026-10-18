@@ -97,7 +97,8 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
 
   React.useEffect(() => {
     const parsed = item ? parseItem(item) : defaultWallpaper;
-    reset(parsed);
+    // keepDirtyValues: edits typed while a save was in flight survive the saved item coming back.
+    reset(parsed, { keepDirtyValues: true });
     setSceneJson(JSON.stringify(parsed.scene?.params ?? defaultScene.params, null, 2));
   }, [item, reset]);
 
@@ -170,7 +171,8 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
         return saved;
       },
       onReload: async () => {
-        await refetch();
+        const fresh = await refetch();
+        reset(parseItem(fresh.data));
       },
     });
 

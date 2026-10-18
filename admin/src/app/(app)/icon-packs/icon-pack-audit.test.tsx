@@ -28,7 +28,7 @@ describe("IconPackEditor audit", () => {
     );
     await waitFor(() => {
       const call = get.mock.calls.find((c) => c[0] === "/admin/v1/audit");
-      expect((call?.[1] as { params: { query: { itemType: string } } })?.params.query.itemType).toBe("icon_pack");
+      expect((call?.[1] as unknown as { params: { query: { itemType: string } } })?.params.query.itemType).toBe("icon_pack");
     });
   });
 });

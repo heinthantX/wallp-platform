@@ -91,4 +91,41 @@ describe("WallpaperEditor identifier", () => {
     window.dispatchEvent(ev);
     expect(ev.defaultPrevented).toBe(false);
   });
+
+  // B10 (loop-2 P1): edits typed while a save is in flight were wiped when the saved item came back.
+  it("keeps edits typed while a save is in flight", async () => {
+    const image = {
+      sizes: [{ width: 1080, height: 2340, asset: { url: "/a.webp", sha256: "a".repeat(64), bytes: 10, format: "webp" } }],
+    };
+    let data: Record<string, unknown> = { id: "loop-test", name: { en: "One" }, kind: "image", tags: [], image };
+    let updatedAt = "2026-10-19T00:00:00Z";
+    const view = () => ({ id: "loop-test", status: "draft", data: JSON.stringify(data), firstPublishedAt: null, updatedAt });
+    vi.spyOn(client, "GET").mockImplementation((async (path: string) =>
+      path === "/admin/v1/wallpapers/{id}" ? { data: view() } : { data: { items: [], total: 0 } }) as never);
+    let release!: () => void;
+    vi.spyOn(client, "PATCH").mockImplementation((async (_p: string, opts: { body: string }) => {
+      const sent = JSON.parse(opts.body).data;
+      await new Promise<void>((r) => (release = r));
+      data = sent;
+      updatedAt = "2026-10-19T00:01:00Z";
+      return { data: view() };
+    }) as never);
+
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <WallpaperEditor id="loop-test" />
+      </QueryClientProvider>
+    );
+    const name = await screen.findByDisplayValue("One");
+    fireEvent.change(name, { target: { value: "Two" } });
+    fireEvent.click(screen.getByRole("button", { name: /save draft/i }));
+    await waitFor(() => expect(client.PATCH).toHaveBeenCalledTimes(1));
+    fireEvent.change(name, { target: { value: "Two Three" } });
+    await act(async () => {
+      release();
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    expect(screen.getByDisplayValue("Two Three")).toBeInTheDocument();
+  });
 });

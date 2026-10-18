@@ -504,7 +504,8 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
   React.useEffect(() => {
     if (item) {
       const parsed = parseThemeItem(item);
-      reset(parsed);
+      // keepDirtyValues: edits typed while a save was in flight survive the saved item coming back.
+      reset(parsed, { keepDirtyValues: true });
       setJsonString(JSON.stringify(parsed, null, 2));
       if (item.validation) {
         setServerErrors(item.validation);
@@ -556,7 +557,8 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
       return saved;
     },
     onReload: async () => {
-      await refetch();
+      const fresh = await refetch();
+      if (fresh.data) reset(parseThemeItem(fresh.data));
     },
     onApplyValidation: applyServerValidation,
   });

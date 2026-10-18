@@ -65,7 +65,8 @@ function Shell<T extends FieldValues & { id: string }>({
 
   React.useEffect(() => {
     if (item) {
-      reset(parseItemData(item, defaults) as DefaultValues<T>);
+      // keepDirtyValues: edits typed while a save was in flight survive the saved item coming back.
+      reset(parseItemData(item, defaults) as DefaultValues<T>, { keepDirtyValues: true });
       if (item.validation) setServerErrors(item.validation);
     } else if (isNew) {
       reset(defaults as DefaultValues<T>);
@@ -96,7 +97,8 @@ function Shell<T extends FieldValues & { id: string }>({
         return saved;
       },
       onReload: async () => {
-        await refetch();
+        const fresh = (await refetch()) as { data?: ItemView | null } | undefined;
+        reset(parseItemData(fresh?.data, defaults) as DefaultValues<T>);
       },
       onApplyValidation: applyServerValidation,
     });

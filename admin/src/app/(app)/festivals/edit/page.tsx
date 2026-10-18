@@ -170,7 +170,8 @@ function FestivalEditor() {
   React.useEffect(() => {
     if (item) {
       const parsed = parseItemData(item);
-      reset(parsed);
+      // keepDirtyValues: edits typed while a save was in flight survive the saved item coming back.
+      reset(parsed, { keepDirtyValues: true });
       setJsonString(JSON.stringify(parsed, null, 2));
       if (item.validation) {
         setServerErrors(item.validation);
@@ -225,7 +226,8 @@ function FestivalEditor() {
       return saved;
     },
     onReload: async () => {
-      await refetch();
+      const fresh = await refetch();
+      if (fresh.data) reset(parseItemData(fresh.data));
     },
     onApplyValidation: applyServerValidation,
   });
