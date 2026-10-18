@@ -350,6 +350,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/generator/recipes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List generator recipes */
+        get: operations["list-generator-recipes"];
+        put?: never;
+        /**
+         * Create a generator recipe
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["create-generator-recipe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/generator/recipes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a generator recipe */
+        get: operations["get-generator-recipe"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a generator recipe
+         * @description Roles: admin, admin
+         */
+        delete: operations["delete-generator-recipe"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a generator recipe
+         * @description Roles: admin, designer, reviewer
+         */
+        patch: operations["update-generator-recipe"];
+        trace?: never;
+    };
+    "/admin/v1/generator/recipes/{id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview 6 theme options for a generator recipe
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["preview-generator-recipe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/import": {
         parameters: {
             query?: never;
@@ -405,6 +471,26 @@ export interface paths {
          * @description Roles: admin, designer, reviewer
          */
         post: operations["generate-themes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/themes/generate/interpret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Interpret theme description into generator parameters
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["interpret-theme-description"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1019,6 +1105,7 @@ export interface components {
         };
         Check: {
             field: string;
+            level?: string;
             /** Format: double */
             min: number;
             name: string;
@@ -1127,8 +1214,10 @@ export interface components {
             engine?: string;
             /** @description Festival ID (must exist) */
             festivalId: string;
+            locked?: components["schemas"]["Locked"];
             /** @description Theme mood: classic, cozy, minimal, cute */
             mood?: string;
+            recipeId?: string;
             /** Format: int64 */
             seed?: number;
         };
@@ -1196,6 +1285,30 @@ export interface components {
             /** Format: int64 */
             wallpapers: number;
         };
+        InterpretInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/InterpretInputBody.json
+             */
+            readonly $schema?: string;
+            description: string;
+            recipeId?: string;
+        };
+        Interpretation: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/Interpretation.json
+             */
+            readonly $schema?: string;
+            hueRanges?: (number[] | null)[] | null;
+            matched: string[] | null;
+            mood?: string;
+            motifs?: string[] | null;
+            particles?: string[] | null;
+            tags?: string[] | null;
+        };
         ItemView: {
             /**
              * Format: uri
@@ -1258,6 +1371,15 @@ export interface components {
             x?: number;
             /** Format: double */
             y?: number;
+        };
+        Locked: {
+            accents?: string[] | null;
+            background?: string;
+            deep?: string;
+            motif?: string;
+            surface?: string;
+            text?: string;
+            textMuted?: string;
         };
         LoginInputBody: {
             /**
@@ -1337,6 +1459,21 @@ export interface components {
             /** Format: int64 */
             total: number;
         };
+        PageRecipeView: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/PageRecipeView.json
+             */
+            readonly $schema?: string;
+            items: components["schemas"]["RecipeView"][] | null;
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            perPage: number;
+            /** Format: int64 */
+            total: number;
+        };
         Palette: {
             background: string;
             deep: string;
@@ -1361,6 +1498,48 @@ export interface components {
              */
             readonly $schema?: string;
             password: string;
+        };
+        PreviewRecipeBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/PreviewRecipeBody.json
+             */
+            readonly $schema?: string;
+            baseColor?: string;
+            mood?: string;
+            /** Format: int64 */
+            seed?: number;
+        };
+        PreviewRecipeOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/PreviewRecipeOutputBody.json
+             */
+            readonly $schema?: string;
+            options: components["schemas"]["GeneratedOption"][] | null;
+            /** Format: int64 */
+            seed: number;
+        };
+        RecipeView: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/RecipeView.json
+             */
+            readonly $schema?: string;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: string;
+            data: string;
+            enabled: boolean;
+            festivalId: string | null;
+            id: string;
+            name: string;
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: string;
         };
         RefreshInputBody: {
             /**
@@ -2296,6 +2475,211 @@ export interface operations {
             };
         };
     };
+    "list-generator-recipes": {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Field name, '-' prefix for descending, e.g. -updatedAt */
+                sort?: string;
+                /** @description Search text */
+                q?: string;
+                /** @description Filter by festival ID */
+                festivalId?: string;
+                /** @description Filter by enabled status */
+                enabled?: "true" | "false" | "";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageRecipeView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "create-generator-recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "get-generator-recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "delete-generator-recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimpleOKOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "update-generator-recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "preview-generator-recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PreviewRecipeBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewRecipeOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "import-catalog": {
         parameters: {
             query?: never;
@@ -2425,6 +2809,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GenerateThemeOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "interpret-theme-description": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterpretInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Interpretation"];
                 };
             };
             /** @description Error */
