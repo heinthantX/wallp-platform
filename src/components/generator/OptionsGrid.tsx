@@ -103,9 +103,9 @@ export function OptionsGrid({
   const canBreed = selectedBreedSlots.length === 2;
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("@container space-y-4", className)}>
       {/* Top Toolbar: Shortcuts info & Breed bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border bg-muted/20">
+      <div className="flex flex-col @2xl:flex-row items-start @2xl:items-center justify-between gap-3 p-3 rounded-lg border bg-muted/20">
         <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
           <Keyboard className="h-3.5 w-3.5 text-foreground/70 shrink-0" />
           <span className="font-semibold text-foreground/80">Shortcuts:</span>
@@ -162,7 +162,7 @@ export function OptionsGrid({
       </div>
 
       {/* 6-Card Responsive Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 @lg:grid-cols-2 @4xl:grid-cols-3 gap-6">
         {slots.map((opt, index) => {
           const isLoading =
             typeof loadingSlots === "boolean"

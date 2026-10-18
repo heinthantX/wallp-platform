@@ -1,5 +1,6 @@
 "use client";
 
+import { festivalName } from "@/lib/festival/name";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -48,7 +49,7 @@ import {
 } from "./wallpaperSchema";
 
 // Scene wallpapers use hex colours only, so the palette is just a neutral canvas default.
-const NEUTRAL_PALETTE: Palette = {
+export const NEUTRAL_PALETTE: Palette = {
   background: "#120326",
   deep: "#07010F",
   surface: "#3A0B5C",
@@ -309,7 +310,7 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                           <SelectItem value="none">Any time</SelectItem>
                           {festivals?.items?.map((f) => (
                             <SelectItem key={f.id} value={f.id}>
-                              {f.id}
+                              {festivalName(f.data) ?? f.id}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -374,6 +375,12 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                 <CardTitle className="text-base">Scene layers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                {scene?.engine && scene.engine !== "layers" && (
+                  <p className="rounded-md border border-dashed bg-muted/30 p-2 text-xs text-muted-foreground">
+                    Uses the built-in <code className="font-mono">{scene.engine}</code> engine. Adding layers switches
+                    it to the <code className="font-mono">layers</code> engine.
+                  </p>
+                )}
                 <Tabs defaultValue="layers">
                   <TabsList>
                     <TabsTrigger value="layers">Layers</TabsTrigger>
@@ -444,7 +451,7 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                 alt="Wallpaper preview"
                 className="aspect-[9/19.5] w-full"
               />
-            ) : kind === "scene" && Array.isArray(sceneLayers) && sceneLayers.length > 0 ? (
+            ) : kind === "scene" && scene?.engine ? (
               <LayersCanvas
                 scene={scene as never}
                 palette={NEUTRAL_PALETTE}

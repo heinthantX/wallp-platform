@@ -1,5 +1,6 @@
 "use client";
 
+import { festivalName } from "@/lib/festival/name";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -1290,11 +1291,3 @@ export default function ThemeGeneratePage() {
 }
 
 // Festival item data arrives as an object or a JSON string; show its English name when present.
-function festivalName(data: unknown): string | undefined {
-  try {
-    const d = (typeof data === "string" ? JSON.parse(data) : data) as { name?: { en?: string } } | null;
-    return d?.name?.en || undefined;
-  } catch {
-    return undefined;
-  }
-}

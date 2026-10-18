@@ -38,7 +38,7 @@ export interface paths {
         post?: never;
         /**
          * Delete an asset
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-asset"];
         options?: never;
@@ -57,7 +57,7 @@ export interface paths {
          * Audit log
          * @description Who changed what and when, with before and after JSON.
          *
-         *     Roles: admin, admin, reviewer
+         *     Roles: admin, reviewer
          */
         get: operations["list-audit"];
         put?: never;
@@ -303,7 +303,7 @@ export interface paths {
         get?: never;
         /**
          * Reorder banners
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         put: operations["reorder-banners"];
         post?: never;
@@ -326,7 +326,7 @@ export interface paths {
         post?: never;
         /**
          * Archive a banner
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-banner"];
         options?: never;
@@ -349,7 +349,7 @@ export interface paths {
         put?: never;
         /**
          * Archive a banner
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["archive-banner"];
         delete?: never;
@@ -406,7 +406,7 @@ export interface paths {
         put?: never;
         /**
          * Restore an archived banner
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["restore-banner"];
         delete?: never;
@@ -426,7 +426,9 @@ export interface paths {
         put?: never;
         /**
          * Transition a banner review status
-         * @description Roles: admin, designer, reviewer
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         *
+         *     Roles: admin, designer, reviewer
          */
         post: operations["review-banner"];
         delete?: never;
@@ -520,7 +522,7 @@ export interface paths {
         get?: never;
         /**
          * Reorder festivals
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         put: operations["reorder-festivals"];
         post?: never;
@@ -543,7 +545,7 @@ export interface paths {
         post?: never;
         /**
          * Archive a festival
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["archive-festival"];
         options?: never;
@@ -566,7 +568,7 @@ export interface paths {
         put?: never;
         /**
          * Restore an archived festival
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["restore-festival"];
         delete?: never;
@@ -646,7 +648,7 @@ export interface paths {
         post?: never;
         /**
          * Archive a font
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-font"];
         options?: never;
@@ -669,7 +671,7 @@ export interface paths {
         put?: never;
         /**
          * Archive a font
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["archive-font"];
         delete?: never;
@@ -726,7 +728,7 @@ export interface paths {
         put?: never;
         /**
          * Restore an archived font
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["restore-font"];
         delete?: never;
@@ -746,7 +748,9 @@ export interface paths {
         put?: never;
         /**
          * Transition a font review status
-         * @description Roles: admin, designer, reviewer
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         *
+         *     Roles: admin, designer, reviewer
          */
         post: operations["review-font"];
         delete?: never;
@@ -829,7 +833,7 @@ export interface paths {
         post?: never;
         /**
          * Delete a generator recipe
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-generator-recipe"];
         options?: never;
@@ -895,7 +899,7 @@ export interface paths {
         post?: never;
         /**
          * Archive a icon-pack
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-icon-pack"];
         options?: never;
@@ -918,7 +922,7 @@ export interface paths {
         put?: never;
         /**
          * Archive a icon-pack
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["archive-icon-pack"];
         delete?: never;
@@ -975,7 +979,7 @@ export interface paths {
         put?: never;
         /**
          * Restore an archived icon-pack
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["restore-icon-pack"];
         delete?: never;
@@ -995,7 +999,9 @@ export interface paths {
         put?: never;
         /**
          * Transition a icon-pack review status
-         * @description Roles: admin, designer, reviewer
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         *
+         *     Roles: admin, designer, reviewer
          */
         post: operations["review-icon-pack"];
         delete?: never;
@@ -1035,7 +1041,7 @@ export interface paths {
         put?: never;
         /**
          * Import catalog bundle or directory
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["import-catalog"];
         delete?: never;
@@ -1078,7 +1084,7 @@ export interface paths {
          * Publish a release
          * @description Runs the checks (422 checks_failed on errors, 409 warnings_need_ack unless ackWarnings), then writes the theme files, the catalog and the manifest. 409 publish_in_progress if another publish is running.
          *
-         *     Roles: admin, admin, reviewer
+         *     Roles: admin, reviewer
          */
         post: operations["publish-release"];
         delete?: never;
@@ -1139,7 +1145,7 @@ export interface paths {
          * Make an earlier release live again
          * @description Rewrites manifest.json from that release. Items keep their current state.
          *
-         *     Roles: admin, admin
+         *     Roles: admin
          */
         post: operations["rollback-release"];
         delete?: never;
@@ -1302,7 +1308,7 @@ export interface paths {
         post?: never;
         /**
          * Archive a theme
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-theme"];
         options?: never;
@@ -1325,7 +1331,7 @@ export interface paths {
         put?: never;
         /**
          * Archive a theme
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["archive-theme"];
         delete?: never;
@@ -1382,7 +1388,7 @@ export interface paths {
         put?: never;
         /**
          * Restore an archived theme
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["restore-theme"];
         delete?: never;
@@ -1402,7 +1408,9 @@ export interface paths {
         put?: never;
         /**
          * Transition a theme review status
-         * @description Roles: admin, designer, reviewer
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         *
+         *     Roles: admin, designer, reviewer
          */
         post: operations["review-theme"];
         delete?: never;
@@ -1440,13 +1448,13 @@ export interface paths {
         };
         /**
          * List dashboard users
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         get: operations["list-users"];
         put?: never;
         /**
          * Add a dashboard user
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["create-user"];
         delete?: never;
@@ -1470,7 +1478,7 @@ export interface paths {
         head?: never;
         /**
          * Change a user's role, name, password or access
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         patch: operations["update-user"];
         trace?: never;
@@ -1526,7 +1534,7 @@ export interface paths {
         post?: never;
         /**
          * Archive a wallpaper
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         delete: operations["delete-wallpaper"];
         options?: never;
@@ -1549,7 +1557,7 @@ export interface paths {
         put?: never;
         /**
          * Archive a wallpaper
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["archive-wallpaper"];
         delete?: never;
@@ -1606,7 +1614,7 @@ export interface paths {
         put?: never;
         /**
          * Restore an archived wallpaper
-         * @description Roles: admin, admin
+         * @description Roles: admin
          */
         post: operations["restore-wallpaper"];
         delete?: never;
@@ -1626,7 +1634,9 @@ export interface paths {
         put?: never;
         /**
          * Transition a wallpaper review status
-         * @description Roles: admin, designer, reviewer
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         *
+         *     Roles: admin, designer, reviewer
          */
         post: operations["review-wallpaper"];
         delete?: never;
@@ -2369,6 +2379,7 @@ export interface components {
             fonts: number;
             /** Format: int64 */
             iconPacks: number;
+            skippedAssets?: string[] | null;
             /** Format: int64 */
             themes: number;
             /** Format: int64 */
@@ -2383,6 +2394,7 @@ export interface components {
             fonts: number;
             /** Format: int64 */
             iconPacks: number;
+            skippedAssets?: string[] | null;
             /** Format: int64 */
             themes: number;
             /** Format: int64 */

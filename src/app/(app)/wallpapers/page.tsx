@@ -22,6 +22,8 @@ import { useAuthStore } from "@/lib/auth/store";
 import { can } from "@/lib/auth/can";
 import { Image as ImageIcon, Plus } from "lucide-react";
 import { BlurImage } from "./_components/BlurImage";
+import { NEUTRAL_PALETTE } from "./_components/WallpaperEditor";
+import { LayersCanvas } from "@/components/preview";
 import { UploadZone } from "./_components/UploadZone";
 
 function parseData(item: ItemView): Partial<Wallpaper> {
@@ -52,6 +54,8 @@ function WallpaperCard({ item }: { item: ItemView }) {
             alt={w.name?.en || item.id}
             className="h-full w-full"
           />
+        ) : w.kind === "scene" && w.scene?.engine ? (
+          <LayersCanvas scene={w.scene as never} palette={NEUTRAL_PALETTE} width={270} height={480} />
         ) : (
           <div className="flex h-full items-center justify-center bg-gradient-to-b from-[#1b1035] to-[#05020d] text-xs text-white/60">
             {w.kind === "scene" ? "Scene" : "No image"}

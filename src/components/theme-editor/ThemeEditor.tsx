@@ -1,5 +1,6 @@
 "use client";
 
+import { festivalName } from "@/lib/festival/name";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -1452,13 +1453,4 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
       />
     </div>
   );
-}
-
-function festivalName(data: unknown): string | undefined {
-  try {
-    const d = (typeof data === "string" ? JSON.parse(data) : data) as { name?: { en?: string } } | null;
-    return d?.name?.en || undefined;
-  } catch {
-    return undefined;
-  }
 }
