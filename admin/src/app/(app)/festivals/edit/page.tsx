@@ -982,7 +982,7 @@ function FestivalEditor() {
         status={item?.status || "draft"}
         isSaving={isSaving}
         onSaveDraft={() => handleSave({ silent: false })}
-        onArchive={item?.status !== "archived" ? handleArchive : undefined}
+        onArchive={item && item.status !== "archived" ? handleArchive : undefined}
         onExportJson={handleExportJson}
       />
 

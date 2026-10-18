@@ -474,11 +474,11 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
         status={item?.status || "draft"}
         isSaving={isSaving}
         onSaveDraft={() => handleSave({ silent: false })}
-        onRequestReview={() => act({ type: "review", action: "request" }, "Review requested")}
-        onApprove={() => act({ type: "review", action: "approve" }, "Approved")}
-        onReject={(note) => act({ type: "review", action: "reject", note }, "Rejected")}
-        onSchedule={(at) => act({ type: "schedule", at }, "Release scheduled")}
-        onDuplicate={() => act({ type: "duplicate" }, "Duplicated as new draft")}
+        onRequestReview={item ? () => act({ type: "review", action: "request" }, "Review requested") : undefined}
+        onApprove={item ? () => act({ type: "review", action: "approve" }, "Approved") : undefined}
+        onReject={item ? (note) => act({ type: "review", action: "reject", note }, "Rejected") : undefined}
+        onSchedule={item ? (at) => act({ type: "schedule", at }, "Release scheduled") : undefined}
+        onDuplicate={item ? () => act({ type: "duplicate" }, "Duplicated as new draft") : undefined}
         onExportJson={exportJson}
         onArchive={item && item.status !== "archived" ? () => act({ type: "archive" }, "Wallpaper archived") : undefined}
       />

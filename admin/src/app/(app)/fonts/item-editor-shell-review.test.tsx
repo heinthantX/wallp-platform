@@ -74,4 +74,28 @@ describe("ItemEditorShell review actions", () => {
     await waitFor(() => expect(post).toHaveBeenCalledWith("/admin/v1/fonts/{id}/duplicate", { params: { path: { id: "inter" } } }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/fonts/edit?id=inter-copy"));
   });
+
+  it("a new, unsaved item shows no review or duplicate actions", () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <ItemEditorShell<{ id: string }>
+          label="Font"
+          basePath="/fonts"
+          auditType="font"
+          schema={z.object({ id: z.string() })}
+          defaults={{ id: "" }}
+          isNew
+          useItem={() => ({ data: null, isLoading: false, isError: false, error: null, refetch: vi.fn() })}
+          save={vi.fn()}
+          action={vi.fn()}
+          titleOf={(v) => v.id}
+        >
+          {() => null}
+        </ItemEditorShell>
+      </QueryClientProvider>
+    );
+    expect(screen.queryByRole("button", { name: /request review/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /duplicate/i })).toBeNull();
+  });
 });

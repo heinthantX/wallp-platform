@@ -1437,13 +1437,13 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
         status={item?.status || "draft"}
         isSaving={isSaving}
         onSaveDraft={() => handleSave({ silent: false })}
-        onRequestReview={() => handleReviewAction("request")}
-        onApprove={() => handleReviewAction("approve")}
-        onReject={(note) => handleReviewAction("reject", note)}
-        onSchedule={(at) => handleScheduleAction(at)}
-        onDuplicate={handleDuplicateAction}
+        onRequestReview={item ? () => handleReviewAction("request") : undefined}
+        onApprove={item ? () => handleReviewAction("approve") : undefined}
+        onReject={item ? (note) => handleReviewAction("reject", note) : undefined}
+        onSchedule={item ? (at) => handleScheduleAction(at) : undefined}
+        onDuplicate={item ? handleDuplicateAction : undefined}
         onExportJson={handleExportJson}
-        onArchive={item?.status !== "archived" ? handleArchiveAction : undefined}
+        onArchive={item && item.status !== "archived" ? handleArchiveAction : undefined}
       />
 
       {/* Conflict Dialog */}

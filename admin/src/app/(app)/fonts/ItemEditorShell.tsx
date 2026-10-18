@@ -228,10 +228,10 @@ function Shell<T extends FieldValues & { id: string }>({
         status={item?.status || "draft"}
         isSaving={isSaving}
         onSaveDraft={saveDraft}
-        onRequestReview={() => review("request", "Review requested")}
-        onApprove={() => review("approve", "Approved")}
-        onReject={(note) => review("reject", "Rejected", note)}
-        onDuplicate={duplicate}
+        onRequestReview={item ? () => review("request", "Review requested") : undefined}
+        onApprove={item ? () => review("approve", "Approved") : undefined}
+        onReject={item ? (note) => review("reject", "Rejected", note) : undefined}
+        onDuplicate={item ? duplicate : undefined}
         onArchive={item && item.status !== "archived" ? () => run("archive") : undefined}
       />
       <ConflictDialog open={conflictOpen} onOpenChange={setConflictOpen} onReload={handleReload} onOverwrite={handleOverwrite} />
