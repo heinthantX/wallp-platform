@@ -1044,6 +1044,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/releases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Release history */
+        get: operations["list-releases"];
+        put?: never;
+        /**
+         * Publish a release
+         * @description Runs the checks (422 checks_failed on errors, 409 warnings_need_ack unless ackWarnings), then writes the theme files, the catalog and the manifest. 409 publish_in_progress if another publish is running.
+         *
+         *     Roles: admin, admin, reviewer
+         */
+        post: operations["publish-release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/releases/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run every pre-publish check
+         * @description Checks the release candidate set (published items plus approved items whose schedule is due). Errors block publishing; warnings need an acknowledgement.
+         *
+         *     Roles: admin, reviewer
+         */
+        post: operations["check-release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/releases/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One release with its manifest */
+        get: operations["get-release"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/releases/{version}/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make an earlier release live again
+         * @description Rewrites manifest.json from that release. Items keep their current state.
+         *
+         *     Roles: admin, admin
+         */
+        post: operations["rollback-release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/themes": {
         parameters: {
             query?: never;
@@ -2225,6 +2309,14 @@ export interface components {
             particles?: string[] | null;
             tags?: string[] | null;
         };
+        Issue: {
+            code: string;
+            field?: string;
+            itemId?: string;
+            itemType?: string;
+            level: string;
+            message: string;
+        };
         ItemView: {
             /**
              * Format: uri
@@ -2405,6 +2497,21 @@ export interface components {
             /** Format: int64 */
             total: number;
         };
+        PageReleaseView: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/PageReleaseView.json
+             */
+            readonly $schema?: string;
+            items: components["schemas"]["ReleaseView"][] | null;
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            perPage: number;
+            /** Format: int64 */
+            total: number;
+        };
         Palette: {
             background: string;
             deep: string;
@@ -2453,6 +2560,17 @@ export interface components {
             /** Format: int64 */
             seed: number;
         };
+        PublishInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/PublishInputBody.json
+             */
+            readonly $schema?: string;
+            /** @description Set after reviewing the check warnings */
+            ackWarnings?: boolean;
+            notes?: string;
+        };
         RecipeView: {
             /**
              * Format: uri
@@ -2481,6 +2599,25 @@ export interface components {
             readonly $schema?: string;
             refreshToken: string;
         };
+        ReleaseView: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/ReleaseView.json
+             */
+            readonly $schema?: string;
+            catalogSha256: string;
+            createdBy: string;
+            current: boolean;
+            manifest: unknown;
+            notes: string;
+            /** Format: date-time */
+            publishedAt: string;
+            status: string;
+            /** @description What changed, e.g. {"text":"+2 themes, 1 banner edited"} */
+            summary: unknown;
+            version: string;
+        };
         ReorderBannersInputBody: {
             /**
              * Format: uri
@@ -2498,6 +2635,17 @@ export interface components {
              */
             readonly $schema?: string;
             ids: string[] | null;
+        };
+        Report: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/Report.json
+             */
+            readonly $schema?: string;
+            errors: components["schemas"]["Issue"][] | null;
+            infos: components["schemas"]["Issue"][] | null;
+            warnings: components["schemas"]["Issue"][] | null;
         };
         ReviewInputBody: {
             /**
@@ -5031,6 +5179,166 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "list-releases": {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Field name, '-' prefix for descending, e.g. -updatedAt */
+                sort?: string;
+                /** @description Search text */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageReleaseView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "publish-release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishInputBody"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReleaseView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "check-release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Report"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "get-release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReleaseView"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "rollback-release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReleaseView"];
                 };
             };
             /** @description Error */
