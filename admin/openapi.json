@@ -1172,6 +1172,15 @@
               "null"
             ]
           },
+          "statuses": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "object"
+          },
           "themes": {
             "items": {},
             "type": [

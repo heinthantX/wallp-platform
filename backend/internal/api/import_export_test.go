@@ -331,4 +331,39 @@ func TestImportExport(t *testing.T) {
 			t.Fatalf("imported themes = %v, want %d", got, len(bundle.Themes))
 		}
 	})
+
+	// 10. B15: export is a backup — a draft stays a draft after export → import.
+	t.Run("ExportKeepsDraftStatus", func(t *testing.T) {
+		status, body := s.do(t, "POST", "/admin/v1/banners", toks.admin, map[string]any{
+			"id": "draft-banner", "title": map[string]any{"en": "Draft"}, "subtitle": map[string]any{"en": "x"},
+			"tag": map[string]any{"en": "x"}, "cta": map[string]any{"en": "x"},
+			"action": map[string]any{"type": "store"},
+			"look":   map[string]any{"background": "#000000", "accent": "#FFFFFF", "titleColor": "#FFFFFF", "font": "creepster"},
+		})
+		if status != http.StatusCreated && status != http.StatusOK {
+			t.Fatalf("create draft banner: %d %v", status, body)
+		}
+		status, exportResp := s.doRaw(t, "GET", "/admin/v1/export", toks.admin, nil, nil)
+		if status != http.StatusOK {
+			t.Fatalf("export: %d", status)
+		}
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+		part, _ := mw.CreateFormFile("catalog", "catalog.json")
+		_, _ = part.Write(exportResp)
+		_ = mw.Close()
+		status, body = s.doWithHeaders(t, "POST", "/admin/v1/import", toks.admin, buf.Bytes(), map[string]string{
+			"Content-Type": mw.FormDataContentType(),
+		})
+		if status != http.StatusOK {
+			t.Fatalf("import: %d %v", status, body)
+		}
+		status, item := s.do(t, "GET", "/admin/v1/banners/draft-banner", toks.admin, nil)
+		if status != http.StatusOK || item["status"] != "draft" {
+			t.Fatalf("draft-banner after round trip: %d status=%v", status, item["status"])
+		}
+		if item["firstPublishedAt"] != nil {
+			t.Fatalf("draft-banner got firstPublishedAt %v", item["firstPublishedAt"])
+		}
+	})
 }

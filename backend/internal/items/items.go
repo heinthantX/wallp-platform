@@ -984,6 +984,12 @@ func (s *Store) Duplicate(ctx context.Context, id string, creatorName string) (*
 }
 
 func (s *Store) ImportItem(ctx context.Context, tx bun.Tx, data []byte, rev int, firstPublished *time.Time, actor string) (*ItemView, error) {
+	return s.ImportItemAs(ctx, tx, data, rev, firstPublished, actor, model.StatusPublished)
+}
+
+// ImportItemAs imports an item with the given status. A non-published status (from an
+// export bundle) keeps whatever was published before and never publishes the new data.
+func (s *Store) ImportItemAs(ctx context.Context, tx bun.Tx, data []byte, rev int, firstPublished *time.Time, actor string, status string) (*ItemView, error) {
 	if !json.Valid(data) {
 		return nil, apierr.Invalid("data", "Invalid JSON")
 	}
@@ -1055,6 +1061,14 @@ func (s *Store) ImportItem(ctx context.Context, tx bun.Tx, data []byte, rev int,
 		CreatedAt:      createdAt,
 		UpdatedAt:      now,
 		GeneratedFrom:  genFrom,
+	}
+	if status == model.StatusDraft || status == model.StatusInReview || status == model.StatusApproved {
+		row.Status = status
+		if existing != nil {
+			row.PublishedData, row.PublishedHash, row.FirstPublished, row.Rev = existing.PublishedData, existing.PublishedHash, existing.FirstPublished, existing.Rev
+		} else {
+			row.PublishedData, row.PublishedHash, row.FirstPublished = nil, "", nil
+		}
 	}
 
 	var outView ItemView

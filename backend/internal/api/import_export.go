@@ -62,6 +62,8 @@ type ExportBundle struct {
 	Banners           []json.RawMessage      `json:"banners"`
 	AccentPresets     *catalog.AccentPresets `json:"accentPresets"`
 	SearchSuggestions []string               `json:"searchSuggestions"`
+	// Statuses lists items that are not published, by collection then id, so a re-import keeps them unpublished.
+	Statuses map[string]map[string]string `json:"statuses,omitempty"`
 }
 
 type FileEntry struct {
@@ -325,6 +327,22 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 		}
 	}
 
+	var statuses map[string]map[string]string
+	if rs, ok := rawCatalog["statuses"]; ok {
+		_ = json.Unmarshal(rs, &statuses)
+	}
+	// statusOf is the item's status from an export bundle; app catalogs have none, so everything publishes.
+	statusOf := func(coll string, raw []byte) string {
+		var v struct {
+			ID string `json:"id"`
+		}
+		_ = json.Unmarshal(raw, &v)
+		if st := statuses[coll][v.ID]; st != "" {
+			return st
+		}
+		return model.StatusPublished
+	}
+
 	var rawWallpapers []json.RawMessage
 	if rw, ok := rawCatalog["wallpapers"]; ok {
 		_ = json.Unmarshal(rw, &rawWallpapers)
@@ -381,7 +399,7 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 
 		// 3. Festivals
 		for _, fb := range rawFestivals {
-			if _, err := festStore.ImportItem(ctx, tx, fb, 1, &defaultPublishedAt, actor); err != nil {
+			if _, err := festStore.ImportItemAs(ctx, tx, fb, 1, &defaultPublishedAt, actor, statusOf("festivals", fb)); err != nil {
 				return fmt.Errorf("import festival: %w", err)
 			}
 		}
@@ -403,7 +421,7 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 			if tPub == nil {
 				tPub = &defaultPublishedAt
 			}
-			if _, err := themeStore.ImportItem(ctx, tx, tf.Bytes, t.Rev, tPub, actor); err != nil {
+			if _, err := themeStore.ImportItemAs(ctx, tx, tf.Bytes, t.Rev, tPub, actor, statusOf("themes", tf.Bytes)); err != nil {
 				return fmt.Errorf("import theme %s: %w", tf.Name, err)
 			}
 		}
@@ -423,14 +441,14 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 			if wPub == nil {
 				wPub = &defaultPublishedAt
 			}
-			if _, err := wpStore.ImportItem(ctx, tx, wb, 1, wPub, actor); err != nil {
+			if _, err := wpStore.ImportItemAs(ctx, tx, wb, 1, wPub, actor, statusOf("wallpapers", wb)); err != nil {
 				return fmt.Errorf("import wallpaper: %w", err)
 			}
 		}
 
 		// 6. Fonts
 		for _, fnb := range rawFonts {
-			if _, err := fontStore.ImportItem(ctx, tx, fnb, 1, &defaultPublishedAt, actor); err != nil {
+			if _, err := fontStore.ImportItemAs(ctx, tx, fnb, 1, &defaultPublishedAt, actor, statusOf("fonts", fnb)); err != nil {
 				return fmt.Errorf("import font: %w", err)
 			}
 		}
@@ -450,14 +468,14 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 			if pPub == nil {
 				pPub = &defaultPublishedAt
 			}
-			if _, err := ipStore.ImportItem(ctx, tx, ipb, 1, pPub, actor); err != nil {
+			if _, err := ipStore.ImportItemAs(ctx, tx, ipb, 1, pPub, actor, statusOf("iconPacks", ipb)); err != nil {
 				return fmt.Errorf("import icon pack: %w", err)
 			}
 		}
 
 		// 8. Banners
 		for _, bnb := range rawBanners {
-			if _, err := bannerStore.ImportItem(ctx, tx, bnb, 1, &defaultPublishedAt, actor); err != nil {
+			if _, err := bannerStore.ImportItemAs(ctx, tx, bnb, 1, &defaultPublishedAt, actor, statusOf("banners", bnb)); err != nil {
 				return fmt.Errorf("import banner: %w", err)
 			}
 		}
@@ -483,6 +501,21 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 	}, nil
 }
 
+func (b *ExportBundle) noteStatuses(coll string, rows []items.ItemRow) {
+	for _, r := range rows {
+		if r.Status == model.StatusPublished {
+			continue
+		}
+		if b.Statuses == nil {
+			b.Statuses = map[string]map[string]string{}
+		}
+		if b.Statuses[coll] == nil {
+			b.Statuses[coll] = map[string]string{}
+		}
+		b.Statuses[coll][r.ID] = r.Status
+	}
+}
+
 func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	bundle := &ExportBundle{
 		Festivals:  []json.RawMessage{},
@@ -498,10 +531,11 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	if err := d.DB.NewSelect().Table("festivals").
 		Where("status != ?", model.StatusArchived).
 		Order("sort ASC", "id ASC").
-		Column("data").
+		Column("id", "status", "data").
 		Scan(ctx, &festRows); err != nil {
 		return nil, err
 	}
+	bundle.noteStatuses("festivals", festRows)
 	for _, r := range festRows {
 		bundle.Festivals = append(bundle.Festivals, json.RawMessage(r.Data))
 	}
@@ -511,10 +545,11 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	if err := d.DB.NewSelect().Table("themes").
 		Where("status != ?", model.StatusArchived).
 		Order("id ASC").
-		Column("data").
+		Column("id", "status", "data").
 		Scan(ctx, &themeRows); err != nil {
 		return nil, err
 	}
+	bundle.noteStatuses("themes", themeRows)
 	for _, r := range themeRows {
 		bundle.Themes = append(bundle.Themes, json.RawMessage(r.Data))
 	}
@@ -524,10 +559,11 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	if err := d.DB.NewSelect().Table("wallpapers").
 		Where("status != ?", model.StatusArchived).
 		Order("id ASC").
-		Column("data").
+		Column("id", "status", "data").
 		Scan(ctx, &wpRows); err != nil {
 		return nil, err
 	}
+	bundle.noteStatuses("wallpapers", wpRows)
 	for _, r := range wpRows {
 		bundle.Wallpapers = append(bundle.Wallpapers, json.RawMessage(r.Data))
 	}
@@ -537,10 +573,11 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	if err := d.DB.NewSelect().Table("fonts").
 		Where("status != ?", model.StatusArchived).
 		Order("id ASC").
-		Column("data").
+		Column("id", "status", "data").
 		Scan(ctx, &fontRows); err != nil {
 		return nil, err
 	}
+	bundle.noteStatuses("fonts", fontRows)
 	for _, r := range fontRows {
 		bundle.Fonts = append(bundle.Fonts, json.RawMessage(r.Data))
 	}
@@ -550,10 +587,11 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	if err := d.DB.NewSelect().Table("icon_packs").
 		Where("status != ?", model.StatusArchived).
 		Order("id ASC").
-		Column("data").
+		Column("id", "status", "data").
 		Scan(ctx, &ipRows); err != nil {
 		return nil, err
 	}
+	bundle.noteStatuses("iconPacks", ipRows)
 	for _, r := range ipRows {
 		bundle.IconPacks = append(bundle.IconPacks, json.RawMessage(r.Data))
 	}
@@ -563,10 +601,11 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	if err := d.DB.NewSelect().Table("banners").
 		Where("status != ?", model.StatusArchived).
 		Order("sort ASC", "id ASC").
-		Column("data").
+		Column("id", "status", "data").
 		Scan(ctx, &bannerRows); err != nil {
 		return nil, err
 	}
+	bundle.noteStatuses("banners", bannerRows)
 	for _, r := range bannerRows {
 		bundle.Banners = append(bundle.Banners, json.RawMessage(r.Data))
 	}

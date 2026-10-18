@@ -2272,6 +2272,11 @@ export interface components {
             fonts: unknown[] | null;
             iconPacks: unknown[] | null;
             searchSuggestions: string[] | null;
+            statuses?: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            };
             themes: unknown[] | null;
             wallpapers: unknown[] | null;
         };
