@@ -17,6 +17,7 @@ import {
   Users,
   Cpu,
   FileText,
+  HardDrive,
   User,
   LogOut,
   Sun,
@@ -127,6 +128,12 @@ export function CommandPalette() {
             <CommandItem onSelect={() => runCommand(() => router.push("/settings/import"))}>
               <UploadCloud className="mr-2 h-4 w-4" />
               <span>Import / Export</span>
+            </CommandItem>
+          )}
+          {can(user, "assets:manage") && (
+            <CommandItem onSelect={() => runCommand(() => router.push("/settings/assets"))}>
+              <HardDrive className="mr-2 h-4 w-4" />
+              <span>Asset library</span>
             </CommandItem>
           )}
           <CommandItem onSelect={() => runCommand(() => router.push("/settings/engines"))}>

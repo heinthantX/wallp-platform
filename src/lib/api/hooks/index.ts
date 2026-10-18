@@ -16,3 +16,8 @@ export * from "./useInterpret";
 export * from "./useFromImage";
 export * from "./useBreed";
 export * from "./useFeedback";
+export * from "./useWallpapers";
+export * from "./useAssets";
+export * from "./useFonts";
+export * from "./useIconPacks";
+export * from "./useBanners";

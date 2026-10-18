@@ -62,3 +62,8 @@ export type BreedThemeOutputBody = components["schemas"]["BreedThemeOutputBody"]
 export type CreateFeedbackInputBody = components["schemas"]["CreateFeedbackInputBody"];
 export type ThemeDetailApi = components["schemas"]["ThemeDetail"];
 export type Palette = components["schemas"]["Palette"];
+
+export type ListWallpapersQuery = NonNullable<paths["/admin/v1/wallpapers"]["get"]["parameters"]["query"]>;
+export type AssetItem = components["schemas"]["AssetItem"];
+export type PageAssetItem = components["schemas"]["PageAssetItem"];
+export type UploadAssetResult = components["schemas"]["UploadAssetResult"];

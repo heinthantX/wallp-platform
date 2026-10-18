@@ -25,7 +25,8 @@ export type Permission =
   | "items:export"
   | "catalog:import"
   | "recipes:delete"
-  | "recipes:edit";
+  | "recipes:edit"
+  | "assets:manage";
 
 /**
  * Role-based permission check mapping to dashboard doc §3 and phase02 §B3:
@@ -53,6 +54,7 @@ export function can(
     case "items:restore":
     case "catalog:import":
     case "recipes:delete":
+    case "assets:manage":
       return false; // Admin only
 
     case "audit:read":
