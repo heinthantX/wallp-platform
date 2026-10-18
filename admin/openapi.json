@@ -4960,7 +4960,7 @@
     },
     "/admin/v1/banners/{id}/review": {
       "post": {
-        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).\n\nRoles: admin, designer, reviewer",
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
         "operationId": "review-banner",
         "parameters": [
           {
@@ -6155,7 +6155,7 @@
     },
     "/admin/v1/fonts/{id}/review": {
       "post": {
-        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).\n\nRoles: admin, designer, reviewer",
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
         "operationId": "review-font",
         "parameters": [
           {
@@ -7201,7 +7201,7 @@
     },
     "/admin/v1/icon-packs/{id}/review": {
       "post": {
-        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).\n\nRoles: admin, designer, reviewer",
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
         "operationId": "review-icon-pack",
         "parameters": [
           {
@@ -8547,7 +8547,7 @@
     },
     "/admin/v1/themes/{id}/review": {
       "post": {
-        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).\n\nRoles: admin, designer, reviewer",
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
         "operationId": "review-theme",
         "parameters": [
           {
@@ -9449,7 +9449,7 @@
     },
     "/admin/v1/wallpapers/{id}/review": {
       "post": {
-        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).\n\nRoles: admin, designer, reviewer",
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
         "operationId": "review-wallpaper",
         "parameters": [
           {

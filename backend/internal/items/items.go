@@ -1338,7 +1338,8 @@ func (s *Store) Transition(ctx context.Context, id, action string, note *string,
 			if callerRole != model.RoleReviewer && callerRole != model.RoleAdmin {
 				return apierr.Forbidden("Your role (" + callerRole + ") can't do this. Needed: admin or reviewer")
 			}
-			if existing.Status != model.StatusInReview {
+			canApprove := existing.Status == model.StatusInReview || (existing.Status == model.StatusDraft && callerRole == model.RoleAdmin)
+			if !canApprove {
 				return apierr.Conflict("invalid_state", "Item must be in review to approve")
 			}
 			valErrors := s.kind.Validate(existing.Data)

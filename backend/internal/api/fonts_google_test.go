@@ -575,3 +575,41 @@ func TestGoogleFontsNotFound(t *testing.T) {
 // Ensure the test function names are non-trivial and do not collide.
 var _ = fmt.Sprintf // keep fmt imported
 var _ = strings.NewReader
+
+// TestGoogleFontsImportRealManifest mirrors fonts.google.com/download/list as served in 2026: an anti-XSSI
+// `)]}'` prefix, licence text inline in manifest.files and font URLs in manifest.fileRefs (loop-2 P1 B7).
+func TestGoogleFontsImportRealManifest(t *testing.T) {
+	families := []map[string]any{{
+		"family": "Lobster", "category": "DISPLAY", "subsets": []string{"latin"},
+		"variants": []string{"regular", "700"}, "license": "OFL-1.1",
+	}}
+	meta := makeGoogleFontsServer(t, families, nil)
+	served := map[string]int{}
+	mux := http.NewServeMux()
+	var base string
+	mux.HandleFunc("/download/list", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(")]}'\n" + `{"zipName":"Lobster.zip","manifest":{"files":[{"filename":"OFL.txt","contents":"Copyright"}],` +
+			`"fileRefs":[{"filename":"Lobster-Regular.ttf","url":"` + base + `/s/regular.ttf"},{"filename":"Lobster-Bold.ttf","url":"` + base + `/s/bold.ttf"}]}}`))
+	})
+	mux.HandleFunc("/s/", func(w http.ResponseWriter, r *http.Request) {
+		served[r.URL.Path]++
+		_, _ = w.Write(minimalTTFBytes)
+	})
+	dl := httptest.NewServer(mux)
+	t.Cleanup(dl.Close)
+	base = dl.URL
+
+	// Metadata and downloads come from different test hosts in this test; only the download host is allowlisted.
+	s := newServerWithGoogleFonts(t, meta.URL+"/metadata/fonts", dl.URL+"/download/list")
+	_ = s
+	toks := setupRoleUsers(t, s)
+	status, body := s.do(t, "POST", "/admin/v1/fonts/google/import", toks.admin, map[string]any{
+		"family": "Lobster", "variants": []string{"regular", "700"},
+	})
+	if status != http.StatusCreated {
+		t.Fatalf("import Lobster: status=%d body=%v", status, body)
+	}
+	if served["/s/regular.ttf"] != 1 || served["/s/bold.ttf"] != 1 {
+		t.Fatalf("expected one download per variant from fileRefs, got %v", served)
+	}
+}

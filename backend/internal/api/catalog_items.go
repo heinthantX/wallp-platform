@@ -507,7 +507,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		Method:      http.MethodPost,
 		Path:        tp + "/{id}/review",
 		Summary:     "Transition a theme review status",
-		Description: "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).",
+		Description: "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.",
 		Tags:        themeTags,
 	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *ReviewInput) (*ItemOutput, error) {
 		me := auth.From(ctx)
@@ -1094,7 +1094,7 @@ func registerItemStandardRoutes(h huma.API, store *items.Store, singular, path s
 		Method:      http.MethodPost,
 		Path:        path + "/{id}/review",
 		Summary:     "Transition a " + singular + " review status",
-		Description: "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).",
+		Description: "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.",
 		Tags:        tags,
 	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *ReviewInput) (*ItemOutput, error) {
 		me := auth.From(ctx)

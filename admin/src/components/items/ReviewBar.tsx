@@ -70,6 +70,9 @@ export function ReviewBar({
   const [scheduleTime, setScheduleTime] = React.useState("");
 
   const normalizedStatus = (status || "draft").toLowerCase();
+  const isDraft = normalizedStatus === "draft" || !normalizedStatus;
+  // Admins skip the review request: they approve a draft directly (the API allows it).
+  const adminApprovesDraft = currentUser?.role === "admin" && isDraft && Boolean(onApprove);
 
   const handleConfirmReject = () => {
     onReject?.(rejectNote);
@@ -105,7 +108,7 @@ export function ReviewBar({
         {/* Right: Actions based on role and status */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Save Draft */}
-          {can(currentUser, "items:save_draft") && normalizedStatus !== "archived" && (
+          {onSaveDraft && can(currentUser, "items:save_draft") && normalizedStatus !== "archived" && (
             <Button
               type="button"
               variant="outline"
@@ -120,8 +123,7 @@ export function ReviewBar({
           )}
 
           {/* Request Review (draft -> in_review) */}
-          {can(currentUser, "items:request_review") &&
-            (normalizedStatus === "draft" || !normalizedStatus) && (
+          {onRequestReview && !adminApprovesDraft && can(currentUser, "items:request_review") && isDraft && (
               <Button
                 type="button"
                 variant="secondary"
@@ -135,10 +137,23 @@ export function ReviewBar({
               </Button>
             )}
 
+          {adminApprovesDraft && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={onApprove}
+              disabled={disabled || isSaving}
+              className="text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+              Approve
+            </Button>
+          )}
+
           {/* Reviewer Actions (in_review -> approve / reject) */}
           {normalizedStatus === "in_review" && (
             <>
-              {can(currentUser, "items:reject") && (
+              {onReject && can(currentUser, "items:reject") && (
                 <Button
                   type="button"
                   variant="outline"
@@ -151,7 +166,7 @@ export function ReviewBar({
                   Reject
                 </Button>
               )}
-              {can(currentUser, "items:approve") && (
+              {onApprove && can(currentUser, "items:approve") && (
                 <Button
                   type="button"
                   size="sm"
@@ -167,7 +182,7 @@ export function ReviewBar({
           )}
 
           {/* Schedule (approved -> scheduled) */}
-          {normalizedStatus === "approved" && can(currentUser, "items:schedule") && (
+          {onSchedule && normalizedStatus === "approved" && can(currentUser, "items:schedule") && (
             <Button
               type="button"
               variant="secondary"
@@ -182,7 +197,7 @@ export function ReviewBar({
           )}
 
           {/* Duplicate */}
-          {can(currentUser, "items:duplicate") && (
+          {onDuplicate && can(currentUser, "items:duplicate") && (
             <Button
               type="button"
               variant="ghost"
@@ -197,7 +212,7 @@ export function ReviewBar({
           )}
 
           {/* Export JSON */}
-          {can(currentUser, "items:export") && (
+          {onExportJson && can(currentUser, "items:export") && (
             <Button
               type="button"
               variant="ghost"
@@ -212,7 +227,7 @@ export function ReviewBar({
           )}
 
           {/* Archive */}
-          {can(currentUser, "items:archive") && normalizedStatus !== "archived" && (
+          {onArchive && can(currentUser, "items:archive") && normalizedStatus !== "archived" && (
             <Button
               type="button"
               variant="ghost"

@@ -426,7 +426,7 @@ export interface paths {
         put?: never;
         /**
          * Transition a banner review status
-         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.
          *
          *     Roles: admin, designer, reviewer
          */
@@ -748,7 +748,7 @@ export interface paths {
         put?: never;
         /**
          * Transition a font review status
-         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.
          *
          *     Roles: admin, designer, reviewer
          */
@@ -999,7 +999,7 @@ export interface paths {
         put?: never;
         /**
          * Transition a icon-pack review status
-         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.
          *
          *     Roles: admin, designer, reviewer
          */
@@ -1408,7 +1408,7 @@ export interface paths {
         put?: never;
         /**
          * Transition a theme review status
-         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.
          *
          *     Roles: admin, designer, reviewer
          */
@@ -1634,7 +1634,7 @@ export interface paths {
         put?: never;
         /**
          * Transition a wallpaper review status
-         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise).
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.
          *
          *     Roles: admin, designer, reviewer
          */

@@ -391,14 +391,18 @@ func downloadFontFile(ctx context.Context, downloadBaseURL, family, variant stri
 		return data, ext, nil
 	}
 
-	// Manifest JSON format
+	// Manifest JSON format. fonts.google.com prefixes it with an anti-XSSI `)]}'` line, keeps licence
+	// text inline in manifest.files and puts the font URLs in manifest.fileRefs.
+	data = bytes.TrimPrefix(bytes.TrimLeft(data, " \r\n"), []byte(")]}'"))
+	type manifestFile struct {
+		Filename string `json:"filename"`
+		URL      string `json:"url"`
+		Variant  string `json:"variant"`
+	}
 	var manifestObj struct {
 		Manifest struct {
-			Files []struct {
-				Filename string `json:"filename"`
-				URL      string `json:"url"`
-				Variant  string `json:"variant"`
-			} `json:"files"`
+			Files    []manifestFile `json:"files"`
+			FileRefs []manifestFile `json:"fileRefs"`
 		} `json:"manifest"`
 		Files []struct {
 			Filename string `json:"filename"`
@@ -407,12 +411,19 @@ func downloadFontFile(ctx context.Context, downloadBaseURL, family, variant stri
 		} `json:"files"`
 	}
 	if err := json.Unmarshal(data, &manifestObj); err == nil {
-		files := manifestObj.Manifest.Files
-		if len(files) == 0 {
-			files = manifestObj.Files
+		var files []manifestFile
+		for _, list := range [][]manifestFile{manifestObj.Manifest.FileRefs, manifestObj.Manifest.Files} {
+			for _, f := range list {
+				if f.URL != "" && (strings.HasSuffix(f.Filename, ".ttf") || strings.HasSuffix(f.Filename, ".otf")) {
+					files = append(files, f)
+				}
+			}
+		}
+		for _, f := range manifestObj.Files {
+			files = append(files, manifestFile(f))
 		}
 		for _, f := range files {
-			if strings.EqualFold(f.Variant, variant) || len(files) == 1 {
+			if strings.EqualFold(f.Variant, variant) || fontFileMatchesVariant(f.Filename, variant) || len(files) == 1 {
 				targetURL := f.URL
 				if !strings.HasPrefix(targetURL, "http://") && !strings.HasPrefix(targetURL, "https://") {
 					targetURL = downloadBaseURL + "/" + targetURL
@@ -649,4 +660,22 @@ func ResetGoogleFontsCache() {
 	gCache.items = nil
 	gCache.fetchedAt = time.Time{}
 	gCache.mu.Unlock()
+}
+
+// fontFileMatchesVariant maps a Google variant ("regular", "italic", "700", "700italic") to the style
+// suffix in a static font file name, e.g. Lobster-Regular.ttf, Inter-BoldItalic.ttf.
+func fontFileMatchesVariant(filename, variant string) bool {
+	names := map[int]string{100: "Thin", 200: "ExtraLight", 300: "Light", 400: "Regular", 500: "Medium",
+		600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black"}
+	v := strings.ToLower(variant)
+	italic := strings.HasSuffix(v, "italic")
+	style := names[parseFontWeight(v)]
+	if italic {
+		if style == "Regular" {
+			style = ""
+		}
+		style += "Italic"
+	}
+	base := strings.TrimSuffix(strings.TrimSuffix(filename, ".ttf"), ".otf")
+	return strings.HasSuffix(base, "-"+style)
 }
