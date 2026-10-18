@@ -309,6 +309,22 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 	if rf, ok := rawCatalog["festivals"]; ok {
 		_ = json.Unmarshal(rf, &rawFestivals)
 	}
+	// An export bundle carries full themes inline (they have "accents"); an app catalog
+	// carries summaries and ships full themes as separate files.
+	if len(themeFiles) == 0 {
+		var rawThemes []map[string]json.RawMessage
+		if rt, ok := rawCatalog["themes"]; ok {
+			_ = json.Unmarshal(rt, &rawThemes)
+		}
+		for _, t := range rawThemes {
+			if _, full := t["accents"]; !full {
+				continue
+			}
+			b, _ := json.Marshal(t)
+			themeFiles = append(themeFiles, FileEntry{Name: "theme " + string(t["id"]), Bytes: b})
+		}
+	}
+
 	var rawWallpapers []json.RawMessage
 	if rw, ok := rawCatalog["wallpapers"]; ok {
 		_ = json.Unmarshal(rw, &rawWallpapers)

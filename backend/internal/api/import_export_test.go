@@ -299,4 +299,36 @@ func TestImportExport(t *testing.T) {
 			t.Fatalf("expected 200 on multipart import, got %d; body: %v", status, body)
 		}
 	})
+
+	// 9. The export bundle imports back on its own, themes included.
+	t.Run("ExportBundleRoundTrip", func(t *testing.T) {
+		status, exportResp := s.doRaw(t, "GET", "/admin/v1/export", toks.admin, nil, nil)
+		if status != http.StatusOK {
+			t.Fatalf("GET /admin/v1/export returned status %d", status)
+		}
+		var bundle struct {
+			Themes []json.RawMessage `json:"themes"`
+		}
+		if err := json.Unmarshal(exportResp, &bundle); err != nil {
+			t.Fatalf("unmarshal export bundle: %v", err)
+		}
+		if len(bundle.Themes) == 0 {
+			t.Fatal("export bundle has no themes")
+		}
+
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+		part, _ := mw.CreateFormFile("catalog", "catalog.json")
+		_, _ = part.Write(exportResp)
+		_ = mw.Close()
+		status, body := s.doWithHeaders(t, "POST", "/admin/v1/import", toks.admin, buf.Bytes(), map[string]string{
+			"Content-Type": mw.FormDataContentType(),
+		})
+		if status != http.StatusOK {
+			t.Fatalf("expected 200 importing the export bundle, got %d; body: %v", status, body)
+		}
+		if got := body["themes"]; got != float64(len(bundle.Themes)) {
+			t.Fatalf("imported themes = %v, want %d", got, len(bundle.Themes))
+		}
+	})
 }
