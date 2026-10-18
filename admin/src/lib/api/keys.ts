@@ -24,6 +24,7 @@ export const queryKeys = {
   statsThemes: (params?: Record<string, unknown>) => ["stats", "themes", params ?? {}] as const,
   statsDaily: (params?: Record<string, unknown>) => ["stats", "daily", params ?? {}] as const,
   engines: ["engines"] as const,
+  aiStatus: ["ai-status"] as const,
   recipes: (params?: Record<string, unknown>) => ["recipes", params ?? {}] as const,
   allRecipes: ["recipes"] as const,
   recipe: (id: string) => ["recipes", "detail", id] as const,

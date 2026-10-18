@@ -31,6 +31,7 @@ export type ItemView = components["schemas"]["ItemView"];
 export type PageItemView = components["schemas"]["PageItemView"];
 export type Engine = components["schemas"]["Engine"];
 export type EnginesOutputBody = components["schemas"]["EnginesOutputBody"];
+export type AIStatus = components["schemas"]["AIStatus"];
 export type FieldError = components["schemas"]["FieldError"];
 export type ReorderFestivalsInputBody = components["schemas"]["ReorderFestivalsInputBody"];
 export type ReviewInputBody = components["schemas"]["ReviewInputBody"];

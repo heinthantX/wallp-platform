@@ -59,6 +59,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { PromptKitButton } from "@/components/ai/PromptKitButton";
+import { buildPromptKit } from "@/lib/prompt-kit";
+import { COMMON_APPS } from "@/app/(app)/icon-packs/common-apps";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/states";
@@ -898,6 +901,15 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                         />
                       )}
                     />
+
+                    <PromptKitButton kit={() => buildPromptKit({
+                      packName: themeNameEn ?? "",
+                      style: typeof watch("style") === "string" ? watch("style") : "",
+                      tile: watch("palette")?.background,
+                      glyph: watch("palette")?.text,
+                      accent: watch("accents")?.[0]?.colors?.[0],
+                      apps: COMMON_APPS,
+                    })} />
                   </CardContent>
                 </Card>
 

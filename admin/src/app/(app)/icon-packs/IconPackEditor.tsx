@@ -11,6 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ItemEditorShell } from "../fonts/ItemEditorShell";
 import { IconPackPreview } from "./IconPackPreview";
 import { PerAppIcons } from "./PerAppIcons";
+import { COMMON_APPS } from "./common-apps";
+import { PromptKitButton } from "@/components/ai/PromptKitButton";
+import { AiButtons } from "@/components/ai/AiButtons";
+import { buildPromptKit } from "@/lib/prompt-kit";
 import { iconPackSchema, defaultIconPack, type IconPackForm } from "./schema";
 
 export function IconPackEditor({ isNew }: { isNew?: boolean }) {
@@ -44,6 +48,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
             toast.error(e instanceof Error ? e.message : "Upload failed");
           }
         };
+        const info = { packName: watch("name")?.en ?? "", style: Object.values(watch("style") ?? {})[0] || "", glyph: watch("glyph") };
         return (
           <>
             <Card>
@@ -94,8 +99,14 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                   <CardTitle className="text-base">Per-app icons</CardTitle>
                   <CardDescription>Optional. Draw each app by its purpose (a chat bubble), never its logo.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <PerAppIcons apps={watch("apps")} tile={watch("tile")} onChange={(next) => setValue("apps", next, { shouldDirty: true, shouldValidate: true })} />
+                <CardContent className="space-y-4">
+                  <PromptKitButton kit={() => {
+                    const have = watch("apps") ?? {};
+                    const miss = COMMON_APPS.filter((a) => !have[a.pkg]);
+                    return buildPromptKit({ packName: watch("name")?.en ?? "", style: info.style, tile: watch("tile"), glyph: info.glyph, accent: "", apps: miss.length ? miss : COMMON_APPS });
+                  }} />
+                  <AiButtons />
+                  <PerAppIcons kitInfo={info} apps={watch("apps")} tile={watch("tile")} onChange={(next) => setValue("apps", next, { shouldDirty: true, shouldValidate: true })} />
                 </CardContent>
               </Card>
             )}

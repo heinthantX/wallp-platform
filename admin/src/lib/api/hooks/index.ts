@@ -7,6 +7,7 @@ export * from "./useAuth";
 export * from "./useFestivals";
 export * from "./useThemes";
 export * from "./useEngines";
+export * from "./useAiStatus";
 export * from "./useValidate";
 export * from "./useAutosaveEditor";
 export * from "./useGenerate";

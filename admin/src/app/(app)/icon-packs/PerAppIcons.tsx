@@ -8,6 +8,8 @@ import { assetSrc } from "@/lib/api/hooks/useAssets";
 import type { Asset } from "@/lib/catalog/types";
 import { COMMON_APPS } from "./common-apps";
 import { resolveAppFile } from "./resolve-app-file";
+import { PromptKitButton } from "@/components/ai/PromptKitButton";
+import { buildPromptKit } from "@/lib/prompt-kit";
 
 type Apps = Record<string, Asset>;
 type Source = "exact" | "alias" | "manual" | "unmatched";
@@ -42,7 +44,7 @@ async function checkDims(file: File): Promise<string | null> {
   return null;
 }
 
-export function PerAppIcons({ apps = {}, onChange, tile }: { apps?: Apps; onChange: (next: Apps) => void; tile?: string }) {
+export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: Apps; onChange: (next: Apps) => void; tile?: string; kitInfo?: { packName: string; style?: string; glyph?: string } }) {
   const upload = useUploadAsset();
   const [rows, setRows] = React.useState<Row[]>([]);
   const [drag, setDrag] = React.useState(false);
@@ -119,6 +121,9 @@ export function PerAppIcons({ apps = {}, onChange, tile }: { apps?: Apps; onChan
         <button type="button" className="text-xs underline" aria-expanded={showMissing} onClick={() => setShowMissing((v) => !v)}>
           {showMissing ? "Hide" : "Show"} missing
         </button>
+        {missing.length > 0 && (
+          <PromptKitButton tip={false} label="Copy kit for missing" kit={() => buildPromptKit({ packName: kitInfo?.packName ?? "", style: kitInfo?.style, tile, glyph: kitInfo?.glyph, apps: missing })} />
+        )}
       </div>
       {showMissing && (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
