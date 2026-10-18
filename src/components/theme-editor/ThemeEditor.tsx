@@ -32,7 +32,7 @@ import {
   useAutosaveEditor,
 } from "@/lib/api/hooks";
 import type { ItemView, FieldError } from "@/lib/api/types";
-import type { ThemeDetail, Accent, SolidAccent, GradientAccent, Localized } from "@/lib/catalog/types";
+import type { ThemeDetail, Layer, Palette as PaletteColors, Accent, SolidAccent, GradientAccent, Localized } from "@/lib/catalog/types";
 import {
   LocalizedField,
   IdField,
@@ -45,6 +45,7 @@ import {
 } from "@/components/fields";
 import { ReviewBar, AuditTimeline, StatusBadge } from "@/components/items";
 import { PhonePreview } from "@/components/preview";
+import { LayersEditor } from "@/components/layers-editor";
 import { ConflictDialog } from "@/components/conflict-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -965,21 +966,53 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold">Scene Parameters (JSON)</Label>
-                      <JsonEditor
-                        value={watch("scene.params") || {}}
-                        onChange={(val) => {
-                          try {
-                            const parsed = JSON.parse(val);
-                            setValue("scene.params", parsed, { shouldDirty: true });
-                          } catch {
-                            // ignore while typing
-                          }
-                        }}
-                        height="220px"
-                      />
-                    </div>
+                    {(() => {
+                      const jsonEditor = (
+                        <JsonEditor
+                          value={watch("scene.params") || {}}
+                          onChange={(val) => {
+                            try {
+                              const parsed = JSON.parse(val);
+                              setValue("scene.params", parsed, { shouldDirty: true });
+                            } catch {
+                              // ignore while typing
+                            }
+                          }}
+                          height="220px"
+                        />
+                      );
+                      if (watch("scene.engine") !== "layers") {
+                        return (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold">Scene Parameters (JSON)</Label>
+                            {jsonEditor}
+                          </div>
+                        );
+                      }
+                      const params = (watch("scene.params") || {}) as { layers?: Layer[] };
+                      return (
+                        <Tabs defaultValue="layers">
+                          <TabsList>
+                            <TabsTrigger value="layers">Layers</TabsTrigger>
+                            <TabsTrigger value="params-json">JSON</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="layers" className="pt-3">
+                            <LayersEditor
+                              allowTokens
+                              value={params.layers ?? []}
+                              palette={watch("palette") as PaletteColors}
+                              accent={watch("accents")?.[0] as Accent | undefined}
+                              onChange={(layers) =>
+                                setValue("scene.params", { ...params, layers }, { shouldDirty: true, shouldValidate: true })
+                              }
+                            />
+                          </TabsContent>
+                          <TabsContent value="params-json" className="pt-3">
+                            {jsonEditor}
+                          </TabsContent>
+                        </Tabs>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
 

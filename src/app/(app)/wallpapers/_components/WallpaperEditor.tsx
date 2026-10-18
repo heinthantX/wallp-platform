@@ -18,7 +18,9 @@ import {
   formatBytes,
 } from "@/lib/api/hooks";
 import type { ItemView } from "@/lib/api/types";
-import type { Palette } from "@/lib/catalog/types";
+import type { Layer, Palette } from "@/lib/catalog/types";
+import { LayersEditor } from "@/components/layers-editor";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LocalizedField, IdField, TagsField, JsonEditor } from "@/components/fields";
 import { ReviewBar, AuditTimeline, StatusBadge } from "@/components/items";
 import { ConflictDialog } from "@/components/conflict-dialog";
@@ -372,13 +374,34 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                 <CardTitle className="text-base">Scene layers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <JsonEditor
-                  label="Layers params (hex colours only, no @tokens)"
-                  value={sceneJson}
-                  onChange={onSceneJson}
-                  height="320px"
-                  error={sceneParseError || (errors.scene?.message as string | undefined)}
-                />
+                <Tabs defaultValue="layers">
+                  <TabsList>
+                    <TabsTrigger value="layers">Layers</TabsTrigger>
+                    <TabsTrigger value="json">JSON</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="layers" className="pt-3">
+                    <LayersEditor
+                      allowTokens={false}
+                      value={(sceneLayers ?? []) as Layer[]}
+                      palette={NEUTRAL_PALETTE}
+                      onChange={(layers) => {
+                        setSceneJson(JSON.stringify({ layers }, null, 2));
+                        setSceneParseError(undefined);
+                        setValue("scene", { engine: "layers", params: { layers } }, { shouldDirty: true, shouldValidate: true });
+                      }}
+                    />
+                    {errors.scene?.message && <p className="pt-2 text-xs text-destructive">{errors.scene.message as string}</p>}
+                  </TabsContent>
+                  <TabsContent value="json" className="pt-3">
+                    <JsonEditor
+                      label="Layers params (hex colours only, no @tokens)"
+                      value={sceneJson}
+                      onChange={onSceneJson}
+                      height="320px"
+                      error={sceneParseError || (errors.scene?.message as string | undefined)}
+                    />
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           )}
