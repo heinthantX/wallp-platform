@@ -301,6 +301,8 @@ curl -s localhost:8080/admin/v1/assets?variants=wallpaper -H "Authorization: Bea
 ### Import and export a catalog
 
 - `GET /export` returns the whole catalog as one JSON bundle: `festivals`, `themes`, `wallpapers`, `fonts`, `iconPacks`, `banners`, `accentPresets`, `searchSuggestions`. Archived items are left out. It is a backup: `statuses` lists every item that is not published (`{"banners": {"my-banner": "draft"}}`), and importing the bundle keeps those items unpublished (their earlier published version, if any, stays live). Items not listed, and every item of an app catalog without `statuses`, import as published.
+
+Icon packs: optional `apps` (Android package name → asset, at most 200) and `appsFallbackStyle`. Release checks per image: `icon_app_bad_package` (key is not like `com.example.app`), `icon_app_not_square` (more than 1% off), `icon_app_too_small` (under 192 px) are errors; `asset_over_1mb` and `icon_app_duplicate` (same image as another package) are warnings.
 - `POST /import` (admin, body limit 64 MB) takes either:
   - `multipart/form-data` with `catalog` (the catalog JSON), and optional `themes` and `assets` files (repeat the field for each file), or
   - JSON `{ "dir": "seed/catalog/v1" }` to read a folder on the server. Not allowed in production (403).

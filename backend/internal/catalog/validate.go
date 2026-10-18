@@ -2,8 +2,10 @@ package catalog
 
 import (
 	"fmt"
+	"maps"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -1297,6 +1299,10 @@ func (f *Font) Validate() []FieldError {
 }
 
 // Validate validates an IconPack document.
+const maxPackApps = 200
+
+var packageRegex = regexp.MustCompile(`^[a-zA-Z][\w]*(\.[a-zA-Z][\w]*)+$`)
+
 func (p *IconPack) Validate() []FieldError {
 	var errs []FieldError
 	if !isValidID(p.ID) {
@@ -1388,6 +1394,24 @@ func (p *IconPack) Validate() []FieldError {
 		})
 	}
 
+	if len(p.Apps) > maxPackApps {
+		errs = append(errs, FieldError{
+			Field:   "apps",
+			Code:    "invalid_range",
+			Message: fmt.Sprintf("apps has %d entries; at most %d", len(p.Apps), maxPackApps),
+		})
+	}
+	for _, pkg := range slices.Sorted(maps.Keys(p.Apps)) {
+		if !packageRegex.MatchString(pkg) {
+			errs = append(errs, FieldError{
+				Field:   "apps." + pkg,
+				Code:    "invalid_package",
+				Message: fmt.Sprintf("%q is not an Android package name (like com.example.app)", pkg),
+			})
+		}
+		a := p.Apps[pkg]
+		errs = append(errs, a.ValidateWithPath("apps."+pkg)...)
+	}
 	return errs
 }
 

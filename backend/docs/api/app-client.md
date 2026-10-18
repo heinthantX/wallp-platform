@@ -81,6 +81,18 @@ Size limits the app already enforces (theme-api.md section 8): manifest 16 KB, c
 
 `banners[].look.image` may hold an asset (`{url, sha256, bytes, format}`, same shape as other assets). It is a new optional field: the app may ignore it and keep drawing the banner from `background`, `accent` and `artThemeId`. If the app shows it, cache it like any other asset (by sha256) and draw the title on top in `titleColor`.
 
+### Per-app icons in an icon pack (optional, new)
+
+`iconPacks[].apps` may map an Android package name to a drawn icon asset (`{"com.whatsapp": {url, sha256, bytes, format}}`). `appsFallbackStyle` (optional string) names how to draw apps that are not listed. Old apps ignore both fields. A pack can be partial.
+
+How to draw an app icon with such a pack (stop at the first step that works):
+1. The per-app image for the app's package, clipped to the user's icon shape, with `ring`.
+2. The pack tile (`background` or `tile`) with the app's own logo on top.
+3. The painted style (`painter`).
+4. The stock app icon.
+
+A failed download goes on to step 2, so one broken file never blanks the home screen. Images are square, at least 192 px and at most 1 MB (the server checks this before publishing).
+
 ### Immutability rules
 
 - Never overwrite a cached catalog, theme or asset file under the same name. A changed theme gets a new `rev` and a new file.

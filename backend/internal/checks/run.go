@@ -14,6 +14,7 @@ import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
+	"maps"
 	"math"
 	"os"
 	"path/filepath"
@@ -41,6 +42,7 @@ const (
 	minTextContrast   = 4.5
 	minAccentContrast = 3.0
 	minTileSize       = 256
+	minAppIconSize    = 192
 )
 
 var (
@@ -213,6 +215,8 @@ func classify(kind string, fe catalog.FieldError) string {
 		if strings.Contains(fe.Field, "params.layers[") {
 			return "scene_limits"
 		}
+	case "invalid_package":
+		return "icon_app_bad_package"
 	case "required":
 		if kind == items.IconPackKind.Name && fe.Field == "background" {
 			return "icon_pack_no_background"
@@ -275,6 +279,16 @@ func (r *runner) item(c cand) {
 			r.cat.IconPacks = append(r.cat.IconPacks, v)
 			if v.Background != nil {
 				r.assetRefs = append(r.assetRefs, assetRef{kind, v.ID, "background", *v.Background})
+			}
+			owner := map[string]string{} // sha256 -> first package using it
+			for _, pkg := range slices.Sorted(maps.Keys(v.Apps)) {
+				a := v.Apps[pkg]
+				r.assetRefs = append(r.assetRefs, assetRef{kind, v.ID, "apps." + pkg, a})
+				if first, dup := owner[a.SHA256]; dup {
+					r.add(levelWarning, "icon_app_duplicate", kind, v.ID, "apps."+pkg, "%s uses the same image as %s", pkg, first)
+				} else {
+					owner[a.SHA256] = pkg
+				}
 			}
 		}
 	case items.BannerKind:
@@ -610,6 +624,18 @@ func (r *runner) assets(ctx context.Context, db bun.IDB) error {
 			r.add(levelError, "asset_over_10mb", ref.kind, ref.id, ref.field, "Asset is %.1f MB; the app rejects files over 10 MB", float64(size)/(1<<20))
 		case size > 1<<20:
 			r.add(levelWarning, "asset_over_1mb", ref.kind, ref.id, ref.field, "Asset is %.1f MB; over 1 MB slows downloads", float64(size)/(1<<20))
+		}
+		if ref.kind == items.IconPackKind.Name && strings.HasPrefix(ref.field, "apps.") {
+			w, h := row.Width, row.Height
+			if d, ok := dims[path]; ok {
+				w, h = d[0], d[1]
+			}
+			switch {
+			case math.Abs(float64(w-h)) > 0.01*float64(max(w, h)):
+				r.add(levelError, "icon_app_not_square", ref.kind, ref.id, ref.field, "App icon is %d x %d px; it must be square", w, h)
+			case w < minAppIconSize:
+				r.add(levelError, "icon_app_too_small", ref.kind, ref.id, ref.field, "App icon is %d px; it must be at least %d px", w, minAppIconSize)
+			}
 		}
 		if ref.kind == items.BannerKind.Name && ref.field == "look.image" {
 			// ponytail: the image's dominant colour stands in for the area under the title.

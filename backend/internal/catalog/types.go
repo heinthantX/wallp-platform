@@ -248,19 +248,22 @@ type Font struct {
 
 // IconPack represents an icon pack (painted or images).
 type IconPack struct {
-	ID          string    `json:"id"`
-	FestivalID  string    `json:"festivalId"`
-	Name        Localized `json:"name"`
-	Style       Localized `json:"style"`
-	Kind        string    `json:"kind"`
-	Painter     *string   `json:"painter,omitempty"`
-	Shape       string    `json:"shape"`
-	Tile        *string   `json:"tile,omitempty"`
-	Glyph       string    `json:"glyph"`
-	Ring        string    `json:"ring"`
-	Background  *Asset    `json:"background,omitempty"`
-	PublishedAt string    `json:"publishedAt"`
-	Popularity  *int      `json:"popularity,omitempty"`
+	ID         string    `json:"id"`
+	FestivalID string    `json:"festivalId"`
+	Name       Localized `json:"name"`
+	Style      Localized `json:"style"`
+	Kind       string    `json:"kind"`
+	Painter    *string   `json:"painter,omitempty"`
+	Shape      string    `json:"shape"`
+	Tile       *string   `json:"tile,omitempty"`
+	Glyph      string    `json:"glyph"`
+	Ring       string    `json:"ring"`
+	Background *Asset    `json:"background,omitempty"`
+	// Apps maps an Android package name to a drawn icon; apps not listed fall back to the pack style.
+	Apps              map[string]Asset `json:"apps,omitempty"`
+	AppsFallbackStyle *string          `json:"appsFallbackStyle,omitempty"`
+	PublishedAt       string           `json:"publishedAt"`
+	Popularity        *int             `json:"popularity,omitempty"`
 }
 
 // BannerAction defines where a banner button links to.
