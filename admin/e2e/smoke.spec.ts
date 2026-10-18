@@ -78,6 +78,34 @@ test("setup, login, festival, generate theme, publish checks, logout", async ({ 
   expect(savedTheme.fonts.display).toBe("creepster");
   expect(savedTheme.festivalId).toBeTruthy();
 
+  // P4: quick theme wizard (upload -> palette -> icons/font -> draft theme)
+  await page.goto("/themes/quick/");
+  await pick(/^Festival$/, /E2E Festival/);
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFklEQVR4nGP8z8Dwn4EIwESMolGFFFEIAD/yAhGRPa9CAAAAAElFTkSuQmCC",
+    "base64"
+  );
+  await page.getByTestId("quick-image-input").setInputFiles({ name: "quick.png", mimeType: "image/png", buffer: png });
+  await page.getByRole("button", { name: "Next" }).click();
+  const cards = page.getByRole("button", { pressed: false });
+  await expect(page.getByText(/^Pick a palette$/)).toBeVisible({ timeout: 60_000 });
+  await cards.first().click();
+  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Next" }).click();
+  await pick(/Icon pack/, /E2E Pack/);
+  await pick(/Clock font/, /creepster/);
+  await page.getByRole("button", { name: "Next" }).click();
+  const quickSaved = page.waitForResponse((r) => r.url().endsWith("/admin/v1/themes") && r.request().method() === "POST");
+  await page.getByRole("button", { name: "Create draft theme" }).click();
+  const qr = await quickSaved;
+  expect(qr.ok(), await qr.text()).toBe(true);
+  const quickBody = JSON.parse(qr.request().postData()!);
+  const quick = quickBody.data ?? quickBody;
+  expect(quick.wallpaperIds?.length).toBe(1);
+  expect(quick.palette?.background).toBeTruthy();
+  expect(quick.iconPackId).toBe("e2e-pack");
+  await expect(page).toHaveURL(/\/themes\/edit\/?\?id=/);
+
   // Publish checks
   await page.goto("/publish/");
   await page.getByRole("button", { name: "Run checks" }).click();

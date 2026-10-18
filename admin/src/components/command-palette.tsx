@@ -85,6 +85,10 @@ export function CommandPalette() {
             <Sparkles className="mr-2 h-4 w-4" />
             <span>Generate theme</span>
           </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/themes/quick"))}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            <span>Quick theme</span>
+          </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/generator/recipes"))}>
             <Sparkles className="mr-2 h-4 w-4" />
             <span>Generator recipes</span>

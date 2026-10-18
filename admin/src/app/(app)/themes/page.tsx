@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState, EmptyState } from "@/components/states";
 import {
   Sparkles,
+  Zap,
   Plus,
   LayoutGrid,
   List,
@@ -251,6 +252,13 @@ function ThemesView() {
             <Link href="/themes/generate/">
               <Sparkles className="h-4 w-4 text-primary" />
               <span>Generate</span>
+            </Link>
+          </Button>
+
+          <Button variant="outline" asChild className="gap-2">
+            <Link href="/themes/quick/">
+              <Zap className="h-4 w-4 text-primary" />
+              <span>Quick theme</span>
             </Link>
           </Button>
 
