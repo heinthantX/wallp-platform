@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useAuthStore } from "@/lib/auth/store";
+import { useAuthStore, apiBase } from "@/lib/auth/store";
 
 export interface PreviewFile {
   asset: { sha256: string; format: string };
@@ -9,7 +9,7 @@ export interface PreviewFile {
 
 /** Loads the font through FontFace from <apiUrl>/assets/<sha256>.<ext>; falls back to the page font. */
 export function useFontFace(family: string, file?: PreviewFile) {
-  const apiUrl = useAuthStore((s) => s.apiUrl);
+  const apiUrl = apiBase(useAuthStore((s) => s.apiUrl));
   const [loaded, setLoaded] = React.useState(false);
   const sha = file?.asset.sha256;
   const ext = file?.asset.format;
@@ -17,7 +17,7 @@ export function useFontFace(family: string, file?: PreviewFile) {
     setLoaded(false);
     if (!sha || !ext || typeof FontFace === "undefined" || typeof document === "undefined") return;
     let cancelled = false;
-    const face = new FontFace(family, `url(${apiUrl.replace(/\/+$/, "")}/assets/${sha}.${ext})`);
+    const face = new FontFace(family, `url(${apiUrl}/assets/${sha}.${ext})`);
     face
       .load()
       .then(() => {

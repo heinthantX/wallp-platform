@@ -21,6 +21,11 @@ export interface AuthState {
 const DEFAULT_API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
+/** The API origin to call: the saved override, else the build default. No trailing slash. */
+export function apiBase(apiUrl: string): string {
+  return (apiUrl || DEFAULT_API_URL).replace(/\/+$/, "");
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({

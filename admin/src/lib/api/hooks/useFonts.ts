@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { client, parseApiError } from "@/lib/api/client";
-import { useAuthStore } from "@/lib/auth/store";
+import { useAuthStore, apiBase } from "@/lib/auth/store";
 import type { paths, components } from "@/lib/api/schema";
 import type {
   PageItemView,
@@ -161,7 +161,7 @@ export function useUploadAsset() {
       const { apiUrl, accessToken } = useAuthStore.getState();
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch(`${(apiUrl || "").replace(/\/+$/, "")}/admin/v1/assets`, {
+      const res = await fetch(`${apiBase(apiUrl)}/admin/v1/assets`, {
         method: "POST",
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
         body: form,

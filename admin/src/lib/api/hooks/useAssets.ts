@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/lib/auth/store";
+import { useAuthStore, apiBase } from "@/lib/auth/store";
 import { client } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/keys";
 import type { PageAssetItem, UploadAssetResult } from "@/lib/api/types";
@@ -68,11 +68,7 @@ export function useDeleteAsset() {
 /** Resolve an asset url to something an <img>/FontFace can load (relative urls live on the API host). */
 export function assetSrc(url: string): string {
   if (/^(https?:|blob:|data:)/.test(url)) return url;
-  const base = (
-    useAuthStore.getState().apiUrl ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:8080"
-  ).replace(/\/+$/, "");
+  const base = apiBase(useAuthStore.getState().apiUrl);
   return base + (url.startsWith("/") ? url : `/${url}`);
 }
 

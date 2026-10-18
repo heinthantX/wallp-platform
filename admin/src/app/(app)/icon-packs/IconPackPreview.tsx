@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Camera, Mail, MessageCircle, Landmark, Music, Map as MapIcon, Phone, Image as ImageIcon } from "lucide-react";
-import { useAuthStore } from "@/lib/auth/store";
+import { useAuthStore, apiBase } from "@/lib/auth/store";
 import { cn } from "@/lib/utils";
 import { TILE_SHAPES } from "./schema";
 
@@ -40,8 +40,8 @@ export function IconPackPreview({
   ring?: string;
   background?: { sha256: string; format: string };
 }) {
-  const apiUrl = useAuthStore((s) => s.apiUrl);
-  const bg = background ? `url(${apiUrl.replace(/\/+$/, "")}/assets/${background.sha256}.${background.format})` : undefined;
+  const apiUrl = apiBase(useAuthStore((s) => s.apiUrl));
+  const bg = background ? `url(${apiUrl}/assets/${background.sha256}.${background.format})` : undefined;
   return (
     <div className="space-y-3">
       <div role="radiogroup" aria-label="Tile shape" className="flex gap-1">

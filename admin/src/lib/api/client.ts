@@ -1,6 +1,6 @@
 import createClient from "openapi-fetch";
 import type { paths } from "./schema";
-import { useAuthStore } from "@/lib/auth/store";
+import { useAuthStore, apiBase } from "@/lib/auth/store";
 import { ApiError } from "./error";
 import type { AdminSession } from "./types";
 
@@ -41,11 +41,7 @@ function redirectToLogin() {
 const BASE_PLACEHOLDER = "http://api.placeholder";
 
 function currentApiUrl() {
-  return (
-    useAuthStore.getState().apiUrl ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:8080"
-  ).replace(/\/+$/, "");
+  return apiBase(useAuthStore.getState().apiUrl);
 }
 
 // Untouched copies of sent requests, so a 401 retry can resend the body.
