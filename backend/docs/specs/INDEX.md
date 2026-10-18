@@ -9,3 +9,4 @@
 | events-and-stats | Public events ingest (202, rate limited), 7-day decayed popularity, admin stats and overview | docs/specs/events-and-stats.md | 2026-10-18 |
 | app-client-api | Guide for the Flutter app: public catalog, optional accounts, events, error codes, local testing | docs/api/app-client.md | 2026-10-18 |
 | admin-api | Guide for the dashboard developer: auth/MFA, roles, item lifecycle, generator, assets, import/export, releases, stats, endpoint tables | docs/api/admin.md | 2026-10-18 |
+| ai-creation | Optional per-provider AI (501 ai_not_configured with 0 keys), /admin/v1/ai/status, admin prompt kit, per-app icon packs (IconPack.apps, alias import, fallback order) | docs/specs/ai-creation.md | 2026-10-19 |
