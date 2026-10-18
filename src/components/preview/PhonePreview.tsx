@@ -188,7 +188,8 @@ export function PhonePreview({
   };
 
   return (
-    <div className={cn("flex flex-col xl:flex-row gap-6 items-start", className)}>
+    <div className={cn("@container w-full", className)}>
+    <div className="flex flex-col @4xl:flex-row gap-6 items-center @4xl:items-start">
       {/* Phone container */}
       <div
         className={cn(
@@ -588,6 +589,7 @@ export function PhonePreview({
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

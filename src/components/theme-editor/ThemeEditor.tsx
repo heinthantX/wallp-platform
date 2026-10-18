@@ -853,7 +853,7 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                                 <SelectItem value="none">None (All-year round)</SelectItem>
                                 {festivalsData?.items?.map((f) => (
                                   <SelectItem key={f.id} value={f.id}>
-                                    {f.id}
+                                    {festivalName(f.data) ?? f.id}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1343,7 +1343,7 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
               </div>
 
               {/* Right Column: Phone Preview (5 cols on XL, sticky) */}
-              <div className="xl:col-span-5 sticky top-24 space-y-4">
+              <div className="xl:col-span-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-4 min-w-0">
                 <Card className="border shadow-lg overflow-hidden bg-card/60 backdrop-blur-xs">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -1452,4 +1452,13 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
       />
     </div>
   );
+}
+
+function festivalName(data: unknown): string | undefined {
+  try {
+    const d = (typeof data === "string" ? JSON.parse(data) : data) as { name?: { en?: string } } | null;
+    return d?.name?.en || undefined;
+  } catch {
+    return undefined;
+  }
 }

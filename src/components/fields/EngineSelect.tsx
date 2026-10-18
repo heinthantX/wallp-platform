@@ -87,7 +87,7 @@ export function EngineSelect({
       >
         <SelectTrigger
           id={id}
-          className={cn(error && "border-destructive focus:ring-destructive")}
+          className={cn("h-auto min-h-9 py-1.5", error && "border-destructive focus:ring-destructive")}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
