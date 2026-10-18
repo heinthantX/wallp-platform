@@ -1,51 +1,101 @@
 # wallp Admin Dashboard
 
-Phase 0–1 administration web console for the [wallp](https://wallp.app) platform. Provides user management, role-based access control, security audit logging with side-by-side JSON diffs, two-step verification (TOTP), and catalog placeholders.
+The web dashboard for the [wallp](https://wallp.app) platform. It is a Next.js 15 app that builds to a static export (`output: 'export'`) and runs entirely in the browser. It talks to the wallp backend API.
 
-## Tech Stack
+It is deployed to GitHub Pages by `.github/workflows/pages.yml`. The base path is set with `NEXT_PUBLIC_BASE_PATH`, which the workflow sets to the repository name.
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router, static export `output: 'export'`)
-- **Language**: TypeScript (strict)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Components**: [shadcn/ui](https://ui.shadcn.com/) (New York style, CSS variables, Lucide icons)
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) with localStorage persistence
-- **Server Cache / Fetching**: [TanStack Query v5](https://tanstack.com/query/latest) & [TanStack Table](https://tanstack.com/table/latest)
-- **API Client**: [openapi-fetch](https://openapi-ts.dev/openapi-fetch/) with single-flight token refresh
-- **API Types**: Generated from backend OpenAPI 3.1 specification via [openapi-typescript](https://openapi-ts.dev/)
-- **Form Validation**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
-- **Theme**: [next-themes](https://github.com/pacocoursey/next-themes) (Light / Dark / System default)
-- **Testing**: [Vitest](https://vitest.dev/) + React Testing Library + jsdom
+## Quick start
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Open `http://localhost:3000`. Start the backend first (see `../backend/README.md`), on `http://localhost:8080` by default.
+
+### API URL
+
+The API URL is picked in this order (`src/lib/api/client.ts`):
+
+1. The URL saved in the browser, set from the **Advanced Server Settings** drawer on `/login`.
+2. `NEXT_PUBLIC_API_URL`, read at build time.
+3. `http://localhost:8080`.
+
+To set it for a build, export `NEXT_PUBLIC_API_URL` before `pnpm build`.
 
 ## Scripts
 
-- `pnpm dev`: Start development server on `http://localhost:3000`
-- `pnpm build`: Generate static production export to `out/`
-- `pnpm start`: Serve the exported `out/` directory locally with `npx serve out`
-- `pnpm lint`: Run Next.js and ESLint code checks
-- `pnpm typecheck`: Run TypeScript compiler typecheck (`tsc --noEmit`)
-- `pnpm test`: Run Vitest unit tests
-- `pnpm gen:api`: Re-generate TypeScript API definitions from `openapi.json`
+| Script | What it does |
+|---|---|
+| `pnpm dev` | Starts the dev server on port 3000. |
+| `pnpm build` | Builds the static export into `out/`. |
+| `pnpm start` | Serves `out/` locally with `npx serve out`. |
+| `pnpm lint` | Runs Next.js and ESLint checks. |
+| `pnpm typecheck` | Runs `tsc --noEmit`. |
+| `pnpm test` | Runs Vitest unit tests. |
+| `pnpm e2e` | Runs the end-to-end test (see below). |
+| `pnpm gen:api` | Regenerates `src/lib/api/schema.d.ts` from `openapi.json`. |
 
-## API Configuration
+### Regenerating API types
 
-The admin web app is a static client-side application that connects to any wallp backend API.
+Run this in the backend, then in the admin app:
 
-- **Default API URL**: `http://localhost:8080` (configured via `NEXT_PUBLIC_API_URL` during build).
-- **Runtime Overrides**: Users can override the target API URL at runtime directly from the **Advanced Server Settings** drawer on the `/login` screen. The URL is preserved in the browser's `localStorage`.
+```bash
+# in backend/
+go run ./cmd/wallp openapi > ../admin/openapi.json
 
-## Deployment to GitHub Pages
+# in admin/
+pnpm gen:api
+```
 
-The application is deployed to GitHub Pages as a static site via the GitHub Actions workflow located at `.github/workflows/pages.yml`.
+## Pages
 
-### Workflow Steps:
-1. Pushes to the `main` branch trigger `.github/workflows/pages.yml`.
-2. Dependencies are installed via `pnpm install --frozen-lockfile=false`.
-3. The app is built with:
-   - `NEXT_PUBLIC_BASE_PATH=/${{ github.event.repository.name }}`
-   - `NEXT_PUBLIC_API_URL=${{ vars.API_URL }}`
-4. Static assets output to `out/` (including `public/.nojekyll`) are uploaded using `actions/upload-pages-artifact`.
-5. GitHub Pages is published using `actions/deploy-pages`.
+- Overview (`/`)
+- Festivals
+- Themes, with a generate wizard
+- Generator recipes
+- Wallpapers
+- Fonts
+- Icon packs
+- Banners
+- Publish
+- Statistics
+- Settings: users, audit, engines, store, import, assets, account
 
-## End-to-end smoke test
+## Roles
 
-`pnpm e2e` builds the Go backend (SQLite in a temp dir, port 18080), builds the static export against it and serves it on port 13000, then drives setup, login, festival, theme generation, publish checks and logout in headless Chromium. Needs Go, the `sqlite3` CLI and `pnpm exec playwright install chromium` once.
+Each dashboard user has one role. The backend checks it on every request.
+
+- **admin**: full access, including users and settings.
+- **designer**: creates and edits drafts, generates themes, edits recipes, uploads assets, requests review.
+- **reviewer**: everything a designer can do, plus approve/reject, schedule, run checks and publish.
+- **viewer**: read-only (lists, editors, audit, statistics).
+
+Admins can do everything, plus users, deletes, rollback, catalog import and the asset library.
+
+## Stack
+
+- Next.js 15 (App Router, static export)
+- TypeScript (strict)
+- Tailwind CSS v4 and shadcn/ui
+- Zustand for state, with localStorage persistence
+- TanStack Query and TanStack Table
+- openapi-fetch with single-flight token refresh
+- React Hook Form and Zod
+- next-themes (light, dark, system)
+- Vitest and React Testing Library
+
+## Deployment
+
+GitHub Pages deploys on every push to `main`:
+
+1. `pnpm install --frozen-lockfile=false`
+2. `pnpm build` with `NEXT_PUBLIC_BASE_PATH=/<repo name>` and `NEXT_PUBLIC_API_URL` from the repository variable `API_URL`.
+3. The `out/` folder (with `public/.nojekyll`) is uploaded with `actions/upload-pages-artifact`.
+4. `actions/deploy-pages` publishes it.
+
+## End-to-end test
+
+`pnpm e2e` starts the Go backend with SQLite in a temp directory on port 18080, builds the static export against it, and serves it on port 13000. It then runs setup, login, festival, theme generation, publish checks and logout in headless Chromium.
+
+One-time setup: install Go, the `sqlite3` CLI, and run `pnpm exec playwright install chromium`.
