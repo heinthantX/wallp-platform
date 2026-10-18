@@ -37,6 +37,8 @@ func New(d *api.Deps) (http.Handler, huma.API) {
 		_ = r.SetTrustedProxies(nil)
 	}
 	r.Use(gin.Recovery(), requestID(), logger(), securityHeaders(d.Cfg.IsProd()))
+	// CORS headers depend on Origin; without Vary a cached no-Origin copy (an <img>) breaks later fetch() calls.
+	r.Use(func(c *gin.Context) { c.Writer.Header().Add("Vary", "Origin"); c.Next() })
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     d.Cfg.CORSOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},

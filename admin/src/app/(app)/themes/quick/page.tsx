@@ -125,7 +125,8 @@ export default function QuickThemePage() {
           const d = (typeof raw === "string" ? JSON.parse(raw) : raw) as { image?: WallpaperImage } | null;
           const url = d?.image?.sizes?.[0]?.asset.url;
           if (!url) throw new Error("That wallpaper has no image to derive a palette from");
-          const blob = await (await fetch(assetSrc(url))).blob();
+          // no-store: an <img> may have cached this file without CORS headers.
+          const blob = await (await fetch(assetSrc(url), { cache: "no-store" })).blob();
           img = new File([blob], `${existingId}.webp`, { type: blob.type || "image/webp" });
         }
         setWallpaperId(wid);
