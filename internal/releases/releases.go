@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -29,6 +30,7 @@ import (
 	"github.com/heinthant/wallp-backend/internal/checks"
 	"github.com/heinthant/wallp-backend/internal/items"
 	"github.com/heinthant/wallp-backend/internal/model"
+	"github.com/heinthant/wallp-backend/internal/stats"
 )
 
 // Checker runs the pre-publish checks.
@@ -145,6 +147,12 @@ func build(ctx context.Context, db *bun.DB, storageDir string, rel *model.Releas
 	oldManifest, _ := os.ReadFile(manifestPath)
 	wroteManifest := false
 
+	// Read before the tx opens: SQLite has one connection.
+	pop, perr := stats.Popularity(ctx, db, now)
+	if perr != nil {
+		slog.Warn("popularity unavailable, publishing without it", "err", perr)
+	}
+
 	err := db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		doc := catalogDoc{CatalogVersion: rel.Version, Festivals: []json.RawMessage{}, Themes: []catalog.ThemeSummary{},
 			Wallpapers: []json.RawMessage{}, Fonts: []json.RawMessage{}, IconPacks: []json.RawMessage{}, Banners: []json.RawMessage{}}
@@ -221,7 +229,13 @@ func build(ctx context.Context, db *bun.DB, storageDir string, rel *model.Releas
 					if err := writeAtomic(filepath.Join(dir, "themes", fmt.Sprintf("%s.%d.json", r.ID, rev)), data); err != nil {
 						return err
 					}
-					doc.Themes = append(doc.Themes, t.Summary())
+					sum := t.Summary()
+					if score := pop[r.ID]; score > 0 {
+						// ponytail: the catalog field is an int, so the score is shipped x10 rounded
+						p := int(math.Round(score * 10))
+						sum.Popularity = &p
+					}
+					doc.Themes = append(doc.Themes, sum)
 				case items.FestivalKind:
 					doc.Festivals = append(doc.Festivals, data)
 				case items.WallpaperKind:
@@ -376,11 +390,19 @@ func Tick(ctx context.Context, db *bun.DB, storageDir string, checker Checker) (
 func RunScheduler(ctx context.Context, db *bun.DB, storageDir string, checker Checker, every time.Duration) {
 	t := time.NewTicker(every)
 	defer t.Stop()
+	var lastPrune time.Time
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-t.C:
+			if now := time.Now().UTC(); now.Sub(lastPrune) >= 24*time.Hour {
+				if err := stats.Prune(ctx, db, now); err != nil {
+					slog.Error("event retention failed", "err", err)
+				} else {
+					lastPrune = now
+				}
+			}
 			if ok, err := Tick(ctx, db, storageDir, checker); err != nil {
 				slog.Error("scheduled publish failed", "err", err)
 			} else if ok {

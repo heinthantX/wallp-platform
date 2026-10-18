@@ -3,6 +3,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,15 @@ type Deps struct {
 	Auth *auth.Service
 	// Checker runs the pre-publish checks; nil means no checks.
 	Checker func(ctx context.Context) (checks.Report, error)
+	// Now is the clock; nil means time.Now (tests fix it).
+	Now func() time.Time
+}
+
+func (d *Deps) now() time.Time {
+	if d.Now != nil {
+		return d.Now().UTC()
+	}
+	return time.Now().UTC()
 }
 
 const (
@@ -39,5 +49,7 @@ func Register(h huma.API, r *gin.Engine, d *Deps) {
 	registerAssets(h, r, d)
 	registerChecks(h, d)
 	registerReleases(h, d)
+	registerEvents(h, d)
+	registerStats(h, d)
 	registerPublicCatalog(r, d)
 }

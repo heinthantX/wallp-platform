@@ -39,6 +39,10 @@ type Config struct {
 	// Requests per minute per IP on auth endpoints.
 	AuthRateLimit int `env:"AUTH_RATE_LIMIT" envDefault:"20"`
 
+	// Events API limits per hour; 0 uses the default.
+	EventsPerInstallHour int `env:"EVENTS_PER_INSTALL_HOUR" envDefault:"30"`
+	EventsPerIPHour      int `env:"EVENTS_PER_IP_HOUR" envDefault:"120"`
+
 	// Google Fonts metadata and download URLs.
 	GoogleFontsMetadataURL string `env:"GOOGLE_FONTS_METADATA_URL" envDefault:"https://fonts.google.com/metadata/fonts"`
 	GoogleFontsDownloadURL string `env:"GOOGLE_FONTS_DOWNLOAD_URL" envDefault:"https://fonts.google.com/download/list"`
