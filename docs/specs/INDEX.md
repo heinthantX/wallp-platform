@@ -1,6 +1,9 @@
 | Feature Slug | Summary (1 line) | Spec Path | Last Updated |
 |---|---|---|---|
 | admin-auth-and-app-accounts | Admin JWT/refresh/TOTP/roles/audit + optional app-user accounts, Gin+Huma+Bun | docs/specs/admin-auth-and-app-accounts.md | 2026-10-18 |
-| theme-generator | Zero-AI seeded OKLCH theme generator: recipes, keyword map, photo palette, feedback, breed | docs/specs/theme-generator.md | 2026-10-18 |
+| theme-generator | Zero-AI seeded OKLCH generator: recipes, keywords, photo palette, feedback bias, breed, dedupe/CVD/cost checks, locks | docs/specs/theme-generator.md | 2026-10-18 |
 | catalog-format | internal/catalog typed structs, validation, summaries (phase 2a) | docs/specs/catalog-format.md | 2026-10-18 |
 | catalog-import-export | Admin bundle import (multipart or server dir) and export as catalog.json, round-trip tested | docs/specs/catalog-import-export.md | 2026-10-18 |
+| assets-and-media | sha256 asset library, WebP variants, blurhash, Google Fonts import, immutable static assets | docs/specs/assets-and-media.md | 2026-10-18 |
+| checks-and-releases | Release checks (dashboard section 6), versioned publish, manifest-last, rollback, scheduler, public catalog ETag | docs/specs/checks-and-releases.md | 2026-10-18 |
+| events-and-stats | Public events ingest (202, rate limited), 7-day decayed popularity, admin stats and overview | docs/specs/events-and-stats.md | 2026-10-18 |
