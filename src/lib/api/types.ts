@@ -44,3 +44,14 @@ export type ExportBundle = components["schemas"]["ExportBundle"];
 
 export type ListFestivalsQuery = NonNullable<paths["/admin/v1/festivals"]["get"]["parameters"]["query"]>;
 export type ListThemesQuery = NonNullable<paths["/admin/v1/themes"]["get"]["parameters"]["query"]>;
+
+export type RecipeView = components["schemas"]["RecipeView"];
+export type PageRecipeView = components["schemas"]["PageRecipeView"];
+export type PreviewRecipeBody = components["schemas"]["PreviewRecipeBody"];
+export type PreviewRecipeOutputBody = components["schemas"]["PreviewRecipeOutputBody"];
+export type InterpretInputBody = components["schemas"]["InterpretInputBody"];
+export type Interpretation = components["schemas"]["Interpretation"];
+export type Locked = components["schemas"]["Locked"];
+export type Check = components["schemas"]["Check"];
+export type ListRecipesQuery = NonNullable<paths["/admin/v1/generator/recipes"]["get"]["parameters"]["query"]>;
+

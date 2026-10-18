@@ -6,6 +6,7 @@ export interface Check {
   ratio: number;
   min: number;
   pass: boolean;
+  level?: string;
 }
 
 // Local GeneratorOption type; will be swapped for generated API types once schema.d.ts includes generator endpoints.

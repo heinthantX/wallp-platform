@@ -265,7 +265,7 @@ export function OptionCard({
         {checks.length > 0 && (
           <div className="w-full flex flex-wrap gap-1 justify-center max-h-16 overflow-y-auto pt-1">
             {checks.map((check, idx) => {
-              const isWarning = WARNING_NAMES.has(check.name);
+              const isWarning = check.level === "warning" || WARNING_NAMES.has(check.name);
 
               if (isWarning) {
                 let warningLabel = check.name;
@@ -275,6 +275,8 @@ export function OptionCard({
                   warningLabel = "CVD Close";
                 } else if (check.name === "scene_cost") {
                   warningLabel = `Cost: ${check.ratio}/${check.min}`;
+                } else if (check.field) {
+                  warningLabel = `${check.field}: ${check.ratio ? check.ratio.toFixed(1) : check.name}`;
                 }
 
                 return (

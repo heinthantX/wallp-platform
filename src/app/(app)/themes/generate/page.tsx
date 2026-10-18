@@ -19,6 +19,7 @@ import {
 
 import { Stepper } from "@/components/generator/Stepper";
 import { OptionsGrid } from "@/components/generator/OptionsGrid";
+import { KeywordChips } from "@/components/generator/KeywordChips";
 import { PhonePreview } from "@/components/preview";
 import { ColorField, EngineSelect } from "@/components/fields";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useFestivals, useGenerate, useSaveTheme } from "@/lib/api/hooks";
+import {
+  useFestivals,
+  useGenerate,
+  useSaveTheme,
+  useRecipes,
+  useInterpret,
+} from "@/lib/api/hooks";
 import { ApiError } from "@/lib/api/client";
 import {
   historyReducer,
@@ -46,11 +53,35 @@ import {
 import {
   createInitialLocks,
   toggleLock,
+  buildLocked,
   type PaletteLocks,
   type PaletteRole,
+  type LockedPalette,
 } from "@/lib/generator/locks";
 import type { GeneratorOption } from "@/lib/generator/types";
+import type { Accent } from "@/lib/catalog/types";
+import type { Locked } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+
+function toApiLocked(locked?: LockedPalette | null): Locked | undefined {
+  if (!locked) return undefined;
+  const entries = Object.entries(locked).filter(([_, v]) => v !== undefined && v !== false);
+  if (entries.length === 0) return undefined;
+
+  const result: Locked = {};
+  if (locked.background) result.background = locked.background;
+  if (locked.deep) result.deep = locked.deep;
+  if (locked.surface) result.surface = locked.surface;
+  if (locked.text) result.text = locked.text;
+  if (locked.textMuted) result.textMuted = locked.textMuted;
+  if (locked.motif) result.motif = locked.motif;
+  if (locked.accents && locked.accents.length > 0) {
+    result.accents = locked.accents.map((a) =>
+      typeof a === "string" ? a : (a as Accent).colors?.[0] || ""
+    );
+  }
+  return result;
+}
 
 const MOODS = [
   { id: "classic", label: "Classic", color: "#1A237E", hint: "Brand navy hue" },
@@ -67,6 +98,7 @@ const step1Schema = z.object({
   pickForMe: z.boolean(),
   baseColor: z.string().optional(),
   engine: z.string().optional(),
+  recipeId: z.string().optional(),
   description: z.string().optional(),
   seed: z.number().optional(),
 });
@@ -84,6 +116,7 @@ function ThemeGenerateContent() {
   const { data: festivalsData, isLoading: festivalsLoading } = useFestivals({
     perPage: 100,
   });
+  const { data: recipesData } = useRecipes({ perPage: 100 });
   const generateMutation = useGenerate();
   const saveThemeMutation = useSaveTheme();
 
@@ -105,7 +138,7 @@ function ThemeGenerateContent() {
   ]);
   const [selectedSlot, setSelectedSlot] = React.useState<number>(0);
 
-  // Locks state (kept in UI kit, omitted from request if not in schema)
+  // Locks state (kept in UI kit, wired into request)
   const [locks, setLocks] = React.useState<PaletteLocks>(createInitialLocks);
 
   // Saved inputs & main seed for regeneration / theme creation
@@ -114,6 +147,7 @@ function ThemeGenerateContent() {
     mood: Mood;
     baseColor?: string;
     engine?: string;
+    recipeId?: string;
     description?: string;
   }>({
     festivalId: "",
@@ -134,6 +168,7 @@ function ThemeGenerateContent() {
   const paramMood = (searchParams.get("mood") as Mood) || "cozy";
   const paramBaseColor = searchParams.get("baseColor") || "";
   const paramEngine = searchParams.get("engine") || "layers";
+  const paramRecipeId = searchParams.get("recipeId") || "";
   const paramDescription = searchParams.get("description") || "";
   const paramSeed = searchParams.get("seed")
     ? parseInt(searchParams.get("seed")!, 10)
@@ -149,6 +184,7 @@ function ThemeGenerateContent() {
       pickForMe: !paramBaseColor,
       baseColor: paramBaseColor || "#7c3aed",
       engine: paramEngine,
+      recipeId: paramRecipeId || "auto",
       description: paramDescription,
       seed: paramSeed,
     },
@@ -165,6 +201,26 @@ function ThemeGenerateContent() {
 
   const pickForMe = watch("pickForMe");
   const selectedMood = watch("mood");
+  const descriptionValue = watch("description");
+  const recipeIdValue = watch("recipeId");
+
+  // Live interpret chips
+  const { data: interpretation } = useInterpret({
+    description: descriptionValue || "",
+    recipeId: recipeIdValue && recipeIdValue !== "auto" ? recipeIdValue : undefined,
+    debounceMs: 400,
+  });
+
+  const [removedKeywords, setRemovedKeywords] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    setRemovedKeywords([]);
+  }, [descriptionValue]);
+
+  const activeMatchedKeywords = React.useMemo(() => {
+    const matched = interpretation?.matched || [];
+    return matched.filter((kw) => !removedKeywords.includes(kw));
+  }, [interpretation, removedKeywords]);
 
   // Keyboard navigation for step 2: Esc to go back to step 1
   React.useEffect(() => {
@@ -197,6 +253,7 @@ function ThemeGenerateContent() {
       baseColor?: string;
       engine?: string;
       description?: string;
+      recipeId?: string;
     },
     seed: number,
     aroundPalette?: GeneratorOption["data"]["palette"]
@@ -209,6 +266,7 @@ function ThemeGenerateContent() {
         baseColor: inputs.baseColor || undefined,
         engine: inputs.engine || undefined,
         description: inputs.description || undefined,
+        recipeId: inputs.recipeId || undefined,
         seed,
         count: 6,
         around: aroundPalette,
@@ -246,6 +304,7 @@ function ThemeGenerateContent() {
       baseColor: data.pickForMe ? "" : data.baseColor,
       engine: data.engine || "layers",
       description: data.description,
+      recipeId: data.recipeId && data.recipeId !== "auto" ? data.recipeId : undefined,
     };
 
     setSavedInputs(inputs);
@@ -263,14 +322,20 @@ function ThemeGenerateContent() {
 
     try {
       const subSeed = Math.floor(Math.random() * 2147483647);
+      const currentOpt = getCurrentOption(historyState, slotIndex);
+      const lockedData = currentOpt ? buildLocked(locks, currentOpt) : undefined;
+      const apiLocked = toApiLocked(lockedData);
+
       const res = await generateMutation.mutateAsync({
         festivalId: savedInputs.festivalId,
         mood: savedInputs.mood,
         baseColor: savedInputs.baseColor || undefined,
         engine: savedInputs.engine || undefined,
         description: savedInputs.description || undefined,
+        recipeId: savedInputs.recipeId || undefined,
         seed: subSeed,
         count: 1,
+        locked: apiLocked,
       });
 
       if (res?.options && res.options[0]) {
@@ -301,15 +366,20 @@ function ThemeGenerateContent() {
     setMainSeed(newSeed);
 
     try {
+      const lockedData = buildLocked(locks, currentOpt);
+      const apiLocked = toApiLocked(lockedData);
+
       const res = await generateMutation.mutateAsync({
         festivalId: savedInputs.festivalId,
         mood: savedInputs.mood,
         baseColor: savedInputs.baseColor || undefined,
         engine: savedInputs.engine || undefined,
         description: savedInputs.description || undefined,
+        recipeId: savedInputs.recipeId || undefined,
         seed: newSeed,
         count: 6,
         around: currentOpt.data.palette,
+        locked: apiLocked,
       });
 
       if (res?.options && res.options.length > 0) {
@@ -332,14 +402,20 @@ function ThemeGenerateContent() {
     setMainSeed(newSeed);
 
     try {
+      const currentOpt = getCurrentOption(historyState, selectedSlot);
+      const lockedData = currentOpt ? buildLocked(locks, currentOpt) : undefined;
+      const apiLocked = toApiLocked(lockedData);
+
       const res = await generateMutation.mutateAsync({
         festivalId: savedInputs.festivalId,
         mood: savedInputs.mood,
         baseColor: savedInputs.baseColor || undefined,
         engine: savedInputs.engine || undefined,
         description: savedInputs.description || undefined,
+        recipeId: savedInputs.recipeId || undefined,
         seed: newSeed,
         count: 6,
+        locked: apiLocked,
       });
 
       if (res?.options && res.options.length > 0) {
@@ -505,6 +581,38 @@ function ThemeGenerateContent() {
                 )}
               </div>
 
+              {/* Recipe Select */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="recipeId">Generator Recipe</Label>
+                  <span className="text-[11px] text-muted-foreground">
+                    Optional recipe override
+                  </span>
+                </div>
+                <Controller
+                  control={control}
+                  name="recipeId"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || "auto"}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger id="recipeId">
+                        <SelectValue placeholder="Auto (Festival default)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto (Festival default)</SelectItem>
+                        {recipesData?.items?.map((recipe) => (
+                          <SelectItem key={recipe.id} value={recipe.id}>
+                            {recipe.name} ({recipe.id})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
               {/* Mood Segmented Control */}
               <div className="space-y-2">
                 <Label>Mood</Label>
@@ -612,6 +720,14 @@ function ThemeGenerateContent() {
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                   {...register("description")}
                 />
+                {activeMatchedKeywords.length > 0 && (
+                  <div className="pt-1.5">
+                    <KeywordChips
+                      matched={activeMatchedKeywords}
+                      onRemove={(kw) => setRemovedKeywords((prev) => [...prev, kw])}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Submit Button */}

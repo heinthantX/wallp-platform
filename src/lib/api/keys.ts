@@ -13,4 +13,9 @@ export const queryKeys = {
   allThemes: ["themes"] as const,
   theme: (id: string) => ["themes", "detail", id] as const,
   engines: ["engines"] as const,
+  recipes: (params?: Record<string, unknown>) => ["recipes", params ?? {}] as const,
+  allRecipes: ["recipes"] as const,
+  recipe: (id: string) => ["recipes", "detail", id] as const,
+  recipePreview: (id: string, params?: Record<string, unknown>) =>
+    ["recipes", "preview", id, params ?? {}] as const,
 };

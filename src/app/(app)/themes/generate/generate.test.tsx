@@ -265,4 +265,105 @@ describe("ThemeGeneratePage Wizard", () => {
       expect(mockPush).toHaveBeenCalledWith("/themes/edit/?id=theme-0");
     });
   });
+
+  it("interpret chips render matched words", async () => {
+    vi.spyOn(client, "POST").mockImplementation(async (path: string) => {
+      if (path === "/admin/v1/themes/generate/interpret") {
+        return {
+          data: {
+            matched: ["cozy", "snow", "lantern"],
+            mood: "cozy",
+          },
+        } as unknown as Awaited<ReturnType<typeof client.POST>>;
+      }
+      return { data: {} } as unknown as Awaited<ReturnType<typeof client.POST>>;
+    });
+
+    renderComponent();
+
+    const descTextarea = screen.getByPlaceholderText(/cozy warm fireplace/i);
+    fireEvent.change(descTextarea, {
+      target: { value: "cozy snow cabin with lantern" },
+    });
+
+    // Debounced 400ms -> wait for chips to render
+    await waitFor(
+      () => {
+        expect(screen.getByText("cozy")).toBeInTheDocument();
+        expect(screen.getByText("snow")).toBeInTheDocument();
+        expect(screen.getByText("lantern")).toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
+  });
+
+  it("locks are sent in the shuffle request body", async () => {
+    const initialOptions = Array.from({ length: 6 }).map((_, i) => ({
+      seed: 1000 + i,
+      data: createMockTheme(`theme-${i}`, `Theme Option ${i}`),
+      checks: [{ name: "text_contrast", field: "text", ratio: 5.5, min: 4.5, pass: true }],
+    }));
+
+    const postSpy = vi.spyOn(client, "POST").mockImplementation(async (path: string) => {
+      if (path === "/admin/v1/themes/generate") {
+        return {
+          data: {
+            seed: 12345,
+            options: initialOptions,
+          },
+        } as unknown as Awaited<ReturnType<typeof client.POST>>;
+      }
+      return { data: {} } as unknown as Awaited<ReturnType<typeof client.POST>>;
+    });
+
+    mockSearchParams = new URLSearchParams("festivalId=christmas&mood=cozy");
+    renderComponent();
+
+    // Generate initial options
+    fireEvent.click(screen.getByRole("button", { name: /generate themes/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Pick & Refine Options")).toBeInTheDocument();
+    });
+
+    // Lock the background role on card 0
+    const bgSwatchBtns = screen.getAllByRole("button", {
+      name: /Palette role background/i,
+    });
+    fireEvent.click(bgSwatchBtns[0]);
+
+    // Mock next generate call for shuffle
+    postSpy.mockImplementationOnce(async () => {
+      return {
+        data: {
+          seed: 8888,
+          options: [
+            {
+              seed: 8888,
+              data: createMockTheme("shuffled-0", "Shuffled 0"),
+              checks: [],
+            },
+          ],
+        },
+      } as unknown as Awaited<ReturnType<typeof client.POST>>;
+    });
+
+    // Shuffle slot 0
+    const shuffleButtons = screen.getAllByRole("button", { name: /^shuffle$/i });
+    fireEvent.click(shuffleButtons[0]);
+
+    // Verify client.POST called with locked background in body
+    await waitFor(() => {
+      const shuffleCall = postSpy.mock.calls.find(
+        (call) =>
+          call[0] === "/admin/v1/themes/generate" &&
+          (call[1] as { body: { count?: number } })?.body?.count === 1
+      );
+      expect(shuffleCall).toBeDefined();
+
+      const reqBody = (shuffleCall![1] as { body: { locked?: { background?: string } } })?.body;
+      expect(reqBody.locked).toBeDefined();
+      expect(reqBody.locked?.background).toBe("#0c0a1a");
+    });
+  });
 });

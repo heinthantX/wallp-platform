@@ -47,6 +47,10 @@ const mainNavItems: NavItem[] = [
   { title: "Statistics", href: "/statistics", icon: BarChart3, phase: 6 },
 ];
 
+const generatorNavItems: NavItem[] = [
+  { title: "Recipes", href: "/generator/recipes", icon: Sparkles, phase: 5 },
+];
+
 const settingsNavItems: NavItem[] = [
   { title: "Store", href: "/settings/store", icon: Store, phase: 3 },
   { title: "Users", href: "/settings/users", icon: Users, adminOnly: true },
@@ -129,6 +133,46 @@ export function AppSidebar({
                 item.href === "/"
                   ? pathname === "/"
                   : pathname === item.href || pathname.startsWith(item.href + "/");
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  title={collapsed ? item.title : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                    isActive
+                      ? "bg-accent text-accent-foreground font-semibold"
+                      : "text-muted-foreground",
+                    collapsed && "justify-center px-2"
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span>{item.title}</span>}
+                  {!collapsed && item.phase && (
+                    <span className="ml-auto text-[10px] font-mono text-muted-foreground/60 border border-border/40 rounded px-1">
+                      p{item.phase}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Generator Nav */}
+        <div className="px-2 pt-2 border-t">
+          {!collapsed && (
+            <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Generator
+            </p>
+          )}
+          <nav className="flex flex-col gap-1">
+            {generatorNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
 
               return (
                 <Link
