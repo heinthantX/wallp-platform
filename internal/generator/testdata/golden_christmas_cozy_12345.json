@@ -1,0 +1,896 @@
+[
+  {
+    "theme": {
+      "id": "christmas-cabin-0nwx",
+      "rev": 1,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Christmas Cabin"
+      },
+      "style": "cozy",
+      "tags": [
+        "christmas",
+        "winter",
+        "holiday",
+        "cozy",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#211511",
+        "deep": "#100301",
+        "surface": "#3F2720",
+        "text": "#FCEDEE",
+        "textMuted": "#D1C3C3",
+        "motif": "#9E5139"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#EB9479"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#49BFDD"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#D9A358"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#EB9479",
+            "#49BFDD"
+          ],
+          "angle": 90
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "creepster"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#FCEDEE"
+      },
+      "eventIcon": "ac_unit_rounded",
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 15.67,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.43,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 15.67,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 7.66,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 8.29,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 7.91,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 7.66,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 8.29,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12345
+  },
+  {
+    "theme": {
+      "id": "christmas-cider-nqe6",
+      "rev": 1,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Christmas Cider"
+      },
+      "style": "cozy",
+      "tags": [
+        "christmas",
+        "winter",
+        "holiday",
+        "cozy",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#220D08",
+        "deep": "#0E0302",
+        "surface": "#4A302B",
+        "text": "#F9EDE8",
+        "textMuted": "#D0C5C0",
+        "motif": "#8D3E30"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#F49A89"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#4DC8DF"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#E6A764"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#F49A89",
+            "#4DC8DF"
+          ],
+          "angle": 180
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "creepster"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#F9EDE8"
+      },
+      "eventIcon": "ac_unit_rounded",
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 16.21,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 11.01,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 16.21,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 8.71,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 9.43,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 8.92,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 8.71,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 9.43,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12346
+  },
+  {
+    "theme": {
+      "id": "christmas-blanket-qmh0",
+      "rev": 1,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Christmas Blanket"
+      },
+      "style": "cozy",
+      "tags": [
+        "christmas",
+        "winter",
+        "holiday",
+        "cozy",
+        "gold"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#271003",
+        "deep": "#130400",
+        "surface": "#472A1A",
+        "text": "#FAF1E7",
+        "textMuted": "#D3CAC0",
+        "motif": "#835033"
+      },
+      "accents": [
+        {
+          "id": "primary-gold",
+          "name": {
+            "en": "Gold Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#DD8654"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#32ADDD"
+          ]
+        },
+        {
+          "id": "analogous-emerald",
+          "name": {
+            "en": "Emerald Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#C39833"
+          ]
+        },
+        {
+          "id": "gradient-gold-sapphire",
+          "name": {
+            "en": "Gold Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#DD8654",
+            "#32ADDD"
+          ],
+          "angle": 135
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "creepster"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#FAF1E7"
+      },
+      "eventIcon": "ac_unit_rounded",
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 16.18,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 11.17,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 16.18,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 6.55,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 7.02,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 6.77,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 6.55,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 7.02,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12347
+  },
+  {
+    "theme": {
+      "id": "christmas-snug-w1ko",
+      "rev": 1,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Christmas Snug"
+      },
+      "style": "cozy",
+      "tags": [
+        "christmas",
+        "winter",
+        "holiday",
+        "cozy",
+        "gold"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#291506",
+        "deep": "#100602",
+        "surface": "#402713",
+        "text": "#F3EBE1",
+        "textMuted": "#D3CBC1",
+        "motif": "#A66B3A"
+      },
+      "accents": [
+        {
+          "id": "primary-gold",
+          "name": {
+            "en": "Gold Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#D1915E"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#60AADA"
+          ]
+        },
+        {
+          "id": "analogous-emerald",
+          "name": {
+            "en": "Emerald Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#B7A051"
+          ]
+        },
+        {
+          "id": "gradient-gold-sapphire",
+          "name": {
+            "en": "Gold Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#D1915E",
+            "#60AADA"
+          ],
+          "angle": 135
+        }
+      ],
+      "fonts": {
+        "display": "cinzel-decorative",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#F3EBE1"
+      },
+      "eventIcon": "ac_unit_rounded",
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 14.77,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.86,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 14.77,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 6.58,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 6.86,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 6.78,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 6.58,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 6.86,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12348
+  },
+  {
+    "theme": {
+      "id": "christmas-lantern-autn",
+      "rev": 1,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Christmas Lantern"
+      },
+      "style": "cozy",
+      "tags": [
+        "christmas",
+        "winter",
+        "holiday",
+        "cozy",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#21100D",
+        "deep": "#120503",
+        "surface": "#3C2824",
+        "text": "#FBEAEE",
+        "textMuted": "#CCBCBF",
+        "motif": "#7F463C"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#FD9A89"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#3CCEE4"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#EEA85F"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#FD9A89",
+            "#3CCEE4"
+          ],
+          "angle": 90
+        }
+      ],
+      "fonts": {
+        "display": "cinzel-decorative",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#FBEAEE"
+      },
+      "eventIcon": "ac_unit_rounded",
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 15.82,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.06,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 15.82,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 8.88,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 9.73,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 9.09,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 8.88,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 9.73,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12349
+  },
+  {
+    "theme": {
+      "id": "christmas-fireside-ox6g",
+      "rev": 1,
+      "festivalId": "christmas",
+      "name": {
+        "en": "Christmas Fireside"
+      },
+      "style": "cozy",
+      "tags": [
+        "christmas",
+        "winter",
+        "holiday",
+        "cozy",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "christmas",
+        "params": {}
+      },
+      "palette": {
+        "background": "#1E0F0A",
+        "deep": "#160804",
+        "surface": "#46261B",
+        "text": "#F9ECEC",
+        "textMuted": "#CDC1C1",
+        "motif": "#945640"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#EE9A7D"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#55C2E2"
+          ]
+        },
+        {
+          "id": "analogous-emerald",
+          "name": {
+            "en": "Emerald Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#DBA85F"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#EE9A7D",
+            "#55C2E2"
+          ],
+          "angle": 135
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#F9ECEC"
+      },
+      "eventIcon": "ac_unit_rounded",
+      "iconPackId": "gold-ornament",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 16.17,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.63,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 16.17,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 8.47,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 9.04,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 8.67,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 8.47,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 9.04,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12350
+  }
+]

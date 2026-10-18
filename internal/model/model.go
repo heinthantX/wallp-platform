@@ -229,3 +229,32 @@ type Event struct {
 	At        time.Time `bun:",notnull"`
 	CreatedAt time.Time `bun:",notnull"`
 }
+
+type GeneratorRecipe struct {
+	bun.BaseModel `bun:"table:generator_recipes"`
+
+	ID         string    `bun:",pk"`
+	Name       string    `bun:",notnull"`
+	FestivalID *string   `bun:",nullzero"`
+	Data       JSON      `bun:"data,notnull"`
+	Enabled    bool      `bun:",notnull"`
+	CreatedBy  string    `bun:",notnull"`
+	UpdatedBy  string    `bun:",notnull"`
+	CreatedAt  time.Time `bun:",notnull"`
+	UpdatedAt  time.Time `bun:",notnull"`
+}
+
+type GeneratorFeedback struct {
+	bun.BaseModel `bun:"table:generator_feedback"`
+
+	ID         int64     `bun:",pk,autoincrement"`
+	UserID     *string   `bun:",nullzero"`
+	FestivalID *string   `bun:",nullzero"`
+	Mood       string    `bun:",notnull"`
+	RecipeID   *string   `bun:",nullzero"`
+	Seed       int64     `bun:",notnull"`
+	Palette    JSON      `bun:"palette,notnull"`
+	Hue        float64   `bun:",notnull"`
+	Action     string    `bun:",notnull"`
+	At         time.Time `bun:",notnull"`
+}

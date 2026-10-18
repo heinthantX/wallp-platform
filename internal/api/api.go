@@ -30,4 +30,5 @@ func Register(h huma.API, r *gin.Engine, d *Deps) {
 	registerAudit(h, d)
 	registerAppAuth(h, d)
 	registerCatalogItems(h, d)
+	registerGeneratorRecipes(h, d)
 }

@@ -31,6 +31,9 @@ type Input struct {
 	Seed         int64                 `json:"seed"`
 	Around       *catalog.Palette      `json:"around"` // "More like this": small jitter around this palette
 	Fonts        []FontInfo            `json:"fonts"`  // library: {ID, Category, Tags, Scripts}
+	Recipe       *Recipe               `json:"recipe,omitempty"`
+	Locked       *Locked               `json:"locked,omitempty"`
+	Existing     []ExistingTheme       `json:"existing,omitempty"`
 }
 
 // Check represents a single contrast validation check.
@@ -40,6 +43,7 @@ type Check struct {
 	Ratio float64 `json:"ratio"`
 	Min   float64 `json:"min"`
 	Pass  bool    `json:"pass"`
+	Level string  `json:"level,omitempty"` // error | warning
 }
 
 // Option represents a generated theme option along with its contrast checks and seed.
@@ -169,6 +173,11 @@ func generateBase36(rng *rand.Rand, length int) string {
 }
 
 func pickBaseHue(in Input, rng *rand.Rand) float64 {
+	if in.Recipe != nil && len(in.Recipe.HueRanges) > 0 {
+		hr := in.Recipe.HueRanges[rng.IntN(len(in.Recipe.HueRanges))]
+		return SampleHueRange(hr, rng.Float64())
+	}
+
 	if in.Around != nil && in.Around.Background != "" {
 		lch, err := HexToOKLCH(in.Around.Background)
 		if err == nil {
@@ -220,23 +229,32 @@ func selectFonts(in Input, rng *rand.Rand) (catalog.ThemeFonts, error) {
 	}
 
 	var displayCandidates []FontInfo
-	switch in.Mood {
-	case "cute":
+	if in.Recipe != nil && len(in.Recipe.FontTags.Display) > 0 {
 		for _, f := range in.Fonts {
-			if f.Category == "display" || f.Category == "handwritten" || hasAnyTag(f.Tags, "rounded", "cute", "handwritten") {
+			if hasAnyTag(f.Tags, in.Recipe.FontTags.Display...) {
 				displayCandidates = append(displayCandidates, f)
 			}
 		}
-	case "minimal":
-		for _, f := range in.Fonts {
-			if f.Category == "clean" {
-				displayCandidates = append(displayCandidates, f)
+	}
+	if len(displayCandidates) == 0 {
+		switch in.Mood {
+		case "cute":
+			for _, f := range in.Fonts {
+				if f.Category == "display" || f.Category == "handwritten" || hasAnyTag(f.Tags, "rounded", "cute", "handwritten") {
+					displayCandidates = append(displayCandidates, f)
+				}
 			}
-		}
-	case "classic", "cozy":
-		for _, f := range in.Fonts {
-			if f.Category == "display" {
-				displayCandidates = append(displayCandidates, f)
+		case "minimal":
+			for _, f := range in.Fonts {
+				if f.Category == "clean" {
+					displayCandidates = append(displayCandidates, f)
+				}
+			}
+		case "classic", "cozy":
+			for _, f := range in.Fonts {
+				if f.Category == "display" {
+					displayCandidates = append(displayCandidates, f)
+				}
 			}
 		}
 	}
@@ -246,23 +264,32 @@ func selectFonts(in Input, rng *rand.Rand) (catalog.ThemeFonts, error) {
 	displayFont := displayCandidates[rng.IntN(len(displayCandidates))].ID
 
 	var labelCandidates []FontInfo
-	switch in.Mood {
-	case "cute":
+	if in.Recipe != nil && len(in.Recipe.FontTags.Labels) > 0 {
 		for _, f := range in.Fonts {
-			if f.Category == "display" || f.Category == "handwritten" || hasAnyTag(f.Tags, "rounded", "cute", "handwritten") {
+			if hasAnyTag(f.Tags, in.Recipe.FontTags.Labels...) {
 				labelCandidates = append(labelCandidates, f)
 			}
 		}
-	case "minimal":
-		for _, f := range in.Fonts {
-			if f.Category == "clean" {
-				labelCandidates = append(labelCandidates, f)
+	}
+	if len(labelCandidates) == 0 {
+		switch in.Mood {
+		case "cute":
+			for _, f := range in.Fonts {
+				if f.Category == "display" || f.Category == "handwritten" || hasAnyTag(f.Tags, "rounded", "cute", "handwritten") {
+					labelCandidates = append(labelCandidates, f)
+				}
 			}
-		}
-	default:
-		for _, f := range in.Fonts {
-			if f.Category == "display" {
-				labelCandidates = append(labelCandidates, f)
+		case "minimal":
+			for _, f := range in.Fonts {
+				if f.Category == "clean" {
+					labelCandidates = append(labelCandidates, f)
+				}
+			}
+		default:
+			for _, f := range in.Fonts {
+				if f.Category == "display" {
+					labelCandidates = append(labelCandidates, f)
+				}
 			}
 		}
 	}
@@ -272,9 +299,18 @@ func selectFonts(in Input, rng *rand.Rand) (catalog.ThemeFonts, error) {
 	labelsFont := labelCandidates[rng.IntN(len(labelCandidates))].ID
 
 	var cleanFonts []FontInfo
-	for _, f := range in.Fonts {
-		if f.Category == "clean" {
-			cleanFonts = append(cleanFonts, f)
+	if in.Recipe != nil && len(in.Recipe.FontTags.Body) > 0 {
+		for _, f := range in.Fonts {
+			if hasAnyTag(f.Tags, in.Recipe.FontTags.Body...) {
+				cleanFonts = append(cleanFonts, f)
+			}
+		}
+	}
+	if len(cleanFonts) == 0 {
+		for _, f := range in.Fonts {
+			if f.Category == "clean" {
+				cleanFonts = append(cleanFonts, f)
+			}
 		}
 	}
 	if len(cleanFonts) == 0 {
@@ -342,7 +378,7 @@ func selectParticleEffect(festivalID string, tags []string) string {
 	return "stars"
 }
 
-func buildScene(engine string, festivalID string, tags []string, rng *rand.Rand) catalog.Scene {
+func buildScene(engine string, festivalID string, tags []string, rng *rand.Rand, recipe *Recipe) catalog.Scene {
 	if engine == "" {
 		engine = "layers"
 	}
@@ -351,6 +387,15 @@ func buildScene(engine string, festivalID string, tags []string, rng *rand.Rand)
 		return catalog.Scene{
 			Engine: engine,
 			Params: catalog.SceneParams{},
+		}
+	}
+
+	if recipe != nil && len(recipe.LayerTemplates) > 0 {
+		return catalog.Scene{
+			Engine: "layers",
+			Params: catalog.SceneParams{
+				Layers: recipe.LayerTemplates,
+			},
 		}
 	}
 
@@ -368,6 +413,30 @@ func buildScene(engine string, festivalID string, tags []string, rng *rand.Rand)
 	colorMotif := "@motif"
 	glow := true
 	motionPulse := "pulse"
+	var motifPoints [][]float64
+
+	if recipe != nil && len(recipe.Motifs) > 0 {
+		m := recipe.Motifs[rng.IntN(len(recipe.Motifs))]
+		if m.Shape != "" {
+			shapeCircle = m.Shape
+		}
+		if m.Glow != nil {
+			glow = *m.Glow
+		}
+		if m.Motion != "" {
+			motionPulse = m.Motion
+		}
+		if len(m.Points) > 0 {
+			motifPoints = m.Points
+		}
+		if m.WidthRange != nil {
+			w = round4(m.WidthRange[0] + rng.Float64()*(m.WidthRange[1]-m.WidthRange[0]))
+		}
+		if m.YRange != nil {
+			y = round4(m.YRange[0] + rng.Float64()*(m.YRange[1]-m.YRange[0]))
+		}
+	}
+
 	motifLayer := catalog.Layer{
 		Type:   "shape",
 		Shape:  &shapeCircle,
@@ -377,6 +446,7 @@ func buildScene(engine string, festivalID string, tags []string, rng *rand.Rand)
 		Color:  &colorMotif,
 		Glow:   &glow,
 		Motion: &motionPulse,
+		Points: motifPoints,
 	}
 
 	numHills := 1 + rng.IntN(2)
@@ -432,6 +502,23 @@ func buildScene(engine string, festivalID string, tags []string, rng *rand.Rand)
 	speed := round4(0.2 + rng.Float64()*0.3)
 	opacity := round4(0.6 + rng.Float64()*0.3)
 	colorText := "@text"
+
+	if recipe != nil && len(recipe.Particles) > 0 {
+		p := recipe.Particles[rng.IntN(len(recipe.Particles))]
+		if p.Effect != "" {
+			particleEffect = p.Effect
+		}
+		if p.CountRange != nil && p.CountRange[1] >= p.CountRange[0] {
+			span := p.CountRange[1] - p.CountRange[0] + 1
+			count = p.CountRange[0] + rng.IntN(span)
+		}
+		if p.SpeedRange != nil && p.SpeedRange[1] >= p.SpeedRange[0] {
+			speed = round4(p.SpeedRange[0] + rng.Float64()*(p.SpeedRange[1]-p.SpeedRange[0]))
+		}
+		if p.OpacityRange != nil && p.OpacityRange[1] >= p.OpacityRange[0] {
+			opacity = round4(p.OpacityRange[0] + rng.Float64()*(p.OpacityRange[1]-p.OpacityRange[0]))
+		}
+	}
 
 	particleLayer := catalog.Layer{
 		Type:    "particles",
@@ -505,7 +592,15 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 	mutedL = 0.80 + rng.Float64()*(0.85-0.80)
 	motifL = 0.45 + rng.Float64()*(0.60-0.45)
 
-	if isMinimal {
+	if in.Recipe != nil && in.Recipe.Chroma != nil {
+		span := in.Recipe.Chroma.Max - in.Recipe.Chroma.Min
+		bgC = in.Recipe.Chroma.Min + rng.Float64()*(span*0.5)
+		deepC = in.Recipe.Chroma.Min + rng.Float64()*(span*0.5)
+		surfaceC = in.Recipe.Chroma.Min + rng.Float64()*span
+		textC = in.Recipe.Chroma.Min + rng.Float64()*(span*0.2)
+		mutedC = textC
+		motifC = in.Recipe.Chroma.Min + span*0.6 + rng.Float64()*(span*0.4)
+	} else if isMinimal {
 		bgC = 0.01 + rng.Float64()*0.015
 		deepC = 0.01 + rng.Float64()*0.015
 		surfaceC = 0.015 + rng.Float64()*0.015
@@ -533,6 +628,29 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 	// Accents
 	compHue := NormalizeHue(baseHue + 180.0)
 	anaHue := NormalizeHue(baseHue + 35.0)
+
+	if in.Recipe != nil && in.Recipe.AccentHues != "" {
+		switch in.Recipe.AccentHues {
+		case "triad":
+			compHue = NormalizeHue(baseHue + 120.0)
+			anaHue = NormalizeHue(baseHue + 240.0)
+		case "analogous":
+			compHue = NormalizeHue(baseHue + 30.0)
+			anaHue = NormalizeHue(baseHue + 60.0)
+		case "complementary":
+			compHue = NormalizeHue(baseHue + 180.0)
+			anaHue = NormalizeHue(baseHue + 35.0)
+		case "recipe":
+			if len(in.Recipe.AccentHueRanges) > 0 {
+				compHue = SampleHueRange(in.Recipe.AccentHueRanges[0], rng.Float64())
+				if len(in.Recipe.AccentHueRanges) > 1 {
+					anaHue = SampleHueRange(in.Recipe.AccentHueRanges[1], rng.Float64())
+				} else {
+					anaHue = NormalizeHue(compHue + 35.0)
+				}
+			}
+		}
+	}
 
 	var solidAccentsOK []OKLCH
 	if isMinimal {
@@ -565,6 +683,47 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 
 	angles := []int{90, 135, 180}
 	gradAngle := angles[rng.IntN(len(angles))]
+
+	// Apply locked swatches before nudging
+	if in.Locked != nil {
+		if in.Locked.Background != nil && *in.Locked.Background != "" {
+			if lch, err := HexToOKLCH(*in.Locked.Background); err == nil {
+				bgOK = lch
+			}
+		}
+		if in.Locked.Deep != nil && *in.Locked.Deep != "" {
+			if lch, err := HexToOKLCH(*in.Locked.Deep); err == nil {
+				deepOK = lch
+			}
+		}
+		if in.Locked.Surface != nil && *in.Locked.Surface != "" {
+			if lch, err := HexToOKLCH(*in.Locked.Surface); err == nil {
+				surfaceOK = lch
+			}
+		}
+		if in.Locked.Text != nil && *in.Locked.Text != "" {
+			if lch, err := HexToOKLCH(*in.Locked.Text); err == nil {
+				textOK = lch
+			}
+		}
+		if in.Locked.TextMuted != nil && *in.Locked.TextMuted != "" {
+			if lch, err := HexToOKLCH(*in.Locked.TextMuted); err == nil {
+				mutedOK = lch
+			}
+		}
+		if in.Locked.Motif != nil && *in.Locked.Motif != "" {
+			if lch, err := HexToOKLCH(*in.Locked.Motif); err == nil {
+				motifOK = lch
+			}
+		}
+		for ai, accHex := range in.Locked.Accents {
+			if ai < len(solidAccentsOK) && accHex != "" {
+				if lch, err := HexToOKLCH(accHex); err == nil {
+					solidAccentsOK[ai] = lch
+				}
+			}
+		}
+	}
 
 	// Nudge loop (max 40 steps)
 	var finalPalette catalog.Palette
@@ -740,28 +899,134 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 			break
 		}
 
-		// Nudge step: lower background L or raise text/accent L
-		if bgOK.L > 0.05 {
+		// Nudge step: lower background L or raise text/accent L (only for unlocked roles)
+		lockedBG := in.Locked != nil && in.Locked.Background != nil && *in.Locked.Background != ""
+		lockedDeep := in.Locked != nil && in.Locked.Deep != nil && *in.Locked.Deep != ""
+		lockedText := in.Locked != nil && in.Locked.Text != nil && *in.Locked.Text != ""
+		lockedMuted := in.Locked != nil && in.Locked.TextMuted != nil && *in.Locked.TextMuted != ""
+
+		if !lockedBG && bgOK.L > 0.05 {
 			bgOK.L = math.Max(0.04, bgOK.L-0.01)
-			if deepOK.L >= bgOK.L {
+			if !lockedDeep && deepOK.L >= bgOK.L {
 				deepOK.L = math.Max(0.02, bgOK.L-0.03)
 			}
 		}
-		if ratioText < 4.5 && textOK.L < 0.99 {
+		if !lockedText && ratioText < 4.5 && textOK.L < 0.99 {
 			textOK.L = math.Min(0.99, textOK.L+0.01)
 		}
-		if ratioMuted < 4.5 && mutedOK.L < 0.98 {
+		if !lockedMuted && ratioMuted < 4.5 && mutedOK.L < 0.98 {
 			mutedOK.L = math.Min(0.98, mutedOK.L+0.01)
 		}
 		for ai := range solidAccentsOK {
-			if ratioAcc[ai] < 3.0 && solidAccentsOK[ai].L < 0.96 {
+			lockedAcc := in.Locked != nil && ai < len(in.Locked.Accents) && in.Locked.Accents[ai] != ""
+			if !lockedAcc && ratioAcc[ai] < 3.0 && solidAccentsOK[ai].L < 0.96 {
 				solidAccentsOK[ai].L = math.Min(0.96, solidAccentsOK[ai].L+0.01)
 			}
 		}
 	}
 
 	if !success {
-		return nil, false
+		if in.Locked != nil {
+			motifHex := OKLCHToHex(motifOK)
+			deepHex := OKLCHToHex(deepOK)
+			surfaceHex := OKLCHToHex(surfaceOK)
+			bgHex := OKLCHToHex(bgOK)
+			textHex := OKLCHToHex(textOK)
+			mutedHex := OKLCHToHex(mutedOK)
+
+			finalPalette = catalog.Palette{
+				Background: bgHex,
+				Deep:       deepHex,
+				Surface:    surfaceHex,
+				Text:       textHex,
+				TextMuted:  mutedHex,
+				Motif:      &motifHex,
+			}
+
+			finalChecks = []Check{
+				{
+					Name:  "locked_conflict",
+					Field: "locked",
+					Ratio: 0,
+					Min:   4.5,
+					Pass:  false,
+					Level: "error",
+				},
+			}
+
+			if isMinimal {
+				accID := fmt.Sprintf("accent-%s", hueWord(solidAccentsOK[0].H))
+				finalAccents = []catalog.Accent{
+					{
+						ID:     accID,
+						Name:   catalog.Localized{"en": fmt.Sprintf("%s Accent", hueDisplayName(solidAccentsOK[0].H))},
+						Type:   "solid",
+						Colors: []string{OKLCHToHex(solidAccentsOK[0])},
+					},
+				}
+			} else {
+				a1ID := fmt.Sprintf("primary-%s", hueWord(solidAccentsOK[0].H))
+				a2ID := fmt.Sprintf("complement-%s", hueWord(solidAccentsOK[1].H))
+				a3ID := fmt.Sprintf("analogous-%s", hueWord(solidAccentsOK[2].H))
+				gradID := fmt.Sprintf("gradient-%s-%s", hueWord(solidAccentsOK[0].H), hueWord(solidAccentsOK[1].H))
+
+				finalAccents = []catalog.Accent{
+					{
+						ID:     a1ID,
+						Name:   catalog.Localized{"en": fmt.Sprintf("%s Accent", hueDisplayName(solidAccentsOK[0].H))},
+						Type:   "solid",
+						Colors: []string{OKLCHToHex(solidAccentsOK[0])},
+					},
+					{
+						ID:     a2ID,
+						Name:   catalog.Localized{"en": fmt.Sprintf("%s Complement", hueDisplayName(solidAccentsOK[1].H))},
+						Type:   "solid",
+						Colors: []string{OKLCHToHex(solidAccentsOK[1])},
+					},
+					{
+						ID:     a3ID,
+						Name:   catalog.Localized{"en": fmt.Sprintf("%s Analogous", hueDisplayName(solidAccentsOK[2].H))},
+						Type:   "solid",
+						Colors: []string{OKLCHToHex(solidAccentsOK[2])},
+					},
+					{
+						ID:     gradID,
+						Name:   catalog.Localized{"en": fmt.Sprintf("%s %s Glow", hueDisplayName(solidAccentsOK[0].H), hueDisplayName(solidAccentsOK[1].H))},
+						Type:   "gradient",
+						Colors: []string{OKLCHToHex(solidAccentsOK[0]), OKLCHToHex(solidAccentsOK[1])},
+						Angle:  &gradAngle,
+					},
+				}
+			}
+		} else {
+			return nil, false
+		}
+	}
+
+	if in.Locked != nil {
+		if in.Locked.Background != nil && *in.Locked.Background != "" {
+			finalPalette.Background = *in.Locked.Background
+		}
+		if in.Locked.Deep != nil && *in.Locked.Deep != "" {
+			finalPalette.Deep = *in.Locked.Deep
+		}
+		if in.Locked.Surface != nil && *in.Locked.Surface != "" {
+			finalPalette.Surface = *in.Locked.Surface
+		}
+		if in.Locked.Text != nil && *in.Locked.Text != "" {
+			finalPalette.Text = *in.Locked.Text
+		}
+		if in.Locked.TextMuted != nil && *in.Locked.TextMuted != "" {
+			finalPalette.TextMuted = *in.Locked.TextMuted
+		}
+		if in.Locked.Motif != nil && *in.Locked.Motif != "" {
+			finalPalette.Motif = in.Locked.Motif
+		}
+		for ai, accHex := range in.Locked.Accents {
+			if ai < len(finalAccents) && accHex != "" {
+				finalAccents[ai].Colors = []string{accHex}
+			}
+		}
 	}
 
 	themeFonts, err := selectFonts(in, rng)
@@ -770,7 +1035,9 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 	}
 
 	words := moodWordLists[in.Mood]
-	if len(words) == 0 {
+	if in.Recipe != nil && len(in.Recipe.NameWords.EN) > 0 {
+		words = in.Recipe.NameWords.EN
+	} else if len(words) == 0 {
 		words = moodWordLists["classic"]
 	}
 	moodWord := words[rng.IntN(len(words))]
@@ -805,8 +1072,24 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 	}
 
 	eventIcon := selectEventIcon(in.FestivalID, in.FestivalTags)
+	if in.Recipe != nil && in.Recipe.EventIcon != "" {
+		eventIcon = in.Recipe.EventIcon
+	}
 	minAppVersion := getMinAppVersion(in.Engine)
-	scene := buildScene(in.Engine, in.FestivalID, in.FestivalTags, rng)
+	scene := buildScene(in.Engine, in.FestivalID, in.FestivalTags, rng, in.Recipe)
+
+	if in.Recipe != nil {
+		budget := 200
+		if in.Recipe.CostBudget > 0 {
+			budget = in.Recipe.CostBudget
+		}
+		for attempt := 0; attempt < 5; attempt++ {
+			if CalculateSceneCost(scene) <= budget {
+				break
+			}
+			scene = buildScene(in.Engine, in.FestivalID, in.FestivalTags, rng, in.Recipe)
+		}
+	}
 
 	theme := catalog.ThemeDetail{
 		ID:            themeID,
@@ -833,6 +1116,37 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 
 	if errs := theme.Validate(); len(errs) > 0 {
 		return nil, false
+	}
+
+	if in.Recipe != nil {
+		for i := range finalChecks {
+			finalChecks[i].Level = "error"
+		}
+		budget := 200
+		if in.Recipe.CostBudget > 0 {
+			budget = in.Recipe.CostBudget
+		}
+		finalChecks = append(finalChecks, CheckSceneCost(theme.Scene, budget))
+		finalChecks = append(finalChecks, CheckCVDAccents(finalAccents)...)
+	}
+
+	if len(in.Existing) > 0 {
+		for _, ex := range in.Existing {
+			dist := PaletteDistance(finalPalette, ex.Palette, finalAccents, ex.Accents)
+			if dist < 0.04 {
+				return nil, false
+			}
+			if dist < 0.08 {
+				finalChecks = append(finalChecks, Check{
+					Name:  "similar_to",
+					Field: ex.ID,
+					Ratio: round4(dist),
+					Min:   0.08,
+					Pass:  true,
+					Level: "warning",
+				})
+			}
+		}
 	}
 
 	return &Option{

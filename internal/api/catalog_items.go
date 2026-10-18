@@ -110,14 +110,16 @@ type SimpleOKOutput struct {
 
 type GenerateThemeInput struct {
 	Body struct {
-		FestivalID  string           `json:"festivalId" doc:"Festival ID (must exist)"`
-		Mood        string           `json:"mood,omitempty" doc:"Theme mood: classic, cozy, minimal, cute"`
-		BaseColor   string           `json:"baseColor,omitempty" doc:"Hex color code"`
-		Engine      string           `json:"engine,omitempty" doc:"Engine (halloween, christmas, thingyan, layers)"`
-		Description string           `json:"description,omitempty"`
-		Seed        *int64           `json:"seed,omitempty"`
-		Count       *int             `json:"count,omitempty"`
-		Around      *catalog.Palette `json:"around,omitempty"`
+		FestivalID  string            `json:"festivalId" doc:"Festival ID (must exist)"`
+		Mood        string            `json:"mood,omitempty" doc:"Theme mood: classic, cozy, minimal, cute"`
+		BaseColor   string            `json:"baseColor,omitempty" doc:"Hex color code"`
+		Engine      string            `json:"engine,omitempty" doc:"Engine (halloween, christmas, thingyan, layers)"`
+		Description string            `json:"description,omitempty"`
+		Seed        *int64            `json:"seed,omitempty"`
+		Count       *int              `json:"count,omitempty"`
+		Around      *catalog.Palette  `json:"around,omitempty"`
+		RecipeID    *string           `json:"recipeId,omitempty"`
+		Locked      *generator.Locked `json:"locked,omitempty"`
 	}
 }
 
@@ -608,8 +610,60 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			return nil, err
 		}
 
-		// 2. Validate mood
+		// 2. Load recipe: if recipeId given, use that; else first enabled recipe for the festival; else default recipe.
+		var recipe *generator.Recipe
+		if in.Body.RecipeID != nil && strings.TrimSpace(*in.Body.RecipeID) != "" {
+			var recRow model.GeneratorRecipe
+			if err := d.DB.NewSelect().Model(&recRow).Where("id = ?", strings.TrimSpace(*in.Body.RecipeID)).Scan(ctx); err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return nil, apierr.NotFound("Recipe " + *in.Body.RecipeID)
+				}
+				return nil, err
+			}
+			var rec generator.Recipe
+			if err := json.Unmarshal(recRow.Data, &rec); err != nil {
+				return nil, err
+			}
+			recipe = &rec
+		} else {
+			var recRow model.GeneratorRecipe
+			err := d.DB.NewSelect().Model(&recRow).
+				Where("festival_id = ? AND enabled = true", fest.ID).
+				Order("name ASC").
+				Limit(1).
+				Scan(ctx)
+			if err == nil {
+				var rec generator.Recipe
+				if err := json.Unmarshal(recRow.Data, &rec); err == nil {
+					recipe = &rec
+				}
+			} else if errors.Is(err, sql.ErrNoRows) {
+				err = d.DB.NewSelect().Model(&recRow).
+					Where("id = 'default' AND enabled = true").
+					Limit(1).
+					Scan(ctx)
+				if err == nil {
+					var rec generator.Recipe
+					if err := json.Unmarshal(recRow.Data, &rec); err == nil {
+						recipe = &rec
+					}
+				}
+			}
+		}
+
+		// 3. Mood and description interpretation
 		mood := in.Body.Mood
+		if strings.TrimSpace(in.Body.Description) != "" {
+			var extraKeywords []generator.KeywordEntry
+			if recipe != nil {
+				extraKeywords = recipe.KeywordEntries()
+			}
+			interp := generator.Interpret(in.Body.Description, extraKeywords)
+			if mood == "" && interp.Mood != "" {
+				mood = interp.Mood
+			}
+		}
+
 		if mood == "" {
 			mood = "classic"
 		}
@@ -619,14 +673,14 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			return nil, apierr.Invalid("mood", "Invalid mood: must be classic, cozy, minimal, or cute")
 		}
 
-		// 3. Validate baseColor
+		// 4. Validate baseColor
 		if in.Body.BaseColor != "" {
 			if !hexColorRegex.MatchString(in.Body.BaseColor) {
 				return nil, apierr.Invalid("baseColor", "Invalid baseColor: must be a 6-digit hex color like #RRGGBB")
 			}
 		}
 
-		// 4. Validate engine
+		// 5. Validate engine
 		engine := in.Body.Engine
 		if engine == "" {
 			engine = "layers"
@@ -635,7 +689,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			return nil, apierr.Invalid("engine", "Invalid engine: "+engine)
 		}
 
-		// 5. Count
+		// 6. Count
 		count := 6
 		if in.Body.Count != nil {
 			count = *in.Body.Count
@@ -644,7 +698,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			}
 		}
 
-		// 6. Seed
+		// 7. Seed
 		var seed int64
 		if in.Body.Seed != nil {
 			seed = *in.Body.Seed
@@ -652,7 +706,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			seed = rand.Int64()
 		}
 
-		// 7. Load fonts (status published or approved)
+		// 8. Load fonts (status published or approved)
 		var fontRows []items.ItemRow
 		if err := d.DB.NewSelect().Table("fonts").
 			Where("status = ? OR status = ?", model.StatusPublished, model.StatusApproved).
@@ -673,6 +727,23 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			}
 		}
 
+		// 9. Load existing themes for deduplication
+		var themeRows []items.ItemRow
+		_ = d.DB.NewSelect().Table("themes").
+			Column("id", "data").
+			Scan(ctx, &themeRows)
+		var existingThemes []generator.ExistingTheme
+		for _, tr := range themeRows {
+			var td catalog.ThemeDetail
+			if err := json.Unmarshal(tr.Data, &td); err == nil {
+				existingThemes = append(existingThemes, generator.ExistingTheme{
+					ID:      td.ID,
+					Palette: td.Palette,
+					Accents: td.Accents,
+				})
+			}
+		}
+
 		genIn := generator.Input{
 			FestivalID:   fest.ID,
 			FestivalName: fest.Name,
@@ -685,6 +756,9 @@ func registerCatalogItems(h huma.API, d *Deps) {
 			Seed:         seed,
 			Around:       in.Body.Around,
 			Fonts:        fontInfos,
+			Recipe:       recipe,
+			Locked:       in.Body.Locked,
+			Existing:     existingThemes,
 		}
 
 		options, err := generator.Generate(genIn, count)
