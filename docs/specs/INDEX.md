@@ -3,3 +3,4 @@
 | admin-auth-and-app-accounts | Admin JWT/refresh/TOTP/roles/audit + optional app-user accounts, Gin+Huma+Bun | docs/specs/admin-auth-and-app-accounts.md | 2026-10-18 |
 | theme-generator | Zero-AI seeded OKLCH theme generator: recipes, keyword map, photo palette, feedback, breed | docs/specs/theme-generator.md | 2026-10-18 |
 | catalog-format | internal/catalog typed structs, validation, summaries (phase 2a) | docs/specs/catalog-format.md | 2026-10-18 |
+| catalog-import-export | Admin bundle import (multipart or server dir) and export as catalog.json, round-trip tested | docs/specs/catalog-import-export.md | 2026-10-18 |

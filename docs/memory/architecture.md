@@ -12,7 +12,10 @@ One codebase, dialect chosen by `DATABASE_URL`. Migrations are Go files with por
 - Optional app-user accounts under `/v1`; anonymous use always works.
 
 ## Theme generator: no AI, deterministic
-Chose a seeded OKLCH generator plus DB recipes, embedded en+my keyword map, median-cut photo palettes, and hue-histogram feedback/breed over an LLM helper, because user locked zero AI/API cost (2026-10-18). Same input + seed gives identical output. Built-in rules live as 4 seed recipes. See specs/theme-generator.md.
+Chose a seeded OKLCH generator over an LLM helper, because user locked zero AI/API cost (2026-10-18). Same input + seed gives identical output. Recipes in DB, embedded keyword map, median-cut photo palettes and hue-histogram feedback/breed are phase 5c and not built yet. See specs/theme-generator.md.
+
+## Catalog import/export
+Chose one `POST /admin/v1/import` with multipart uploads plus a server-side `{dir}` form, over a separate CLI-only path, so the admin UI and `wallp import --dir` share one write path. The dir form returns 403 when `APP_ENV=production` because it reads server files. Every imported item writes an audit entry `import`. Round-trip test (import mock catalog, export equals mock files) is the guard. See specs/catalog-import-export.md.
 
 ## Catalog package
 `internal/catalog`: typed structs for validation/summary only; cross-ref `Catalog.Validate()` deferred to phase 4.
