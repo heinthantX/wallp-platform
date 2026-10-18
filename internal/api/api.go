@@ -29,4 +29,5 @@ func Register(h huma.API, r *gin.Engine, d *Deps) {
 	registerUsers(h, d)
 	registerAudit(h, d)
 	registerAppAuth(h, d)
+	registerCatalogItems(h, d)
 }

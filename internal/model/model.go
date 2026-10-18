@@ -22,6 +22,7 @@ var Roles = []string{RoleAdmin, RoleDesigner, RoleReviewer, RoleViewer}
 const (
 	StatusDraft     = "draft"
 	StatusInReview  = "in_review"
+	StatusApproved  = "approved"
 	StatusScheduled = "scheduled"
 	StatusPublished = "published"
 	StatusArchived  = "archived"
@@ -114,12 +115,13 @@ type AuditEntry struct {
 
 // Item is the shared shape of every catalog table.
 type Item struct {
-	ID         string  `bun:",pk"`
-	Status     string  `bun:",notnull"`
-	FestivalID *string `bun:",nullzero"`
-	Sort       int     `bun:",notnull"`
-	Search     string  `bun:",notnull"` // lowercased names + tags, for q=
-	Data       JSON    `bun:"data,notnull"`
+	ID            string  `bun:",pk"`
+	Status        string  `bun:",notnull"`
+	FestivalID    *string `bun:",nullzero"`
+	Sort          int     `bun:",notnull"`
+	Search        string  `bun:",notnull"` // lowercased names + tags, for q=
+	Data          JSON    `bun:"data,notnull"`
+	PublishedData JSON    `bun:"published_data"`
 	// Rev of the last published file; publish bumps it when Data changed.
 	Rev            int        `bun:",notnull"`
 	PublishedHash  string     `bun:",notnull"`
