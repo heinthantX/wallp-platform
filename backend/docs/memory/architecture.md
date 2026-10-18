@@ -17,6 +17,15 @@ Chose a seeded OKLCH generator over an LLM helper, because user locked zero AI/A
 ## Catalog import/export
 Chose one `POST /admin/v1/import` with multipart uploads plus a server-side `{dir}` form, over a separate CLI-only path, so the admin UI and `wallp import --dir` share one write path. The dir form returns 403 when `APP_ENV=production` because it reads server files. Every imported item writes an audit entry `import`. Round-trip test (import mock catalog, export equals mock files) is the guard. See specs/catalog-import-export.md.
 
+## Import keeps status; export is a backup
+Chose export-as-backup (user choice a): `ExportBundle.statuses` lists unpublished items only, and import keeps each item's draft/in_review/approved status via `items.ImportItemAs`, keeping existing published data. Replaces "import always sets published". See specs/catalog-import-export.md.
+
+## Admin approves straight from draft
+User choice (P1b): admin role may approve from draft without requesting review. Replaces "request review required before approve" for admins. See specs/admin-editor-ux.md.
+
+## AI is optional; status and 501 shape
+Hybrid ladder, only the prompt kit built. `GET /admin/v1/ai/status` (any role) returns booleans and env key names, never values. Missing keys give 501 `ai_not_configured` in the standard apierr shape with `details[].field` per missing key (not a flat body). Keys: OPENROUTER_API_KEY, OPENROUTER_MODEL, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_AI_TOKEN, GEMINI_API_KEY. No provider client yet. See specs/ai-creation.md.
+
 ## Catalog package and validation
 `internal/catalog`: typed structs for validation and summaries. `Catalog.Validate()` is implemented and runs inside `checks.Run` (cross-item and soft references). See specs/checks-and-releases.md.
 

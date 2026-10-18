@@ -55,31 +55,25 @@ Both runners chose the hybrid with A first. Confirmed: A is the only option that
 - Overturned: sonnet's "F glyph fallback tonight". The locked fallback chain (per-app image, then pack tile + logo, then painted, then app icon) already covers missing apps, so glyphs add nothing tonight. D moves to deferred.
 - Overturned: sonnet's `POST /admin/v1/icon-packs/{id}/import`. Files upload through the existing `POST /admin/v1/assets`, which already handles dedupe, sniffing and caps. P6 owns the import UI.
 
-## Built tonight: P7 (about 25 min, one implementer, never needs a key)
-1. **Backend `GET /admin/v1/ai/status`**, registered with `auth.Admin(op)` (any dashboard role, including viewer, since it returns booleans only). It reads env presence only, never values:
-   ```json
-   {"anyConfigured": false,
-    "providers": [
-      {"id":"openrouter","kind":"text","configured":false,"envKeys":["OPENROUTER_API_KEY"]},
-      {"id":"cloudflare","kind":"image","configured":false,"envKeys":["CLOUDFLARE_ACCOUNT_ID","CLOUDFLARE_AI_TOKEN"]},
-      {"id":"gemini","kind":"text","configured":false,"envKeys":["GEMINI_API_KEY"]}]}
-   ```
-   `configured` is true only when every listed key is non-empty. One table test covers no env (all false), one key set, and a partial Cloudflare pair (false).
-2. **501 helper, defined but unused until the first provider ships.** `aiNotConfigured(provider)` returns 501:
-   `{"code":"ai_not_configured","provider":"cloudflare","envKeys":["CLOUDFLARE_ACCOUNT_ID","CLOUDFLARE_AI_TOKEN"],"message":"Image generation is off. Use Copy prompt kit, or set these keys."}`. A provider quota error later maps to 429 `ai_quota_exhausted` with `resetAt` when the provider gives one.
-3. **Admin prompt kit, pure admin (no endpoint).** A "Copy prompt kit" button on the icon pack editor and the theme editor. The admin already holds the pack and theme data, so a backend round trip adds nothing.
+## Built: P7 part A (wallp-loop-2, 2026-10-19; never needs a key)
+Shipped: status endpoint, 501 helper, admin prompt kit, disabled AI placeholders. No provider client exists yet.
+1. **Backend `GET /admin/v1/ai/status`** (`internal/api/ai.go`), `auth.Admin(op)` so any role incl. viewer. Booleans plus env key names, never values:
+   `{"anyConfigured":false,"providers":[{"id":"openrouter","kind":"text","configured":false,"envKeys":[...]}, cloudflare (image), gemini (text)]}`.
+   `configured` is true only when every listed key is non-empty. Table test: no env, one key, partial Cloudflare pair.
+2. **501 helper `aiNotConfigured(provider)`**, defined, unused until a provider ships. Uses the standard apierr shape (supersedes the flat body sketched earlier): 501 `{error:{code:"ai_not_configured",message,details:[{field:<each missing env key>}]}}`. Later: provider quota error maps to 429 `ai_quota_exhausted` with `resetAt`.
+3. **Admin prompt kit, pure admin (no endpoint)**: `src/lib/prompt-kit.ts`, UI in `src/components/ai/*`. A "Copy prompt kit" button on the icon pack editor and the theme editor (toast on copy). The admin already holds the pack and theme data, so a backend round trip adds nothing.
    - Inputs: pack name, `style`, `tile`/`glyph`/`ring` hex plus the theme accents, and selected apps from the P6 common-app list (default: the missing ones).
    - Output: plain text, a preamble plus one line per app:
      > Icon set, {pack name}, {style} style. One square 1024x1024 PNG per subject. Flat illustration, same light from top-left, same line weight, palette: background {tile}, main {glyph}, detail {accent}. Subject centred inside the middle 66%, background fills edge to edge, no border, no rounded corners, no text, no watermark, no brand logos: draw the app's purpose, not its logo. Save each file under the given name.
      > `com.google.android.apps.maps.png`: a map pin with a holly sprig
    - Tips under the button: approve the first icon, then reuse it as a style reference (chat tools: "match the previous image"; Midjourney: `--sref <url> --ar 1:1`; Ideogram: style-reference upload).
-4. **AI buttons** ("Suggest names", "Generate icons") render disabled when `/ai/status` reports the provider unconfigured, with the tooltip "Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN to enable". Each button is a placeholder with no handler until its provider lands.
+4. **AI buttons** ("Suggest names", "Generate icons") are disabled placeholders with no handler until a provider lands. The disabled reason is exposed accessibly (tooltip plus aria text), e.g. "Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN to enable".
 5. **Env keys documented** in `.env.example` (names only, empty values) and in `docs/api/admin.md`.
 
 Out of P7: any provider client, model discovery, and the glyph filler.
 
-## Per-app icon pack flow (P6, separate ~35 min phase)
-**Data:** `IconPack.apps`: an optional map of Android package name to `Asset`, with `json:"apps,omitempty"`, so old clients ignore it. An optional `appsFallbackStyle` string sets the fallback style. A pack can be partial. No migration.
+## Per-app icon pack flow (P6, built; UI in specs/admin-editor-ux.md)
+**Data:** `IconPack.apps`: an optional map of Android package name to `Asset`, with `json:"apps,omitempty"`, so old clients ignore it. An optional `appsFallbackStyle` string sets the fallback style. A pack can be partial. No migration. Built check codes are in specs/catalog-format.md; fallback order is in docs/api/app-client.md.
 
 **Backend checks**, per image at the trust boundary, as stable warning/error codes:
 - `not_square`: not square within 1%.

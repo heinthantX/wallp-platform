@@ -24,6 +24,7 @@ Content-addressed uploads (images, fonts, JSON) plus the wallpaper, font, icon p
 - Files over 10 MB rejected (Huma `MaxBodyBytes`); metadata responses capped at 32 MB.
 - Side over 8000 px rejected.
 - Unknown or missing licence returns 422 on field `license`. Never silently defaults to OFL.
+- Concurrent identical uploads (B16): asset insert is `ON CONFLICT (sha256) DO NOTHING`; RowsAffected 0 means deduped, so the loser returns the existing row with `deduped:true` instead of a unique-violation error.
 - Delete returns 409 `asset_in_use` when any item JSON references the url (bound `LIKE` via `likeContains`).
 - Static route: filename must match `^[a-f0-9]{64}\.(png|jpg|webp|ttf|otf|json)$`. `../` and other names rejected.
 - Google host outside the allowlist rejected; timeouts surface as a clear error, not a hang.

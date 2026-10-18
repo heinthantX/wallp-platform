@@ -16,6 +16,8 @@ Admin-only bundle import and export of the catalog: themes, assets and festivals
 - Directory import: same write path, with the server-side directory as the source.
 - Export: returns the full bundle. The admin downloads it as `catalog.json`.
 - Round-trip invariant: import the mock catalog, then export. The output equals the mock theme files and catalog festivals. This is the regression test.
+- Export is a backup (B15): `ExportBundle.statuses` maps unpublished items to their status (draft/in_review/approved). Import writes each item through `items.ImportItemAs`, keeping that status; items without an entry import as published. Existing published data is kept.
+- B13: `RunImport` also imports inline themes (catalog entries with `accents`) when no theme files are supplied.
 
 ## Edge Cases
 - Dir form is blocked in production with 403. The check is on `APP_ENV`, not on the request body.

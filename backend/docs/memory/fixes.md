@@ -12,3 +12,18 @@ Root cause: an agy delegation rewrote `openapi.json`, which it was told to leave
 
 ## Shell gate chains committed after a failed step
 Root cause: `(a; b; c) && git commit` only checks the subshell's last exit code, so an inner failure still commits. Fix: check each step's exit code before committing.
+
+## Audit timeline stale after mutations (B12)
+Root cause: only the mutating view's queries were invalidated. Fix: global `MutationCache.onSuccess` in `query-provider.tsx` invalidates `queryKeys.allAudit`.
+
+## RunImport ignored inline themes (B13)
+Root cause: with no theme files given, entries carrying inline `accents` were skipped. Fix: import inline themes from the catalog in that case.
+
+## Festival default font ids (B14)
+Root cause: defaults like "creepster" did not match the font catalog's kebab ids. Fix: use kebab ids matching the catalog.
+
+## Concurrent identical uploads raced on sha256 (B16)
+Root cause: check-then-insert on the unique sha256 column. Fix: insert `ON CONFLICT (sha256) DO NOTHING`; RowsAffected 0 means deduped, return the existing row.
+
+## CORS "Failed to fetch" from cached img response (B17)
+Root cause: CORS responses lacked `Vary: Origin`, so a copy cached by an `<img>` load (no Origin header) was reused by `fetch()` and failed CORS. Fix: server adds `Vary: Origin`; the quick wizard fetches with `cache: "no-store"`.
