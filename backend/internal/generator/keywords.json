@@ -1,0 +1,619 @@
+[
+  {
+    "words": { "en": ["snow", "snowy", "snowfall", "blizzard"], "my": ["နှင်း", "နှင်းမုန်တိုင်း"] },
+    "mood": "cozy",
+    "hueRange": [200.0, 230.0],
+    "chroma": { "min": 0.01, "max": 0.04 },
+    "particles": "snow",
+    "tags": ["winter", "snow", "cold"]
+  },
+  {
+    "words": { "en": ["cozy", "snug", "comfy", "warmth"], "my": ["နွေးထွေးသော", "သက်တောင့်သက်သာ"] },
+    "mood": "cozy",
+    "hueRange": [30.0, 60.0],
+    "chroma": { "min": 0.05, "max": 0.12 },
+    "tags": ["cozy", "warm"]
+  },
+  {
+    "words": { "en": ["cabin", "cabin in the woods", "chalet", "lodge"], "my": ["သစ်လုံးအိမ်"] },
+    "mood": "cozy",
+    "hueRange": [35.0, 55.0],
+    "chroma": { "min": 0.04, "max": 0.09 },
+    "motif": "hill",
+    "tags": ["cabin", "rustic", "woodland"]
+  },
+  {
+    "words": { "en": ["warm", "fireplace", "hearth", "campfire"], "my": ["နွေးထွေး", "မီးဖို"] },
+    "mood": "cozy",
+    "hueRange": [25.0, 50.0],
+    "chroma": { "min": 0.08, "max": 0.15 },
+    "tags": ["warm", "fire"]
+  },
+  {
+    "words": { "en": ["neon", "cyberpunk", "fluorescent", "glow stick"], "my": ["နီယွန်"] },
+    "mood": "minimal",
+    "hueRange": [280.0, 330.0],
+    "chroma": { "min": 0.18, "max": 0.28 },
+    "motif": "circle",
+    "tags": ["neon", "vibrant", "electric"]
+  },
+  {
+    "words": { "en": ["ocean", "sea", "marine", "deep blue"], "my": ["သမုဒ္ဒရာ", "ပင်လယ်"] },
+    "mood": "classic",
+    "hueRange": [220.0, 250.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "particles": "drops",
+    "tags": ["ocean", "water", "blue"]
+  },
+  {
+    "words": { "en": ["gold", "golden", "gilded", "luxury"], "my": ["ရွှေ", "ရွှေရောင်"] },
+    "mood": "classic",
+    "hueRange": [60.0, 85.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["gold", "festive", "royal"]
+  },
+  {
+    "words": { "en": ["spooky", "haunted", "creepy", "ghostly"], "my": ["ကြောက်စရာ", "သရဲ"] },
+    "mood": "classic",
+    "hueRange": [280.0, 310.0],
+    "chroma": { "min": 0.08, "max": 0.16 },
+    "particles": "bats",
+    "motif": "moon",
+    "tags": ["spooky", "halloween"]
+  },
+  {
+    "words": { "en": ["moon", "moonlight", "crescent moon", "lunar"], "my": ["လ", "လရောင်", "လခြမ်း"] },
+    "mood": "minimal",
+    "hueRange": [230.0, 260.0],
+    "chroma": { "min": 0.02, "max": 0.06 },
+    "motif": "moon",
+    "tags": ["moon", "night", "astronomy"]
+  },
+  {
+    "words": { "en": ["rain", "rainy", "downpour", "rainfall", "drizzle"], "my": ["မိုး", "မိုးရွာ"] },
+    "mood": "cozy",
+    "hueRange": [210.0, 240.0],
+    "chroma": { "min": 0.02, "max": 0.07 },
+    "particles": "drops",
+    "tags": ["rain", "storm", "water"]
+  },
+  {
+    "words": { "en": ["flower", "flowers", "floral", "blossom", "bloom"], "my": ["ပန်း", "ပန်းပွင့်", "ပန်းများ"] },
+    "mood": "cute",
+    "hueRange": [330.0, 360.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "motif": "heart",
+    "tags": ["flower", "nature", "floral"]
+  },
+  {
+    "words": { "en": ["water", "splash", "aqua", "stream"], "my": ["ရေ", "ရေပက်"] },
+    "mood": "cute",
+    "hueRange": [190.0, 225.0],
+    "chroma": { "min": 0.06, "max": 0.15 },
+    "particles": "drops",
+    "tags": ["water", "thingyan", "splash"]
+  },
+  {
+    "words": { "en": ["light", "lights", "illumination", "lantern light"], "my": ["မီး", "မီးရောင်", "အလင်း"] },
+    "mood": "classic",
+    "hueRange": [45.0, 75.0],
+    "chroma": { "min": 0.10, "max": 0.18 },
+    "particles": "lanterns",
+    "motif": "lantern",
+    "tags": ["lights", "thadingyut", "lanterns"]
+  },
+  {
+    "words": { "en": ["pagoda", "temple", "stupa", "shrine"], "my": ["ဘုရား", "စေတီ", "ပုထိုး"] },
+    "mood": "classic",
+    "hueRange": [65.0, 90.0],
+    "chroma": { "min": 0.08, "max": 0.16 },
+    "motif": "pagoda",
+    "tags": ["pagoda", "myanmar", "heritage"]
+  },
+  {
+    "words": { "en": ["star", "stars", "starry", "starlight"], "my": ["ကြယ်", "ကြယ်များ"] },
+    "mood": "minimal",
+    "hueRange": [250.0, 280.0],
+    "chroma": { "min": 0.03, "max": 0.08 },
+    "particles": "stars",
+    "motif": "star",
+    "tags": ["stars", "night", "sky"]
+  },
+  {
+    "words": { "en": ["candy", "sweets", "sugar", "lollipop"], "my": ["သကြားလုံး", "မုန့်"] },
+    "mood": "cute",
+    "hueRange": [320.0, 350.0],
+    "chroma": { "min": 0.14, "max": 0.24 },
+    "tags": ["candy", "cute", "sweet"]
+  },
+  {
+    "words": { "en": ["night", "midnight", "nocturnal", "darkness"], "my": ["ည", "သန်းခေါင်"] },
+    "mood": "minimal",
+    "hueRange": [260.0, 290.0],
+    "chroma": { "min": 0.01, "max": 0.05 },
+    "motif": "moon",
+    "tags": ["night", "dark"]
+  },
+  {
+    "words": { "en": ["sunset", "sundown", "dusk", "twilight"], "my": ["နေဝင်", "ဆည်းဆာ"] },
+    "mood": "cozy",
+    "hueRange": [15.0, 45.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "motif": "sun",
+    "tags": ["sunset", "sky", "evening"]
+  },
+  {
+    "words": { "en": ["sunrise", "dawn", "daybreak", "morning"], "my": ["နေထွက်", "မိုးသောက်"] },
+    "mood": "minimal",
+    "hueRange": [40.0, 70.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "motif": "sun",
+    "tags": ["sunrise", "morning", "dawn"]
+  },
+  {
+    "words": { "en": ["forest", "woods", "pine", "evergreen"], "my": ["သစ်တော", "တောအုပ်"] },
+    "mood": "cozy",
+    "hueRange": [130.0, 160.0],
+    "chroma": { "min": 0.05, "max": 0.12 },
+    "motif": "tree",
+    "tags": ["forest", "nature", "green"]
+  },
+  {
+    "words": { "en": ["tree", "trees", "cypress", "fir"], "my": ["သစ်ပင်"] },
+    "mood": "cozy",
+    "hueRange": [125.0, 155.0],
+    "chroma": { "min": 0.06, "max": 0.12 },
+    "motif": "tree",
+    "tags": ["tree", "nature"]
+  },
+  {
+    "words": { "en": ["lantern", "lanterns", "paper lantern"], "my": ["မီးပုံး", "ဆီမီး"] },
+    "mood": "classic",
+    "hueRange": [30.0, 60.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "particles": "lanterns",
+    "motif": "lantern",
+    "tags": ["lantern", "festive"]
+  },
+  {
+    "words": { "en": ["heart", "hearts", "romance", "valentine"], "my": ["အချစ်", "နှလုံးသား"] },
+    "mood": "cute",
+    "hueRange": [340.0, 10.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "motif": "heart",
+    "tags": ["heart", "cute", "romance"]
+  },
+  {
+    "words": { "en": ["hill", "hills", "mountain", "valley"], "my": ["တောင်", "တောင်ကုန်း"] },
+    "mood": "minimal",
+    "hueRange": [210.0, 240.0],
+    "chroma": { "min": 0.03, "max": 0.08 },
+    "motif": "hill",
+    "tags": ["hill", "landscape"]
+  },
+  {
+    "words": { "en": ["sun", "sunny", "sunshine", "solar"], "my": ["နေ", "နေရောင်"] },
+    "mood": "classic",
+    "hueRange": [50.0, 80.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "motif": "sun",
+    "tags": ["sun", "bright"]
+  },
+  {
+    "words": { "en": ["rose", "roses", "crimson"], "my": ["နှင်းဆီ"] },
+    "mood": "classic",
+    "hueRange": [345.0, 15.0],
+    "chroma": { "min": 0.15, "max": 0.25 },
+    "tags": ["rose", "flower", "red"]
+  },
+  {
+    "words": { "en": ["padauk", "padauk blossom"], "my": ["ပိတောက်", "ပိတောက်ပန်း"] },
+    "mood": "cute",
+    "hueRange": [60.0, 85.0],
+    "chroma": { "min": 0.15, "max": 0.25 },
+    "motif": "circle",
+    "tags": ["padauk", "thingyan", "yellow"]
+  },
+  {
+    "words": { "en": ["emerald", "jade", "mint"], "my": ["မြ", "ကျောက်စိမ်း"] },
+    "mood": "minimal",
+    "hueRange": [140.0, 170.0],
+    "chroma": { "min": 0.08, "max": 0.18 },
+    "tags": ["emerald", "green", "gem"]
+  },
+  {
+    "words": { "en": ["ruby", "garnet", "scarlet"], "my": ["ပတ္တမြား"] },
+    "mood": "classic",
+    "hueRange": [350.0, 20.0],
+    "chroma": { "min": 0.16, "max": 0.26 },
+    "tags": ["ruby", "red", "jewel"]
+  },
+  {
+    "words": { "en": ["sapphire", "cobalt", "indigo"], "my": ["နီလာ"] },
+    "mood": "classic",
+    "hueRange": [230.0, 260.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["sapphire", "blue", "jewel"]
+  },
+  {
+    "words": { "en": ["amethyst", "violet", "purple"], "my": ["ခရမ်းစွဲ", "ခရမ်းရောင်"] },
+    "mood": "classic",
+    "hueRange": [290.0, 320.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "tags": ["amethyst", "purple"]
+  },
+  {
+    "words": { "en": ["bat", "bats", "vampire", "dracula"], "my": ["လင်းနို့"] },
+    "mood": "classic",
+    "hueRange": [270.0, 300.0],
+    "chroma": { "min": 0.05, "max": 0.12 },
+    "particles": "bats",
+    "tags": ["bats", "spooky", "halloween"]
+  },
+  {
+    "words": { "en": ["pumpkin", "jack-o-lantern", "gourd"], "my": ["ဖရုံသီး"] },
+    "mood": "classic",
+    "hueRange": [35.0, 60.0],
+    "chroma": { "min": 0.15, "max": 0.24 },
+    "particles": "bats",
+    "tags": ["pumpkin", "halloween", "orange"]
+  },
+  {
+    "words": { "en": ["ghost", "phantom", "specter", "spirit"], "my": ["သရဲ", "တစ္ဆေ"] },
+    "mood": "minimal",
+    "hueRange": [210.0, 240.0],
+    "chroma": { "min": 0.01, "max": 0.04 },
+    "tags": ["ghost", "spooky"]
+  },
+  {
+    "words": { "en": ["ice", "frost", "frozen", "glacial", "icicle"], "my": ["ရေခဲ", "ဆီးနှင်း"] },
+    "mood": "minimal",
+    "hueRange": [200.0, 230.0],
+    "chroma": { "min": 0.02, "max": 0.06 },
+    "particles": "snow",
+    "tags": ["ice", "winter", "cold"]
+  },
+  {
+    "words": { "en": ["autumn", "fall", "maple", "foliage"], "my": ["ဆောင်းဦး", "သစ်ရွက်ကြွေ"] },
+    "mood": "cozy",
+    "hueRange": [30.0, 55.0],
+    "chroma": { "min": 0.10, "max": 0.18 },
+    "tags": ["autumn", "fall", "leaves"]
+  },
+  {
+    "words": { "en": ["spring", "blossoming", "renewal"], "my": ["နွေဦး"] },
+    "mood": "cute",
+    "hueRange": [110.0, 140.0],
+    "chroma": { "min": 0.08, "max": 0.18 },
+    "tags": ["spring", "blossom", "green"]
+  },
+  {
+    "words": { "en": ["summer", "tropical", "beach"], "my": ["နွေ", "နွေရာသီ", "ကမ်းခြေ"] },
+    "mood": "cute",
+    "hueRange": [45.0, 75.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["summer", "warm", "sun"]
+  },
+  {
+    "words": { "en": ["winter", "wintry", "polar"], "my": ["ဆောင်း", "ဆောင်းရာသီ"] },
+    "mood": "cozy",
+    "hueRange": [210.0, 240.0],
+    "chroma": { "min": 0.03, "max": 0.07 },
+    "particles": "snow",
+    "tags": ["winter", "cold", "christmas"]
+  },
+  {
+    "words": { "en": ["cute", "kawaii", "adorable", "sweetie"], "my": ["ချစ်စရာ", "ချစ်စနိုး"] },
+    "mood": "cute",
+    "hueRange": [330.0, 360.0],
+    "chroma": { "min": 0.12, "max": 0.20 },
+    "motif": "heart",
+    "tags": ["cute", "pastel"]
+  },
+  {
+    "words": { "en": ["minimal", "clean", "simple", "sleek", "modern"], "my": ["ရိုးရှင်းသော"] },
+    "mood": "minimal",
+    "chroma": { "min": 0.005, "max": 0.025 },
+    "tags": ["minimal", "clean"]
+  },
+  {
+    "words": { "en": ["classic", "heritage", "traditional", "timeless"], "my": ["ရိုးရာ", "ရှေးရိုး"] },
+    "mood": "classic",
+    "tags": ["classic", "tradition"]
+  },
+  {
+    "words": { "en": ["sparkle", "glitter", "twinkle", "shimmer"], "my": ["တလက်လက်", "လက်ခနဲ"] },
+    "mood": "cute",
+    "particles": "stars",
+    "motif": "star",
+    "tags": ["sparkle", "shine"]
+  },
+  {
+    "words": { "en": ["candle", "candlelight", "flame"], "my": ["ဖယောင်းတိုင်", "မီးတောက်"] },
+    "mood": "cozy",
+    "hueRange": [35.0, 65.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "particles": "lanterns",
+    "tags": ["candle", "light"]
+  },
+  {
+    "words": { "en": ["breeze", "gentle wind", "whisper"], "my": ["လေညင်း", "လေပြေ"] },
+    "mood": "minimal",
+    "hueRange": [170.0, 200.0],
+    "chroma": { "min": 0.02, "max": 0.05 },
+    "tags": ["breeze", "wind", "calm"]
+  },
+  {
+    "words": { "en": ["peaceful", "calm", "serene", "tranquil"], "my": ["အေးချမ်း", "ငြိမ်သက်"] },
+    "mood": "minimal",
+    "hueRange": [190.0, 220.0],
+    "chroma": { "min": 0.02, "max": 0.06 },
+    "tags": ["peaceful", "serene"]
+  },
+  {
+    "words": { "en": ["cloud", "clouds", "cloudy", "overcast"], "my": ["တိမ်", "တိမ်တိုက်"] },
+    "mood": "minimal",
+    "hueRange": [210.0, 240.0],
+    "chroma": { "min": 0.01, "max": 0.04 },
+    "tags": ["cloud", "sky"]
+  },
+  {
+    "words": { "en": ["storm", "thunder", "lightning", "tempest"], "my": ["မုန်တိုင်း", "မိုးကြိုး"] },
+    "mood": "classic",
+    "hueRange": [250.0, 280.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "particles": "drops",
+    "tags": ["storm", "dark"]
+  },
+  {
+    "words": { "en": ["festive", "carnival", "festival", "holiday"], "my": ["ပွဲတော်", "ပျော်ပွဲရွှင်ပွဲ"] },
+    "mood": "classic",
+    "hueRange": [20.0, 50.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["festive", "holiday"]
+  },
+  {
+    "words": { "en": ["royal", "regal", "majestic", "palace"], "my": ["တော်ဝင်", "နန်းတော်"] },
+    "mood": "classic",
+    "hueRange": [280.0, 310.0],
+    "chroma": { "min": 0.12, "max": 0.20 },
+    "tags": ["royal", "purple", "gold"]
+  },
+  {
+    "words": { "en": ["crown", "tiara", "coronation"], "my": ["သရဖူ"] },
+    "mood": "classic",
+    "hueRange": [60.0, 85.0],
+    "chroma": { "min": 0.14, "max": 0.24 },
+    "tags": ["crown", "gold"]
+  },
+  {
+    "words": { "en": ["silent", "silence", "quiet", "stillness"], "my": ["တိတ်ဆိတ်", "ဆိတ်ငြိမ်"] },
+    "mood": "minimal",
+    "chroma": { "min": 0.005, "max": 0.02 },
+    "tags": ["silent", "quiet"]
+  },
+  {
+    "words": { "en": ["cherry blossom", "sakura"], "my": ["ချယ်ရီ", "ချယ်ရီပန်း"] },
+    "mood": "cute",
+    "hueRange": [330.0, 355.0],
+    "chroma": { "min": 0.08, "max": 0.18 },
+    "motif": "heart",
+    "tags": ["cherry", "blossom", "pink"]
+  },
+  {
+    "words": { "en": ["lotus", "water lily"], "my": ["ကြာ", "ကြာပန်း"] },
+    "mood": "classic",
+    "hueRange": [320.0, 345.0],
+    "chroma": { "min": 0.08, "max": 0.16 },
+    "motif": "circle",
+    "tags": ["lotus", "sacred", "pink"]
+  },
+  {
+    "words": { "en": ["monastery", "monk", "abbey"], "my": ["ကျောင်း", "ဘုန်းကြီးကျောင်း"] },
+    "mood": "classic",
+    "hueRange": [25.0, 50.0],
+    "chroma": { "min": 0.08, "max": 0.16 },
+    "tags": ["monastery", "spiritual"]
+  },
+  {
+    "words": { "en": ["silver", "metallic", "platinum"], "my": ["ငွေ", "ငွေရောင်"] },
+    "mood": "minimal",
+    "hueRange": [210.0, 240.0],
+    "chroma": { "min": 0.005, "max": 0.03 },
+    "tags": ["silver", "metallic"]
+  },
+  {
+    "words": { "en": ["bronze", "copper", "sepia"], "my": ["ကြေး", "ကြေးနီ"] },
+    "mood": "cozy",
+    "hueRange": [35.0, 60.0],
+    "chroma": { "min": 0.08, "max": 0.16 },
+    "tags": ["bronze", "warm"]
+  },
+  {
+    "words": { "en": ["pastel", "soft tone", "tender"], "my": ["နုဖတ်သော"] },
+    "mood": "cute",
+    "chroma": { "min": 0.04, "max": 0.09 },
+    "tags": ["pastel", "soft"]
+  },
+  {
+    "words": { "en": ["bubble", "bubbles", "bubbly", "foam"], "my": ["ပူဖောင်း"] },
+    "mood": "cute",
+    "hueRange": [190.0, 220.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "motif": "circle",
+    "particles": "drops",
+    "tags": ["bubble", "cute"]
+  },
+  {
+    "words": { "en": ["peach", "peachy", "apricot", "coral"], "my": ["မက်မွန်"] },
+    "mood": "cute",
+    "hueRange": [30.0, 55.0],
+    "chroma": { "min": 0.10, "max": 0.18 },
+    "tags": ["peach", "warm", "cute"]
+  },
+  {
+    "words": { "en": ["lavender", "lilac"], "my": ["လာဗင်ဒါ"] },
+    "mood": "cute",
+    "hueRange": [280.0, 310.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "tags": ["lavender", "purple"]
+  },
+  {
+    "words": { "en": ["berry", "strawberry", "raspberry"], "my": ["ဘယ်ရီ"] },
+    "mood": "cute",
+    "hueRange": [340.0, 10.0],
+    "chroma": { "min": 0.14, "max": 0.24 },
+    "tags": ["berry", "sweet"]
+  },
+  {
+    "words": { "en": ["chocolate", "cocoa", "caramel", "cider"], "my": ["ချောကလက်"] },
+    "mood": "cozy",
+    "hueRange": [30.0, 50.0],
+    "chroma": { "min": 0.06, "max": 0.12 },
+    "tags": ["chocolate", "sweet", "cozy"]
+  },
+  {
+    "words": { "en": ["blanket", "quilt", "fleece"], "my": ["စောင်"] },
+    "mood": "cozy",
+    "hueRange": [35.0, 65.0],
+    "chroma": { "min": 0.04, "max": 0.10 },
+    "tags": ["blanket", "cozy"]
+  },
+  {
+    "words": { "en": ["ember", "embers", "glowing coal"], "my": ["မီးခဲ"] },
+    "mood": "cozy",
+    "hueRange": [20.0, 45.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["ember", "fire", "glow"]
+  },
+  {
+    "words": { "en": ["velvet", "plush", "silky"], "my": ["ကတ္တီပါ"] },
+    "mood": "classic",
+    "hueRange": [330.0, 360.0],
+    "chroma": { "min": 0.08, "max": 0.18 },
+    "tags": ["velvet", "rich"]
+  },
+  {
+    "words": { "en": ["aurora", "northern lights", "borealis"], "my": ["မြောက်ဝင်ရိုးစွန်းအလင်း"] },
+    "mood": "minimal",
+    "hueRange": [150.0, 185.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "motif": "circle",
+    "particles": "stars",
+    "tags": ["aurora", "sky", "green"]
+  },
+  {
+    "words": { "en": ["galaxy", "cosmos", "nebula", "universe"], "my": ["ဂလက်ဆီ", "စကြဝဠာ"] },
+    "mood": "classic",
+    "hueRange": [260.0, 300.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "particles": "stars",
+    "motif": "star",
+    "tags": ["galaxy", "space"]
+  },
+  {
+    "words": { "en": ["desert", "dune", "sand", "sahara"], "my": ["သဲကန္တာရ", "သဲသောင်"] },
+    "mood": "minimal",
+    "hueRange": [40.0, 65.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "motif": "hill",
+    "tags": ["desert", "sand", "warm"]
+  },
+  {
+    "words": { "en": ["river", "creek", "brook"], "my": ["မြစ်", "ချောင်း"] },
+    "mood": "minimal",
+    "hueRange": [200.0, 230.0],
+    "chroma": { "min": 0.04, "max": 0.10 },
+    "particles": "drops",
+    "tags": ["river", "water"]
+  },
+  {
+    "words": { "en": ["lake", "pond", "lagoon"], "my": ["အင်း", "ကန်"] },
+    "mood": "cozy",
+    "hueRange": [205.0, 235.0],
+    "chroma": { "min": 0.04, "max": 0.09 },
+    "tags": ["lake", "water", "calm"]
+  },
+  {
+    "words": { "en": ["meadow", "grass", "pasture"], "my": ["မြက်ခင်း"] },
+    "mood": "cute",
+    "hueRange": [115.0, 145.0],
+    "chroma": { "min": 0.08, "max": 0.16 },
+    "tags": ["meadow", "green"]
+  },
+  {
+    "words": { "en": ["bell", "bells", "chime", "jingle"], "my": ["ခေါင်းလောင်း"] },
+    "mood": "classic",
+    "hueRange": [55.0, 80.0],
+    "chroma": { "min": 0.10, "max": 0.18 },
+    "tags": ["bells", "christmas", "sound"]
+  },
+  {
+    "words": { "en": ["ribbon", "bow", "gift", "present"], "my": ["လက်ဆောင်", "ဖဲကြိုး"] },
+    "mood": "cute",
+    "hueRange": [345.0, 15.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["gift", "ribbon"]
+  },
+  {
+    "words": { "en": ["ornament", "bauble", "tinsel"], "my": ["အလှဆင်ပစ္စည်း"] },
+    "mood": "classic",
+    "hueRange": [50.0, 80.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["ornament", "christmas"]
+  },
+  {
+    "words": { "en": ["spirit", "legend", "myth", "folklore"], "my": ["ဒဏ္ဍာရီ"] },
+    "mood": "classic",
+    "hueRange": [240.0, 270.0],
+    "chroma": { "min": 0.06, "max": 0.14 },
+    "tags": ["legend", "myth"]
+  },
+  {
+    "words": { "en": ["magic", "magical", "enchanted", "spell", "sorcery"], "my": ["မှော်", "မှော်ဆန်သော"] },
+    "mood": "cute",
+    "hueRange": [280.0, 310.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "particles": "stars",
+    "motif": "star",
+    "tags": ["magic", "fantasy"]
+  },
+  {
+    "words": { "en": ["sunflower"], "my": ["နေကြာ", "နေကြာပန်း"] },
+    "mood": "cute",
+    "hueRange": [60.0, 85.0],
+    "chroma": { "min": 0.15, "max": 0.24 },
+    "motif": "sun",
+    "tags": ["sunflower", "yellow"]
+  },
+  {
+    "words": { "en": ["orchid"], "my": ["သစ်ခွ", "သစ်ခွပန်း"] },
+    "mood": "classic",
+    "hueRange": [300.0, 330.0],
+    "chroma": { "min": 0.10, "max": 0.20 },
+    "motif": "heart",
+    "tags": ["orchid", "flower"]
+  },
+  {
+    "words": { "en": ["jasmine"], "my": ["စံပယ်", "စံပယ်ပန်း"] },
+    "mood": "minimal",
+    "hueRange": [50.0, 80.0],
+    "chroma": { "min": 0.02, "max": 0.06 },
+    "tags": ["jasmine", "white", "fragrant"]
+  },
+  {
+    "words": { "en": ["peacock", "dance"], "my": ["ဒေါင်း", "ကချေသည်"] },
+    "mood": "classic",
+    "hueRange": [170.0, 210.0],
+    "chroma": { "min": 0.12, "max": 0.22 },
+    "tags": ["peacock", "myanmar", "royal"]
+  },
+  {
+    "words": { "en": ["sunset glow", "evening glow"], "my": ["ဆည်းဆာရောင်"] },
+    "mood": "cozy",
+    "hueRange": [15.0, 45.0],
+    "chroma": { "min": 0.12, "max": 0.20 },
+    "motif": "sun",
+    "tags": ["sunset", "glow"]
+  }
+]

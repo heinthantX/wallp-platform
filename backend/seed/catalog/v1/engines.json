@@ -1,0 +1,26 @@
+{
+  "engines": [
+    {
+      "id": "halloween",
+      "sinceApp": "1.0.0",
+      "params": []
+    },
+    {
+      "id": "christmas",
+      "sinceApp": "1.0.0",
+      "params": []
+    },
+    {
+      "id": "thingyan",
+      "sinceApp": "1.0.0",
+      "params": []
+    },
+    {
+      "id": "layers",
+      "sinceApp": "1.0.0",
+      "params": [
+        "layers"
+      ]
+    }
+  ]
+}

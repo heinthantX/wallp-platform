@@ -1,0 +1,890 @@
+[
+  {
+    "theme": {
+      "id": "halloween-legend-36n0",
+      "rev": 1,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Halloween Legend"
+      },
+      "style": "classic",
+      "tags": [
+        "halloween",
+        "spooky",
+        "classic",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#27110E",
+        "deep": "#130706",
+        "surface": "#4A2E2A",
+        "text": "#F5EBED",
+        "textMuted": "#D5CACD",
+        "motif": "#B35B53"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#FF9186"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#00CCDF"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#FF9824"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#FF9186",
+            "#00CCDF"
+          ],
+          "angle": 180
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#F5EBED"
+      },
+      "eventIcon": "nightlight_round",
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 15.34,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 11.22,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 15.34,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 8.23,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 9.13,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 8.33,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 8.23,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 9.13,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 7
+  },
+  {
+    "theme": {
+      "id": "halloween-legend-n5it",
+      "rev": 1,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Halloween Legend"
+      },
+      "style": "classic",
+      "tags": [
+        "halloween",
+        "spooky",
+        "classic",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#290F0C",
+        "deep": "#140605",
+        "surface": "#3E2A28",
+        "text": "#F9E8E3",
+        "textMuted": "#D6C6C1",
+        "motif": "#8F4F48"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#FF867A"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#00C5D8"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#FA9100"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#FF867A",
+            "#00C5D8"
+          ],
+          "angle": 135
+        }
+      ],
+      "fonts": {
+        "display": "cinzel-decorative",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#F9E8E3"
+      },
+      "eventIcon": "nightlight_round",
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 15.14,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.88,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 15.14,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 7.66,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 8.54,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 7.8,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 7.66,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 8.54,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 8
+  },
+  {
+    "theme": {
+      "id": "halloween-spirit-uskf",
+      "rev": 1,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Halloween Spirit"
+      },
+      "style": "classic",
+      "tags": [
+        "halloween",
+        "spooky",
+        "classic",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#2D1816",
+        "deep": "#150705",
+        "surface": "#462B27",
+        "text": "#FCECEB",
+        "textMuted": "#D7C8C7",
+        "motif": "#955049"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#FF867B"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#00C5D8"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#FA9100"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#FF867B",
+            "#00C5D8"
+          ],
+          "angle": 180
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "creepster"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#FCECEB"
+      },
+      "eventIcon": "nightlight_round",
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 14.62,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.35,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 14.62,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 7.14,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 7.96,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 7.27,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 7.14,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 7.96,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 9
+  },
+  {
+    "theme": {
+      "id": "halloween-festive-fyhy",
+      "rev": 1,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Halloween Festive"
+      },
+      "style": "classic",
+      "tags": [
+        "halloween",
+        "spooky",
+        "classic",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#1F110F",
+        "deep": "#0F0605",
+        "surface": "#502B27",
+        "text": "#FCEFEC",
+        "textMuted": "#C8BBB8",
+        "motif": "#8C514B"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#FF7368"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#00BACC"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#ED8900"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#FF7368",
+            "#00BACC"
+          ],
+          "angle": 90
+        }
+      ],
+      "fonts": {
+        "display": "creepster",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#FCEFEC"
+      },
+      "eventIcon": "nightlight_round",
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 16.32,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 9.83,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 16.32,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 6.9,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 7.77,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 7.14,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 6.9,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 7.77,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 10
+  },
+  {
+    "theme": {
+      "id": "halloween-ceremony-qmqk",
+      "rev": 1,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Halloween Ceremony"
+      },
+      "style": "classic",
+      "tags": [
+        "halloween",
+        "spooky",
+        "classic",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#221412",
+        "deep": "#130605",
+        "surface": "#412623",
+        "text": "#F8ECEF",
+        "textMuted": "#CFC3C6",
+        "motif": "#9A5049"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#F77368"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#00B6C8"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#E88600"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#F77368",
+            "#00B6C8"
+          ],
+          "angle": 135
+        }
+      ],
+      "fonts": {
+        "display": "cinzel-decorative",
+        "body": "padauk",
+        "labels": "cinzel-decorative"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#F8ECEF"
+      },
+      "eventIcon": "nightlight_round",
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 15.5,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 10.43,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 15.5,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 6.46,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 7.24,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 6.66,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 6.46,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 7.24,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 11
+  },
+  {
+    "theme": {
+      "id": "halloween-royal-w138",
+      "rev": 1,
+      "festivalId": "halloween",
+      "name": {
+        "en": "Halloween Royal"
+      },
+      "style": "classic",
+      "tags": [
+        "halloween",
+        "spooky",
+        "classic",
+        "amber"
+      ],
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "minAppVersion": "1.0.0",
+      "scene": {
+        "engine": "halloween",
+        "params": {}
+      },
+      "palette": {
+        "background": "#210E0C",
+        "deep": "#180605",
+        "surface": "#432926",
+        "text": "#FEF1EC",
+        "textMuted": "#D2C5C0",
+        "motif": "#AA6962"
+      },
+      "accents": [
+        {
+          "id": "primary-amber",
+          "name": {
+            "en": "Amber Accent"
+          },
+          "type": "solid",
+          "colors": [
+            "#FFA297"
+          ]
+        },
+        {
+          "id": "complement-sapphire",
+          "name": {
+            "en": "Sapphire Complement"
+          },
+          "type": "solid",
+          "colors": [
+            "#00D6EB"
+          ]
+        },
+        {
+          "id": "analogous-gold",
+          "name": {
+            "en": "Gold Analogous"
+          },
+          "type": "solid",
+          "colors": [
+            "#FFA855"
+          ]
+        },
+        {
+          "id": "gradient-amber-sapphire",
+          "name": {
+            "en": "Amber Sapphire Glow"
+          },
+          "type": "gradient",
+          "colors": [
+            "#FFA297",
+            "#00D6EB"
+          ],
+          "angle": 135
+        }
+      ],
+      "fonts": {
+        "display": "cinzel-decorative",
+        "body": "padauk",
+        "labels": "creepster"
+      },
+      "clock": {
+        "useAccent": true
+      },
+      "labels": {
+        "color": "#FEF1EC"
+      },
+      "eventIcon": "nightlight_round",
+      "iconPackId": "spooky-glow",
+      "downloadBytes": 0
+    },
+    "checks": [
+      {
+        "name": "Text contrast",
+        "field": "palette.text",
+        "ratio": 16.78,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Muted text contrast",
+        "field": "palette.textMuted",
+        "ratio": 11.02,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Labels contrast",
+        "field": "labels.color",
+        "ratio": 16.78,
+        "min": 4.5,
+        "pass": true
+      },
+      {
+        "name": "Accent 1 contrast",
+        "field": "accents[0].colors[0]",
+        "ratio": 9.59,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 2 contrast",
+        "field": "accents[1].colors[0]",
+        "ratio": 10.43,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Accent 3 contrast",
+        "field": "accents[2].colors[0]",
+        "ratio": 9.7,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 1 contrast",
+        "field": "accents[3].colors[0]",
+        "ratio": 9.59,
+        "min": 3,
+        "pass": true
+      },
+      {
+        "name": "Gradient stop 2 contrast",
+        "field": "accents[3].colors[1]",
+        "ratio": 10.43,
+        "min": 3,
+        "pass": true
+      }
+    ],
+    "seed": 12
+  }
+]
