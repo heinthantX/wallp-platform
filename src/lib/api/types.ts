@@ -73,3 +73,8 @@ export type ReleaseReport = components["schemas"]["Report"];
 export type ReleaseView = components["schemas"]["ReleaseView"];
 export type PageReleaseView = components["schemas"]["PageReleaseView"];
 export type PublishInputBody = components["schemas"]["PublishInputBody"];
+
+export type OverviewOutputBody = components["schemas"]["OverviewOutputBody"];
+export type OverviewFestival = components["schemas"]["OverviewFestival"];
+export type ThemeStat = components["schemas"]["ThemeStat"];
+export type DayStat = components["schemas"]["DayStat"];

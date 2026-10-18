@@ -38,26 +38,26 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { title: "Overview", href: "/", icon: LayoutDashboard },
-  { title: "Festivals", href: "/festivals", icon: Sparkles, phase: 2 },
-  { title: "Themes", href: "/themes", icon: Palette, phase: 2 },
-  { title: "Wallpapers", href: "/wallpapers", icon: Image, phase: 3 },
-  { title: "Fonts", href: "/fonts", icon: Type, phase: 3 },
-  { title: "Icon packs", href: "/icon-packs", icon: Grid, phase: 3 },
-  { title: "Banners", href: "/banners", icon: Flag, phase: 3 },
-  { title: "Publish", href: "/publish", icon: UploadCloud, phase: 4 },
-  { title: "Statistics", href: "/statistics", icon: BarChart3, phase: 6 },
+  { title: "Festivals", href: "/festivals", icon: Sparkles },
+  { title: "Themes", href: "/themes", icon: Palette },
+  { title: "Wallpapers", href: "/wallpapers", icon: Image },
+  { title: "Fonts", href: "/fonts", icon: Type },
+  { title: "Icon packs", href: "/icon-packs", icon: Grid },
+  { title: "Banners", href: "/banners", icon: Flag },
+  { title: "Publish", href: "/publish", icon: UploadCloud },
+  { title: "Statistics", href: "/statistics", icon: BarChart3 },
 ];
 
 const generatorNavItems: NavItem[] = [
-  { title: "Recipes", href: "/generator/recipes", icon: Sparkles, phase: 5 },
+  { title: "Recipes", href: "/generator/recipes", icon: Sparkles },
 ];
 
 const settingsNavItems: NavItem[] = [
-  { title: "Store", href: "/settings/store", icon: Store, phase: 3 },
+  { title: "Store", href: "/settings/store", icon: Store },
   { title: "Users", href: "/settings/users", icon: Users, adminOnly: true },
   { title: "Assets", href: "/settings/assets", icon: HardDrive, adminOnly: true },
   { title: "Import / Export", href: "/settings/import", icon: UploadCloud, adminOnly: true },
-  { title: "Engines", href: "/settings/engines", icon: Cpu, phase: 4 },
+  { title: "Engines", href: "/settings/engines", icon: Cpu },
   { title: "Audit log", href: "/settings/audit", icon: FileText, reviewerOnly: true },
 ];
 
