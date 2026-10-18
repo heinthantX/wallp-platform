@@ -1,9 +1,10 @@
-name: Deploy to GitHub Pages
+name: Admin Pages
 
 on:
   push:
     branches:
       - main
+    paths: ["admin/**", ".github/workflows/admin-pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +22,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,6 +39,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: admin/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=false
@@ -48,7 +53,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: out
+          path: admin/out
 
       - name: Deploy to GitHub Pages
         id: deployment
