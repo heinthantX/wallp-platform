@@ -76,7 +76,7 @@ func TestSeedImportAndPublish(t *testing.T) {
 		codes = append(codes, w.Code)
 	}
 	sort.Strings(codes)
-	want := "festival_few_dates festival_few_dates theme_no_preview theme_no_preview theme_no_preview theme_no_preview theme_no_preview"
+	want := ""
 	if got := strings.Join(codes, " "); got != want {
 		t.Fatalf("warnings: %s", got)
 	}

@@ -141,6 +141,11 @@ type Festival struct {
 	Item
 }
 
+type Category struct {
+	bun.BaseModel `bun:"table:categories"`
+	Item
+}
+
 type Theme struct {
 	bun.BaseModel `bun:"table:themes"`
 	Item

@@ -8,3 +8,4 @@ export * from "./EngineSelect";
 export * from "./EventIconSelect";
 export * from "./JsonEditor";
 export * from "./RelationSelect";
+export * from "./CategoriesField";

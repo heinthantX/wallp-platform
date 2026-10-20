@@ -7,6 +7,7 @@ import { useThemes, useFestivals, useEngines } from "@/lib/api/hooks";
 import type { ItemView, ListThemesQuery } from "@/lib/api/types";
 import type { ThemeDetail } from "@/lib/catalog/types";
 import { StatusBadge } from "@/components/items";
+import { LayersCanvas } from "@/components/preview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -76,19 +77,24 @@ function ThemeCard({ item }: { item: ItemView }) {
           background: `linear-gradient(180deg, ${palette.background} 0%, ${palette.deep || palette.background} 100%)`,
         }}
       >
-        {/* Subtle glow / motif circle */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full blur-md opacity-40 transition-transform group-hover:scale-110 duration-300"
-          style={{
-            backgroundColor: palette.motif || palette.text,
-          }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-white/20 transition-transform group-hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
-          style={{
-            backgroundColor: palette.motif || palette.surface,
-          }}
-        />
+        {/* The theme's own scene in its palette and first accent, like the app's theme card */}
+        {theme.scene?.engine ? (
+          <div className="absolute inset-0 transition-transform duration-300 group-hover:scale-[1.03] [&_canvas]:h-full [&_canvas]:w-full [&_canvas]:object-cover">
+            <LayersCanvas
+              scene={theme.scene as never}
+              palette={palette as never}
+              accent={theme.accents?.[0] as never}
+              width={320}
+              height={400}
+            />
+          </div>
+        ) : (
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-white/20 shadow-lg"
+            style={{ backgroundColor: palette.motif || palette.surface }}
+          />
+        )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
 
         {/* Top Badges */}
         <div className="relative z-10 flex items-center justify-between gap-1 w-full">

@@ -227,7 +227,7 @@ Every change to items, users, assets and TOTP is written to the audit log, with 
 
 ## Item lifecycle
 
-Kinds: festivals, themes, wallpapers, fonts, icon packs, banners. Paths: `/festivals`, `/themes`, `/wallpapers`, `/fonts`, `/icon-packs`, `/banners`.
+Kinds: festivals, themes, wallpapers, fonts, icon packs, banners, categories. Paths: `/festivals`, `/themes`, `/wallpapers`, `/fonts`, `/icon-packs`, `/banners`, `/categories`. Categories (`{id kebab, name, sort, tags}`) follow the banner lifecycle; themes and wallpapers reference them with optional `categoryIds`.
 
 ```
 draft --request--> in_review --approve--> approved --schedule(at)--> scheduled
@@ -250,7 +250,7 @@ any --archive--> archived --restore--> draft
 - `hasUnpublishedChanges` is `true` when the item was published before and its current data differs.
 - Validate without saving: `POST /validate/{kind}` with the item JSON (kinds: festival, theme, wallpaper, font, icon-pack, banner; plural forms work too). Returns a list of field errors.
 
-Festivals are different: they have no review or schedule routes. Every festival that is not archived goes out in the next release. Festivals and banners also have `PUT /<kind>/order` with `{"ids":[…]}` (admin) to set their order.
+Festivals are different: they have no review or schedule routes. Every festival that is not archived goes out in the next release. Festivals, banners and categories also have `PUT /<kind>/order` with `{"ids":[…]}` (admin) to set their order.
 
 `generatedFrom` (themes only) records how a theme was generated. Send it with the create or update body, next to `data`. The server stores it and the list filter `generated=true` uses it. A duplicate keeps it.
 
@@ -300,7 +300,7 @@ curl -s localhost:8080/admin/v1/assets?variants=wallpaper -H "Authorization: Bea
 
 ### Import and export a catalog
 
-- `GET /export` returns the whole catalog as one JSON bundle: `festivals`, `themes`, `wallpapers`, `fonts`, `iconPacks`, `banners`, `accentPresets`, `searchSuggestions`. Archived items are left out. It is a backup: `statuses` lists every item that is not published (`{"banners": {"my-banner": "draft"}}`), and importing the bundle keeps those items unpublished (their earlier published version, if any, stays live). Items not listed, and every item of an app catalog without `statuses`, import as published.
+- `GET /export` returns the whole catalog as one JSON bundle: `festivals`, `themes`, `wallpapers`, `fonts`, `iconPacks`, `banners`, `categories`, `accentPresets`, `searchSuggestions`. Archived items are left out. It is a backup: `statuses` lists every item that is not published (`{"banners": {"my-banner": "draft"}}`), and importing the bundle keeps those items unpublished (their earlier published version, if any, stays live). Items not listed, and every item of an app catalog without `statuses`, import as published.
 
 Icon packs: optional `apps` (Android package name → asset, at most 200) and `appsFallbackStyle`. Release checks per image: `icon_app_bad_package` (key is not like `com.example.app`), `icon_app_not_square` (more than 1% off), `icon_app_too_small` (under 192 px) are errors; `asset_over_1mb` and `icon_app_duplicate` (same image as another package) are warnings.
 - `POST /import` (admin, body limit 64 MB) takes either:
@@ -325,8 +325,8 @@ Icon packs: optional `apps` (Android package name → asset, at most 200) and `a
 
 `itemType`, `itemId` and `field` are optional. Codes you can see today:
 
-- Errors (block publishing): `schema_invalid`, `contrast_too_low`, `accent_contrast_low`, `festival_look_contrast`, `ref_missing`, `asset_missing`, `asset_sha_mismatch`, `asset_over_10mb`, `myanmar_glyphs_missing`, `min_app_version_low`, `id_changed`, plus the mapped validation codes `engine_unknown`, `event_icon_unknown`, `font_license`, `scene_tokens`, `scene_limits`, `variant_accent_missing`, `duplicate_id`, `banner_time_order`, `value_out_of_list`, `icon_pack_no_background`.
-- Warnings (need `ackWarnings`): `text_muted_low`, `labels_contrast`, `theme_no_preview`, `festival_few_dates`, `asset_over_1mb`.
+- Errors (block publishing): `schema_invalid`, `contrast_too_low`, `festival_look_contrast`, `ref_missing` (also unknown `categoryIds`), `asset_missing`, `asset_sha_mismatch`, `asset_over_10mb`, `myanmar_glyphs_missing`, `min_app_version_low`, `id_changed`, plus the mapped validation codes `engine_unknown`, `event_icon_unknown`, `font_license`, `scene_tokens`, `scene_limits`, `variant_accent_missing`, `duplicate_id`, `banner_time_order`, `value_out_of_list`.
+- Warnings (need `ackWarnings`): `accent_contrast_low` (the app shows "Hard to read here"), `text_muted_low`, `labels_contrast`, `theme_no_preview` (skipped when the theme has a scene engine), `festival_few_dates` (skipped for kind "collection"), `asset_over_1mb`.
 - Infos: `font_unlisted`.
 
 ### Publish
@@ -552,6 +552,23 @@ Generated from the OpenAPI spec (`go run ./cmd/wallp openapi`). "Roles" lists th
 | POST | `/banners/{id}/restore` | Restore an archived banner | admin |
 | POST | `/banners/{id}/review` | Transition a banner review status | admin, designer, reviewer |
 | POST | `/banners/{id}/schedule` | Schedule or unschedule a banner | admin, reviewer |
+
+### Categories
+
+| Method | Path | What it does | Roles |
+|---|---|---|---|
+| GET | `/categories` | List categories | any signed in |
+| POST | `/categories` | Create a category draft | admin, designer, reviewer |
+| PUT | `/categories/order` | Reorder categories | admin |
+| DELETE | `/categories/{id}` | Archive a category | admin |
+| GET | `/categories/{id}` | Get a category | any signed in |
+| PATCH | `/categories/{id}` | Update a category | admin, designer, reviewer |
+| POST | `/categories/{id}/archive` | Archive a category | admin |
+| POST | `/categories/{id}/duplicate` | Duplicate a category as a new draft | admin, designer, reviewer |
+| GET | `/categories/{id}/export` | Export raw category data JSON | any signed in |
+| POST | `/categories/{id}/restore` | Restore an archived category | admin |
+| POST | `/categories/{id}/review` | Transition a category review status | admin, designer, reviewer |
+| POST | `/categories/{id}/schedule` | Schedule or unschedule a category | admin, reviewer |
 
 ### Generator
 

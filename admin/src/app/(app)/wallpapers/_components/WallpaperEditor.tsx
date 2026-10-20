@@ -20,7 +20,7 @@ import type { ItemView } from "@/lib/api/types";
 import type { Layer, Palette } from "@/lib/catalog/types";
 import { LayersEditor } from "@/components/layers-editor";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { LocalizedField, IdField, TagsField, JsonEditor, RelationSelect } from "@/components/fields";
+import { LocalizedField, IdField, TagsField, JsonEditor, RelationSelect, CategoriesField } from "@/components/fields";
 import { ReviewBar, AuditTimeline, StatusBadge } from "@/components/items";
 import { ConflictDialog } from "@/components/conflict-dialog";
 import { LayersCanvas } from "@/components/preview";
@@ -305,6 +305,13 @@ export function WallpaperEditor({ id: idParam }: { id?: string }) {
                   )}
                 />
               </div>
+              <Controller
+                control={control}
+                name="categoryIds"
+                render={({ field }) => (
+                  <CategoriesField value={field.value} onChange={field.onChange} />
+                )}
+              />
               <Controller
                 control={control}
                 name="tags"

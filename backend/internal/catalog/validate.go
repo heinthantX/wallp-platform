@@ -236,6 +236,43 @@ func (a *Asset) ValidateWithPath(path string) []FieldError {
 	return errs
 }
 
+// Validate validates a Category document.
+func (c *Category) Validate() []FieldError {
+	var errs []FieldError
+	if !isValidID(c.ID) {
+		errs = append(errs, FieldError{
+			Field:   "id",
+			Code:    "invalid_id",
+			Message: "id must be lowercase kebab-case",
+		})
+	}
+	errs = append(errs, validateLocalized(c.Name, "name")...)
+	return errs
+}
+
+func validateCategoryIDs(ids []string) []FieldError {
+	var errs []FieldError
+	seen := make(map[string]bool, len(ids))
+	for i, id := range ids {
+		if !isValidID(id) {
+			errs = append(errs, FieldError{
+				Field:   fmt.Sprintf("categoryIds[%d]", i),
+				Code:    "invalid_id",
+				Message: "categoryId must be lowercase kebab-case",
+			})
+		}
+		if seen[id] {
+			errs = append(errs, FieldError{
+				Field:   fmt.Sprintf("categoryIds[%d]", i),
+				Code:    "duplicate_id",
+				Message: fmt.Sprintf("duplicate categoryId %q", id),
+			})
+		}
+		seen[id] = true
+	}
+	return errs
+}
+
 // Validate validates a Festival document.
 func (f *Festival) Validate() []FieldError {
 	var errs []FieldError
@@ -980,6 +1017,8 @@ func (t *ThemeDetail) Validate() []FieldError {
 		}
 	}
 
+	errs = append(errs, validateCategoryIDs(t.CategoryIDs)...)
+
 	if t.PreviewImage != nil {
 		errs = append(errs, t.PreviewImage.ValidateWithPath("previewImage")...)
 	}
@@ -1085,6 +1124,8 @@ func (t *ThemeSummary) Validate() []FieldError {
 			Message: "iconPackId must be lowercase kebab-case",
 		})
 	}
+
+	errs = append(errs, validateCategoryIDs(t.CategoryIDs)...)
 
 	if t.PreviewImage != nil {
 		errs = append(errs, t.PreviewImage.ValidateWithPath("previewImage")...)
@@ -1194,6 +1235,8 @@ func (w *Wallpaper) Validate() []FieldError {
 			})
 		}
 	}
+
+	errs = append(errs, validateCategoryIDs(w.CategoryIDs)...)
 
 	return errs
 }
@@ -1375,13 +1418,8 @@ func (p *IconPack) Validate() []FieldError {
 			})
 		}
 	} else if p.Kind == "images" {
-		if p.Background == nil {
-			errs = append(errs, FieldError{
-				Field:   "background",
-				Code:    "required",
-				Message: "an image pack needs its background tile",
-			})
-		} else {
+		// No background (and no tile) is allowed: the pack is transparent and only the app logo is drawn.
+		if p.Background != nil {
 			errs = append(errs, p.Background.ValidateWithPath("background")...)
 		}
 	}
@@ -1571,6 +1609,7 @@ func (c *Catalog) Validate() []FieldError {
 		return m
 	}
 	festivals := ids("festivals", len(c.Festivals), func(i int) string { return c.Festivals[i].ID })
+	categories := ids("categories", len(c.Categories), func(i int) string { return c.Categories[i].ID })
 	themes := ids("themes", len(c.Themes), func(i int) string { return c.Themes[i].ID })
 	ids("wallpapers", len(c.Wallpapers), func(i int) string { return c.Wallpapers[i].ID })
 	fonts := ids("fonts", len(c.Fonts), func(i int) string { return c.Fonts[i].ID })
@@ -1592,11 +1631,18 @@ func (c *Catalog) Validate() []FieldError {
 	for i, t := range c.Themes {
 		p := fmt.Sprintf("themes[%d]", i)
 		ref(festivals, t.FestivalID, p+".festivalId", "festival")
+		for j, cid := range t.CategoryIDs {
+			ref(categories, cid, fmt.Sprintf("%s.categoryIds[%d]", p, j), "category")
+		}
 		ref(packs, t.IconPackID, p+".iconPackId", "icon pack")
 		ref(fonts, t.DisplayFont, p+".displayFont", "font")
 	}
 	for i, w := range c.Wallpapers {
-		ref(festivals, w.FestivalID, fmt.Sprintf("wallpapers[%d].festivalId", i), "festival")
+		p := fmt.Sprintf("wallpapers[%d]", i)
+		ref(festivals, w.FestivalID, p+".festivalId", "festival")
+		for j, cid := range w.CategoryIDs {
+			ref(categories, cid, fmt.Sprintf("%s.categoryIds[%d]", p, j), "category")
+		}
 	}
 	for i, ip := range c.IconPacks {
 		ref(festivals, ip.FestivalID, fmt.Sprintf("iconPacks[%d].festivalId", i), "festival")

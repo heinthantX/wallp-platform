@@ -595,18 +595,6 @@ func TestNegativeValidationRules(t *testing.T) {
 			expectedField: "painter",
 			expectedCode:  "required",
 		},
-		// 33. Icon pack images requires background
-		{
-			name: "images icon pack requires background",
-			validate: func() []catalog.FieldError {
-				p := baseValidIconPack()
-				p.Kind = "images"
-				p.Background = nil
-				return p.Validate()
-			},
-			expectedField: "background",
-			expectedCode:  "required",
-		},
 		// 34. Banner action url must be https
 		{
 			name: "banner action url must be https",

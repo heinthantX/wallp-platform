@@ -278,7 +278,7 @@ func nextDate(f catalog.Festival, today time.Time) (time.Time, bool) {
 
 func reviewQueue(ctx context.Context, d *Deps) ([]ReviewQueueItem, error) {
 	out := []ReviewQueueItem{}
-	for _, k := range []*items.Kind{items.ThemeKind, items.WallpaperKind, items.FontKind, items.IconPackKind, items.BannerKind} {
+	for _, k := range []*items.Kind{items.CategoryKind, items.ThemeKind, items.WallpaperKind, items.FontKind, items.IconPackKind, items.BannerKind} {
 		var rows []struct {
 			ID        string    `bun:"id"`
 			Data      []byte    `bun:"data"`

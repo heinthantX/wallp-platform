@@ -43,6 +43,7 @@ export function AppHeader({
   const getBreadcrumbTitle = (segment: string) => {
     const titles: Record<string, string> = {
       festivals: "Festivals",
+      categories: "Categories",
       themes: "Themes",
       wallpapers: "Wallpapers",
       fonts: "Fonts",

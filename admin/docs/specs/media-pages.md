@@ -12,6 +12,8 @@ Admin pages for wallpapers, fonts, icon packs, banners and the asset library. Ba
 - Wallpapers: grid with blurhash placeholders that fade into the image. Filters for festival, status and kind (image or scene). Drop zone (drag, drop, paste) with upload progress; an upload auto-creates a draft wallpaper. Shows 1080 and 1440 variant sizes and warning chips. Scene wallpapers use the layers editor (hex only).
 - Fonts: list with live preview text loaded through `FontFace`. Google Fonts search dialog (debounced, reached from `Cmd+K` "Add Google font"). Upload TTF or OTF with a required licence select (OFL-1.1 or Apache-2.0), category, tags, scripts, weights, sampleText per language, listed toggle, fallback per script.
 - Icon packs: fields per dashboard section 4.7. Tile preview under sample app logos (lucide icons as stand-ins) on a theme wallpaper, with a shape switcher (squircle, circle, square, leaf) using clip-path or border-radius. Ring, tile and glyph colour fields.
+  - Background mode: "Background image" or "No background" (`background` null, tile ""); the app logo glyph is drawn in front (fixed for now, custom glyph generation later). Backend no longer requires `background` for kind images.
+  - Sprite sheet import (`sprite-sheet.ts`, in `PerAppIcons.tsx`): one image, white glyphs on a dark solid background, default 8 columns, cells in COMMON_APPS order (51 apps, Phone to Brave). Auto-detects the grid with a fixed-grid fallback; background becomes alpha; each cell is a 192x192 white PNG uploaded to `apps[pkg]`. Preview grid with per-cell unassign, "Uploading n / N" progress, Retry for failed uploads, Esc closes.
 - Banners: list with dnd-kit reorder (saves via `/banners/order`). Editor per section 4.8 with action select and https link validation. Phone-size carousel preview with a date picker for "what users see on <date>".
 - Assets: library table (format, size, dimensions, used-by). Delete with confirm.
 
@@ -30,3 +32,4 @@ Admin pages for wallpapers, fonts, icon packs, banners and the asset library. Ba
 - Keyboard-accessible reorder through the dnd-kit keyboard sensor.
 - Icon shape switcher updates the preview instantly with no request.
 - Command palette entries for each kind.
+- Icon pack "No background": clear `background` without `shouldDirty` and mark dirty via `tile` (react-hook-form getDirtyFields crashes diffing an object against null).

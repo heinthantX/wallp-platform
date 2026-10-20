@@ -25,6 +25,9 @@ export function shapeStyle(shape: TileShape): React.CSSProperties {
 const SAMPLES = [MessageCircle, Mail, Landmark, Camera, Music, MapIcon, Phone, ImageIcon];
 const LOGO_COLORS = ["#25d366", "#ea4335", "#1d4ed8", "#f59e0b", "#ec4899", "#10b981", "#ffffff", "#111827"];
 
+// Transparent packs: faint checkerboard so the empty tile stays visible on the dark backdrop.
+const CHECKER = "repeating-conic-gradient(rgba(255,255,255,0.10) 0% 25%, rgba(255,255,255,0.03) 0% 50%)";
+
 export function IconPackPreview({
   shape,
   onShapeChange,
@@ -38,9 +41,10 @@ export function IconPackPreview({
   tile?: string;
   glyph?: string;
   ring?: string;
-  background?: { sha256: string; format: string };
+  background?: { sha256: string; format: string } | null;
 }) {
   const apiUrl = apiBase(useAuthStore((s) => s.apiUrl));
+  const none = !background && !tile;
   const bg = background ? `url(${apiUrl}/assets/${background.sha256}.${background.format})` : undefined;
   return (
     <div className="space-y-3">
@@ -59,16 +63,17 @@ export function IconPackPreview({
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-4 gap-4 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 p-4" data-testid="icon-preview" data-shape={shape}>
+      <div className="grid grid-cols-4 gap-4 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 p-4" data-testid="icon-preview" data-shape={shape} data-background={background ? "image" : tile ? "color" : "none"}>
         {SAMPLES.map((Icon, i) => (
           <div
             key={i}
             data-testid="icon-tile"
+            data-bg={background ? "image" : tile ? "color" : "none"}
             style={{
               ...shapeStyle(shape),
               backgroundColor: tile || undefined,
-              backgroundImage: bg,
-              backgroundSize: "cover",
+              backgroundImage: bg ?? (none ? CHECKER : undefined),
+              backgroundSize: bg ? "cover" : none ? "12px 12px" : undefined,
               border: `2px solid ${ring || "transparent"}`,
               transition: "border-radius 200ms",
             }}

@@ -77,6 +77,46 @@ var FestivalKind = &Kind{
 	DefaultSort:   "sort",
 }
 
+func categoryColumns(data []byte) (map[string]any, error) {
+	var c catalog.Category
+	if err := json.Unmarshal(data, &c); err != nil {
+		return nil, fmt.Errorf("invalid category json: %w", err)
+	}
+	if c.ID == "" {
+		return nil, errors.New("missing id")
+	}
+	var searchParts []string
+	for _, v := range c.Name {
+		searchParts = append(searchParts, v)
+	}
+	searchParts = append(searchParts, c.Tags...)
+	search := strings.ToLower(strings.Join(searchParts, " "))
+
+	return map[string]any{
+		"festival_id": (*string)(nil),
+		"sort":        c.Sort,
+		"search":      search,
+	}, nil
+}
+
+func categoryValidate(data []byte) []catalog.FieldError {
+	var c catalog.Category
+	if err := json.Unmarshal(data, &c); err != nil {
+		return []catalog.FieldError{{Field: "data", Code: "invalid_json", Message: err.Error()}}
+	}
+	return c.Validate()
+}
+
+var CategoryKind = &Kind{
+	Name:          "category",
+	Plural:        "categories",
+	Path:          "/categories",
+	Columns:       categoryColumns,
+	Validate:      categoryValidate,
+	FilterColumns: map[string]string{},
+	DefaultSort:   "sort",
+}
+
 func themeColumns(data []byte) (map[string]any, error) {
 	var t catalog.ThemeDetail
 	if err := json.Unmarshal(data, &t); err != nil {
@@ -355,6 +395,8 @@ var BannerKind = &Kind{
 var Kinds = map[string]*Kind{
 	"festival":   FestivalKind,
 	"festivals":  FestivalKind,
+	"category":   CategoryKind,
+	"categories": CategoryKind,
 	"theme":      ThemeKind,
 	"themes":     ThemeKind,
 	"wallpaper":  WallpaperKind,

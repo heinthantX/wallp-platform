@@ -21,3 +21,17 @@ describe("icon shape switcher", () => {
     expect(preview).toHaveAttribute("data-shape", "leaf");
   });
 });
+
+describe("icon preview background modes", () => {
+  const bgOf = () => screen.getAllByTestId("icon-tile")[0];
+  it("renders tile colour, background image and none", () => {
+    const { rerender } = render(<IconPackPreview shape="squircle" tile="#111111" />);
+    expect(bgOf()).toHaveAttribute("data-bg", "color");
+    rerender(<IconPackPreview shape="squircle" background={{ sha256: "abc", format: "png" }} />);
+    expect(bgOf()).toHaveAttribute("data-bg", "image");
+    expect(bgOf().style.backgroundImage).toContain("abc.png");
+    rerender(<IconPackPreview shape="squircle" />);
+    expect(bgOf()).toHaveAttribute("data-bg", "none");
+    expect(bgOf().style.backgroundImage).toContain("repeating-conic-gradient");
+  });
+});

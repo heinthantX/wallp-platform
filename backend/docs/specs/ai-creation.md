@@ -91,6 +91,8 @@ Out of P7: any provider client, model discovery, and the glyph filler.
 - OEM variants go in the alias table: `com.samsung.android.dialer`, `com.sec.android.app.camera`, `com.miui.gallery`.
 - Runners disagreed on some ids (KBZPay `com.kbzbank.kpaycustomer` vs `com.kbzbank.kbzpay`; camera `com.android.camera` vs `camera2`). Verify every id once against the Play Store `?id=` URL before locking the list.
 
+**Sprite-sheet import (built, admin-only, no AI; realises option E):** one image of white glyphs on a dark solid background, default 8 columns, cells in COMMON_APPS order (51 apps, Phone to Brave). The grid is auto-detected with a fixed-grid fallback, the background becomes alpha, and each cell is uploaded as a 192x192 white PNG to `apps[pkg]` via `POST /admin/v1/assets`. Backend validation no longer requires `background` for kind "images" (background may be null, tile "").
+
 **Admin "Per-app icons" tab** (images packs only):
 - A phone-mock grid with a 4x5 home screen per page. Each slot shows the pack image, or the fallback render greyed out.
 - A header reads "42 / 60 · 18 missing", with an expandable missing list and "Copy kit for missing only" (from P7).
@@ -120,7 +122,7 @@ Out of P7: any provider client, model discovery, and the glyph filler.
 1. D glyph filler: "Fill N missing with simple icons". About 30 min, no keys, and it writes into `apps` like an upload.
 2. C `POST /admin/v1/ai/images {prompt, count, seed, size}` with `auth.Admin(op, model.RoleDesigner)`. It returns asset rows into the same mapping table and records the provider and prompt in the asset `source` for takedown. Add `ai_jobs` only if fan-out needs progress tracking.
 3. B or F `POST /admin/v1/ai/suggest {description}` with `auth.Admin(op, model.RoleDesigner, model.RoleReviewer)`, returning names, subtitle, tags and mood words that become `Interpret` chips. Include a 15 s timeout, a cache by input hash, and 402/429 handling.
-4. E sprite-sheet slicer, only if outside sheets prove grid-accurate.
+4. (E sprite-sheet slicer: built client-side in the admin, see above.)
 5. A provenance field on assets (`origin: upload|glyph|ai`, provider, prompt) for later takedown.
 
 ## Open questions for the user

@@ -151,12 +151,14 @@ func (r *runner) load(ctx context.Context, db bun.IDB) error {
 	var fo []model.Font
 	var ip []model.IconPack
 	var ba []model.Banner
+	var cat []model.Category
 	for _, q := range []struct {
 		dst  any
 		kind *items.Kind
 		item func() []model.Item
 	}{
 		{&fest, items.FestivalKind, func() []model.Item { return pick(fest, func(x model.Festival) model.Item { return x.Item }) }},
+		{&cat, items.CategoryKind, func() []model.Item { return pick(cat, func(x model.Category) model.Item { return x.Item }) }},
 		{&th, items.ThemeKind, func() []model.Item { return pick(th, func(x model.Theme) model.Item { return x.Item }) }},
 		{&wp, items.WallpaperKind, func() []model.Item { return pick(wp, func(x model.Wallpaper) model.Item { return x.Item }) }},
 		{&fo, items.FontKind, func() []model.Item { return pick(fo, func(x model.Font) model.Item { return x.Item }) }},
@@ -300,6 +302,11 @@ func (r *runner) item(c cand) {
 				r.bannerTitle[v.ID] = v.Look.TitleColor
 			}
 		}
+	case items.CategoryKind:
+		var v catalog.Category
+		if err = json.Unmarshal(c.data, &v); err == nil {
+			r.cat.Categories = append(r.cat.Categories, v)
+		}
 	}
 	if err != nil {
 		r.add(levelError, "schema_invalid", kind, c.id, "", "Cannot read %s %q: %v", kind, c.id, err)
@@ -317,6 +324,8 @@ func (r *runner) refs() {
 			switch m[1] {
 			case "festivals":
 				kind, id = items.FestivalKind.Name, r.cat.Festivals[i].ID
+			case "categories":
+				kind, id = items.CategoryKind.Name, r.cat.Categories[i].ID
 			case "themes":
 				kind, id = items.ThemeKind.Name, r.cat.Themes[i].ID
 			case "wallpapers":
@@ -437,7 +446,7 @@ func (r *runner) festival(f catalog.Festival) {
 	if hasMyanmar(f.Name) && !r.fontCoversMyanmar(f.Look.DisplayFont) {
 		r.add(levelError, "myanmar_glyphs_missing", k, f.ID, "look.displayFont", "Font %q has no Myanmar letters and no Myanmar fallback, but the name of %s uses them", f.Look.DisplayFont, en(f.Name, f.ID))
 	}
-	if f.FallbackDate == nil {
+	if f.FallbackDate == nil && f.Kind != "collection" {
 		future := 0
 		for _, o := range f.Occurrences {
 			if d, err := time.Parse("2006-01-02", o); err == nil && !d.Before(r.now.UTC().Truncate(24*time.Hour)) {
@@ -462,7 +471,7 @@ func (r *runner) theme(t catalog.ThemeDetail) {
 	r.scene(k, t.ID, "scene", &t.Scene, t.MinAppVersion)
 	if t.PreviewImage != nil {
 		r.assetRefs = append(r.assetRefs, assetRef{k, t.ID, "previewImage", *t.PreviewImage})
-	} else {
+	} else if t.Scene.Engine == "" {
 		r.add(levelWarning, "theme_no_preview", k, t.ID, "previewImage", "%s has no preview image", name)
 	}
 
@@ -529,7 +538,7 @@ func (r *runner) theme(t catalog.ThemeDetail) {
 				}
 			}
 			if worst < minAccentContrast {
-				r.add(levelError, "accent_contrast_low", k, t.ID, fmt.Sprintf("accents[%d].colors[%d]", i, j), "Accent %s colour %d on %s background is %s:1, needs %.1f:1", en(a.Name, a.ID), j+1, worstName, fmtRatio(worst), minAccentContrast)
+				r.add(levelWarning, "accent_contrast_low", k, t.ID, fmt.Sprintf("accents[%d].colors[%d]", i, j), "Accent %s colour %d on %s background is %s:1, needs %.1f:1", en(a.Name, a.ID), j+1, worstName, fmtRatio(worst), minAccentContrast)
 			}
 		}
 	}

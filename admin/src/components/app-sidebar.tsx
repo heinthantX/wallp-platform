@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Tags,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { title: "Overview", href: "/", icon: LayoutDashboard },
   { title: "Festivals", href: "/festivals", icon: Sparkles },
+  { title: "Categories", href: "/categories", icon: Tags },
   { title: "Themes", href: "/themes", icon: Palette },
   { title: "Wallpapers", href: "/wallpapers", icon: Image },
   { title: "Fonts", href: "/fonts", icon: Type },

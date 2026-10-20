@@ -1210,6 +1210,13 @@
               "null"
             ]
           },
+          "categories": {
+            "items": {},
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "festivals": {
             "items": {},
             "type": [
@@ -1266,6 +1273,7 @@
         },
         "required": [
           "festivals",
+          "categories",
           "themes",
           "wallpapers",
           "fonts",
@@ -1569,6 +1577,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "categories": {
+            "format": "int64",
+            "type": "integer"
+          },
           "counts": {
             "$ref": "#/components/schemas/ImportResult"
           },
@@ -1605,6 +1617,7 @@
         "required": [
           "counts",
           "festivals",
+          "categories",
           "themes",
           "wallpapers",
           "fonts",
@@ -1617,6 +1630,10 @@
         "additionalProperties": false,
         "properties": {
           "banners": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "categories": {
             "format": "int64",
             "type": "integer"
           },
@@ -1652,6 +1669,7 @@
         },
         "required": [
           "festivals",
+          "categories",
           "themes",
           "wallpapers",
           "fonts",
@@ -2804,6 +2822,33 @@
         ],
         "type": "object"
       },
+      "ReorderCategoriesInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/ReorderCategoriesInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
       "ReorderFestivalsInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -3187,6 +3232,15 @@
           "accents": {
             "items": {
               "$ref": "#/components/schemas/Accent"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "categoryIds": {
+            "items": {
+              "type": "string"
             },
             "type": [
               "array",
@@ -5185,6 +5239,668 @@
         "summary": "Schedule or unschedule a banner",
         "tags": [
           "Banners"
+        ]
+      }
+    },
+    "/admin/v1/categories": {
+      "get": {
+        "operationId": "list-categories",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "perPage",
+            "schema": {
+              "default": 50,
+              "format": "int64",
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Field name, '-' prefix for descending, e.g. -updatedAt",
+            "explode": false,
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "description": "Field name, '-' prefix for descending, e.g. -updatedAt",
+              "maxLength": 40,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Search text",
+            "explode": false,
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "description": "Search text",
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "draft",
+                "in_review",
+                "approved",
+                "scheduled",
+                "published",
+                "archived",
+                ""
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List categories",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "post": {
+        "description": "Roles: admin, designer, reviewer",
+        "operationId": "create-category",
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "contentMediaType": "application/octet-stream",
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a category draft",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/order": {
+      "put": {
+        "description": "Roles: admin",
+        "operationId": "reorder-categories",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderCategoriesInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleOKOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reorder categories",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}": {
+      "delete": {
+        "description": "Roles: admin",
+        "operationId": "delete-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Archive a category",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "get": {
+        "operationId": "get-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a category",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "patch": {
+        "description": "Roles: admin, designer, reviewer",
+        "operationId": "update-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "contentMediaType": "application/octet-stream",
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}/archive": {
+      "post": {
+        "description": "Roles: admin",
+        "operationId": "archive-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Archive a category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}/duplicate": {
+      "post": {
+        "description": "Roles: admin, designer, reviewer",
+        "operationId": "duplicate-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Duplicate a category as a new draft",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}/export": {
+      "get": {
+        "operationId": "export-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export raw category data JSON",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}/restore": {
+      "post": {
+        "description": "Roles: admin",
+        "operationId": "restore-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Restore an archived category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}/review": {
+      "post": {
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
+        "operationId": "review-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Transition a category review status",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/admin/v1/categories/{id}/schedule": {
+      "post": {
+        "description": "Roles: admin, reviewer",
+        "operationId": "schedule-category",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Schedule or unschedule a category",
+        "tags": [
+          "Categories"
         ]
       }
     },

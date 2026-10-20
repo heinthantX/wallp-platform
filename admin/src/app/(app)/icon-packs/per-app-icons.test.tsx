@@ -31,3 +31,10 @@ describe("PerAppIcons", () => {
     expect(screen.getAllByTestId("app-row")).toHaveLength(2);
   });
 });
+
+describe("PerAppIcons sprite import", () => {
+  it("offers the import button", () => {
+    render(<Harness spy={() => {}} />);
+    expect(screen.getByLabelText("Import sprite sheet")).toBeInTheDocument();
+  });
+});

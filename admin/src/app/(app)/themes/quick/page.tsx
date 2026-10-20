@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, RefreshCw, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,29 +16,175 @@ import {
   useFromImage,
   useSaveTheme,
   useSaveWallpaper,
+  useFonts,
   useUploadImageAsset,
   useWallpaper,
+  useWallpapers,
 } from "@/lib/api/hooks";
 import type { GeneratorOption } from "@/lib/generator/types";
 import type { WallpaperImage } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
+import { LayersCanvas } from "@/components/preview";
+import { NEUTRAL_PALETTE } from "../../wallpapers/_components/WallpaperEditor";
 import { toWallpaperImage } from "../../wallpapers/_components/UploadZone";
 
 const STEPS = [
   { id: 1, title: "Wallpaper", description: "Festival and image" },
-  { id: 2, title: "Palette", description: "Pick a candidate" },
-  { id: 3, title: "Live scene", description: "Optional" },
-  { id: 4, title: "Icons & font", description: "Optional icon pack" },
+  { id: 2, title: "Icon pack", description: "Required" },
+  { id: 3, title: "Font", description: "Search and preview" },
+  { id: 4, title: "Live scene", description: "Optional" },
   { id: 5, title: "Create", description: "Save as draft" },
 ];
 
 const randomSeed = () => Math.floor(Math.random() * 2147483647);
 
-function Swatches({ palette }: { palette: Record<string, string | undefined> }) {
+function parseData<T>(raw: unknown): T | null {
+  try {
+    return (typeof raw === "string" ? JSON.parse(raw) : raw) as T | null;
+  } catch {
+    return null;
+  }
+}
+
+function EmptyState({ noun, href, cta }: { noun: string; href: string; cta: string }) {
   return (
-    <div className="flex h-8 overflow-hidden rounded-md border">
-      {["background", "deep", "surface", "text", "textMuted", "motif"].map((k) =>
-        palette[k] ? <div key={k} className="flex-1" style={{ background: palette[k] }} title={k} /> : null
+    <p className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
+      No {noun} yet.{" "}
+      <Link className="underline" href={href}>
+        {cta}
+      </Link>
+    </p>
+  );
+}
+
+function WallpaperGrid({ value, onChange }: { value?: string; onChange: (id: string) => void }) {
+  const { data, isLoading, isError, refetch } = useWallpapers({ perPage: 100 });
+  const [q, setQ] = React.useState("");
+  if (isLoading)
+    return (
+      <div className="grid grid-cols-3 gap-3" data-testid="wallpaper-skeleton">
+        {Array.from({ length: 6 }, (_, i) => (
+          <Skeleton key={i} className="h-28 rounded-lg" />
+        ))}
+      </div>
+    );
+  if (isError)
+    return (
+      <div role="alert" className="flex items-center justify-between rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+        Could not load wallpapers.
+        <Button size="sm" variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  const items = (data?.items ?? []).map((i) => {
+    const d = parseData<{ name?: { en?: string }; image?: WallpaperImage; scene?: { engine?: string } }>(i.data);
+    return { id: i.id, name: d?.name?.en || i.id, thumb: d?.image?.sizes?.[0]?.asset.url, scene: d?.scene?.engine ? d.scene : undefined };
+  });
+  if (items.length === 0)
+    return <EmptyState noun="wallpapers" href="/wallpapers/new" cta="Create a wallpaper" />;
+  const shown = items.filter((i) => `${i.name} ${i.id}`.toLowerCase().includes(q.trim().toLowerCase()));
+  return (
+    <div className="space-y-2">
+      <input
+        aria-label="Search wallpapers"
+        placeholder="Search wallpapers by name"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+      />
+      <div className="grid max-h-72 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
+        {shown.map((i) => (
+          <button
+            key={i.id}
+            type="button"
+            aria-pressed={value === i.id}
+            data-wallpaper-id={i.id}
+            onClick={() => onChange(i.id)}
+            className={cn(
+              "space-y-1 rounded-lg border p-1.5 text-left transition-all hover:border-primary/50",
+              value === i.id && "border-primary ring-2 ring-primary/40"
+            )}
+          >
+            {i.thumb ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={assetSrc(i.thumb)} alt="" className="h-24 w-full rounded-md object-cover" />
+            ) : i.scene ? (
+              <div className="h-24 overflow-hidden rounded-md [&_canvas]:h-full [&_canvas]:w-full [&_canvas]:object-cover">
+                <LayersCanvas scene={i.scene as never} palette={NEUTRAL_PALETTE} width={160} height={96} animate={false} />
+              </div>
+            ) : (
+              <div className="h-24 rounded-md bg-muted" />
+            )}
+            <p className="truncate text-xs font-medium">{i.name}</p>
+          </button>
+        ))}
+        {shown.length === 0 && <p className="col-span-full text-sm text-muted-foreground">No matches.</p>}
+      </div>
+    </div>
+  );
+}
+
+function FontPicker({ value, onChange }: { value?: string; onChange: (id: string) => void }) {
+  const { data, isLoading, isError, refetch } = useFonts({ perPage: 100 });
+  const [q, setQ] = React.useState("");
+  if (isLoading)
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="h-10 rounded-md" />
+        ))}
+      </div>
+    );
+  if (isError)
+    return (
+      <div role="alert" className="flex items-center justify-between rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+        Could not load fonts.
+        <Button size="sm" variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  const items = (data?.items ?? []).map((i) => {
+    const d = parseData<{ family?: string; name?: { en?: string } }>(i.data);
+    return { id: i.id, family: d?.family || d?.name?.en || i.id };
+  });
+  if (items.length === 0) return <EmptyState noun="fonts" href="/fonts/new" cta="Import fonts" />;
+  const needle = q.trim().toLowerCase();
+  const shown = items.filter((i) => `${i.family} ${i.id}`.toLowerCase().includes(needle));
+  const sel = items.find((i) => i.id === value);
+  return (
+    <div className="space-y-3">
+      <input
+        aria-label="Search fonts"
+        placeholder="Search fonts by family"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+      />
+      <ul className="max-h-64 space-y-1 overflow-y-auto" aria-label="Fonts">
+        {shown.map((i) => (
+          <li key={i.id}>
+            <button
+              type="button"
+              aria-pressed={value === i.id}
+              onClick={() => onChange(i.id)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm hover:border-primary/50",
+                value === i.id && "border-primary ring-2 ring-primary/40"
+              )}
+            >
+              <span style={{ fontFamily: `"${i.family}", sans-serif` }}>{i.family}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">{i.id}</span>
+            </button>
+          </li>
+        ))}
+        {shown.length === 0 && <li className="text-sm text-muted-foreground">No matches.</li>}
+      </ul>
+      {sel && (
+        <p data-testid="font-preview" className="rounded-md border p-3 text-2xl" style={{ fontFamily: `"${sel.family}", sans-serif` }}>
+          12:45 {sel.family}
+        </p>
       )}
     </div>
   );
@@ -58,10 +204,10 @@ export default function QuickThemePage() {
   const [wallpaperId, setWallpaperId] = React.useState<string>();
   const [image, setImage] = React.useState<File | null>(null);
   const [options, setOptions] = React.useState<GeneratorOption[]>([]);
-  const [picked, setPicked] = React.useState<number>();
   const [engine, setEngine] = React.useState<string>();
   const [iconPackId, setIconPackId] = React.useState<string>();
   const [fontId, setFontId] = React.useState<string>();
+  const [wallpaperScene, setWallpaperScene] = React.useState<GeneratorOption["data"]["scene"]>();
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string>();
 
@@ -72,10 +218,9 @@ export default function QuickThemePage() {
     setError(undefined);
     try {
       const res = await fromImage.mutateAsync({ image: img, festivalId, seed: randomSeed() });
-      const opts = ((res?.options ?? []) as unknown as GeneratorOption[]).slice(0, 6);
-      if (opts.length === 0) throw new Error("No palette candidates returned");
-      setOptions(opts);
-      setPicked(undefined);
+      const opts = (res?.options ?? []) as unknown as GeneratorOption[];
+      if (opts.length === 0) throw new Error("Could not derive colours from this wallpaper");
+      setOptions(opts.slice(0, 1));
       return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Generation failed");
@@ -85,18 +230,18 @@ export default function QuickThemePage() {
     }
   };
 
-  const chosen = picked !== undefined ? options[picked] : undefined;
+  const chosen = options[0];
 
   // Why Next is disabled (undefined = valid).
   const blocker: string | undefined = (() => {
     if (busy) return "Working...";
     if (step === 1) {
       if (!festivalId) return "Pick a festival";
-      if (!file && !existingId) return "Upload an image or pick a wallpaper";
+      if (!file && !existingId) return "Pick a wallpaper or upload an image";
       if (existingId && !file && !existing.data) return "Loading wallpaper...";
     }
-    if (step === 2 && !chosen) return "Pick a palette";
-    if (step === 4 && !fontId) return "Pick a clock font";
+    if (step === 2 && !iconPackId) return "Pick an icon pack";
+    if (step === 3 && !fontId) return "Pick a font";
     return undefined;
   })();
 
@@ -122,15 +267,29 @@ export default function QuickThemePage() {
           } else wid = wallpaperId;
         } else {
           const raw = existing.data?.data;
-          const d = (typeof raw === "string" ? JSON.parse(raw) : raw) as { image?: WallpaperImage } | null;
+          const d = (typeof raw === "string" ? JSON.parse(raw) : raw) as
+            | { image?: WallpaperImage; scene?: GeneratorOption["data"]["scene"] }
+            | null;
           const url = d?.image?.sizes?.[0]?.asset.url;
-          if (!url) throw new Error("That wallpaper has no image to derive a palette from");
-          // no-store: an <img> may have cached this file without CORS headers.
-          const blob = await (await fetch(assetSrc(url), { cache: "no-store" })).blob();
-          img = new File([blob], `${existingId}.webp`, { type: blob.type || "image/webp" });
+          if (url) {
+            // no-store: an <img> may have cached this file without CORS headers.
+            const blob = await (await fetch(assetSrc(url), { cache: "no-store" })).blob();
+            img = new File([blob], `${existingId}.webp`, { type: blob.type || "image/webp" });
+            setWallpaperScene(undefined);
+          } else if (d?.scene?.engine) {
+            // Scene wallpapers have no image: sample the drawn thumbnail, and the theme reuses the scene.
+            const canvas = document.querySelector<HTMLCanvasElement>(`[data-wallpaper-id="${existingId}"] canvas`);
+            const blob = canvas && (await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png")));
+            if (!blob) throw new Error("Could not read this scene's colours. Try again in a moment.");
+            img = new File([blob], `${existingId}.png`, { type: "image/png" });
+            setWallpaperScene(d.scene);
+          } else {
+            throw new Error("That wallpaper has no image or scene to derive a palette from");
+          }
         }
         setWallpaperId(wid);
         setImage(img);
+        // Palette and accents are derived silently from the wallpaper's colours.
         if (!(await generate(img!))) return;
         setStep(2);
       } catch (e) {
@@ -146,14 +305,14 @@ export default function QuickThemePage() {
   const back = () => (step > 1 ? setStep(step - 1) : router.push("/themes"));
 
   const create = async () => {
-    if (!chosen || !festivalId || !wallpaperId || !fontId) return;
+    if (!chosen || !festivalId || !wallpaperId || !fontId || !iconPackId) return;
     const data = {
       ...chosen.data,
       festivalId,
       wallpaperIds: [wallpaperId],
-      ...(iconPackId ? { iconPackId } : {}),
+      iconPackId,
       fonts: { ...chosen.data.fonts, display: fontId },
-      scene: engine ? { ...chosen.data.scene, engine } : chosen.data.scene,
+      scene: engine ? { ...(wallpaperScene ?? chosen.data.scene), engine } : (wallpaperScene ?? chosen.data.scene),
     };
     try {
       const created = await saveTheme.mutateAsync({ id: data.id, data, isNew: true });
@@ -167,9 +326,12 @@ export default function QuickThemePage() {
   const onKey = React.useRef<(e: KeyboardEvent) => void>(() => {});
   onKey.current = (e) => {
     if (e.defaultPrevented) return;
-    if (e.key === "Escape") router.push("/themes");
+    if (e.key === "Escape") {
+      if (!busy) back();
+    }
     else if (e.key === "Enter" && (e.target === document.body || (e.target as HTMLElement).tagName === "DIV")) {
       if (step === 5) void create();
+      else if (busy) return;
       else void next();
     }
   };
@@ -192,7 +354,7 @@ export default function QuickThemePage() {
             <Zap className="h-6 w-6 text-primary" />
             Quick theme
           </h1>
-          <p className="text-xs text-muted-foreground">Wallpaper to draft theme in five steps. No AI keys needed.</p>
+          <p className="text-xs text-muted-foreground">Wallpaper, icon pack and font to a draft theme. Colours are derived automatically.</p>
         </div>
       </div>
 
@@ -204,6 +366,14 @@ export default function QuickThemePage() {
         {step === 1 && (
           <>
             <RelationSelect kind="festivals" label="Festival" value={festivalId} onChange={setFestivalId} />
+            <WallpaperGrid
+              value={existingId}
+              onChange={(v) => {
+                setExistingId(v);
+                setFile(null);
+              }}
+            />
+            <p className="text-center text-xs text-muted-foreground">or</p>
             <div className="space-y-1.5">
               <label htmlFor="quick-image" className="text-sm font-medium">
                 Upload an image
@@ -221,58 +391,16 @@ export default function QuickThemePage() {
               />
               {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
             </div>
-            <p className="text-center text-xs text-muted-foreground">or</p>
-            <RelationSelect
-              kind="wallpapers"
-              label="Existing wallpaper"
-              optional
-              value={existingId}
-              onChange={(v) => {
-                setExistingId(v);
-                if (v) setFile(null);
-              }}
-            />
           </>
         )}
 
         {step === 2 && (
-          <>
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Pick a palette</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                disabled={busy || !image}
-                onClick={() => image && generate(image)}
-              >
-                <RefreshCw className={cn("h-3.5 w-3.5", busy && "animate-spin")} />
-                Reshuffle
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {busy
-                ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)
-                : options.map((o, i) => (
-                    <button
-                      key={`${o.seed}-${i}`}
-                      type="button"
-                      aria-pressed={picked === i}
-                      onClick={() => setPicked(i)}
-                      className={cn(
-                        "space-y-2 rounded-lg border p-2 text-left transition-all hover:border-primary/50",
-                        picked === i && "border-primary ring-2 ring-primary/40"
-                      )}
-                    >
-                      <Swatches palette={o.data.palette as unknown as Record<string, string>} />
-                      <p className="truncate text-xs font-medium">{o.data.name?.en || o.data.id}</p>
-                    </button>
-                  ))}
-            </div>
-          </>
+          <RelationSelect kind="iconPacks" label="Icon pack" value={iconPackId} onChange={setIconPackId} />
         )}
 
-        {step === 3 && (
+        {step === 3 && <FontPicker value={fontId} onChange={setFontId} />}
+
+        {step === 4 && (
           <>
             <p className="text-sm text-muted-foreground">
               Keeping the generated scene ({chosen?.data.scene?.engine ?? "layers"}). Optionally switch the engine.
@@ -290,16 +418,8 @@ export default function QuickThemePage() {
           </>
         )}
 
-        {step === 4 && (
-          <>
-            <RelationSelect kind="iconPacks" label="Icon pack" optional value={iconPackId} onChange={setIconPackId} />
-            <RelationSelect kind="fonts" label="Clock font" value={fontId} onChange={setFontId} />
-          </>
-        )}
-
         {step === 5 && chosen && (
           <div className="space-y-3 text-sm">
-            <Swatches palette={chosen.data.palette as unknown as Record<string, string>} />
             <dl className="grid grid-cols-[8rem_1fr] gap-y-1">
               <dt className="text-muted-foreground">Festival</dt>
               <dd>{festivalId}</dd>
@@ -308,8 +428,8 @@ export default function QuickThemePage() {
               <dt className="text-muted-foreground">Scene</dt>
               <dd>{engine ?? chosen.data.scene?.engine}</dd>
               <dt className="text-muted-foreground">Icon pack</dt>
-              <dd>{iconPackId ?? "None"}</dd>
-              <dt className="text-muted-foreground">Clock font</dt>
+              <dd>{iconPackId}</dd>
+              <dt className="text-muted-foreground">Font</dt>
               <dd>{fontId}</dd>
             </dl>
           </div>

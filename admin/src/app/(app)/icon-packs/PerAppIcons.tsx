@@ -10,6 +10,8 @@ import { COMMON_APPS } from "./common-apps";
 import { resolveAppFile } from "./resolve-app-file";
 import { PromptKitButton } from "@/components/ai/PromptKitButton";
 import { buildPromptKit } from "@/lib/prompt-kit";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { sliceSheetFile, DEFAULT_COLUMNS, type Slice } from "./sprite-sheet";
 
 type Apps = Record<string, Asset>;
 type Source = "exact" | "alias" | "manual" | "unmatched";
@@ -42,6 +44,142 @@ async function checkDims(file: File): Promise<string | null> {
     /* undecodable here: leave it to the backend check */
   }
   return null;
+}
+
+function SpriteImport({ onApply }: { onApply: (assets: Apps) => void }) {
+  const upload = useUploadAsset();
+  const [file, setFile] = React.useState<File | null>(null);
+  const [columns, setColumns] = React.useState(DEFAULT_COLUMNS);
+  const [auto, setAuto] = React.useState(true);
+  const [slices, setSlices] = React.useState<Slice[]>([]);
+  const [off, setOff] = React.useState<Set<string>>(new Set());
+  const [slicing, setSlicing] = React.useState(false);
+  const [progress, setProgress] = React.useState<{ done: number; total: number } | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const done = React.useRef<Apps>({});
+  const urls = React.useRef<string[]>([]);
+
+  const revoke = () => { urls.current.forEach((u) => URL.revokeObjectURL(u)); urls.current = []; };
+  React.useEffect(() => revoke, []);
+
+  const slice = React.useCallback(async (f: File, cols: number, detect: boolean) => {
+    setSlicing(true);
+    setError(null);
+    try {
+      const next = await sliceSheetFile(f, { columns: cols, auto: detect });
+      revoke();
+      urls.current = next.map((x) => x.url);
+      setSlices(next);
+      setOff(new Set());
+      if (!next.length) setError("No glyphs found. Check the column count or the image.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not read the image");
+    } finally {
+      setSlicing(false);
+    }
+  }, []);
+
+  const pick = (f?: File) => {
+    if (!f) return;
+    done.current = {};
+    setFile(f);
+    void slice(f, columns, auto);
+  };
+  const close = () => { if (progress) return; revoke(); setFile(null); setSlices([]); setError(null); };
+  const chosen = slices.filter((x) => !off.has(x.pkg));
+
+  const apply = async () => {
+    setError(null);
+    const todo = chosen.filter((x) => !done.current[x.pkg]);
+    const total = chosen.length;
+    setProgress({ done: total - todo.length, total });
+    const queue = [...todo];
+    let failed = 0;
+    const worker = async () => {
+      for (let x = queue.shift(); x; x = queue.shift()) {
+        try {
+          const a = await upload.mutateAsync(new File([x.blob], `${x.pkg}.png`, { type: "image/png" }));
+          done.current[x.pkg] = { url: a.url, sha256: a.sha256, bytes: a.bytes, format: a.format as Asset["format"] };
+          setProgress((p) => (p ? { ...p, done: p.done + 1 } : p));
+        } catch (e) {
+          failed++;
+          setError(e instanceof Error ? e.message : "Upload failed");
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(MAX_PARALLEL, todo.length) }, worker));
+    setProgress(null);
+    if (failed) return; // keep the dialog open: Retry re-uploads only what is missing
+    onApply({ ...done.current });
+    done.current = {};
+    revoke(); setFile(null); setSlices([]);
+    toast.success(`Imported ${total} icons`);
+  };
+
+  return (
+    <>
+      <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted">
+        <Upload className="h-4 w-4" />
+        Import sprite sheet
+        <input type="file" accept="image/png,image/webp,image/jpeg" className="sr-only" aria-label="Import sprite sheet"
+          onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
+      </label>
+      <Dialog open={Boolean(file)} onOpenChange={(o) => { if (!o) close(); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" aria-describedby="sprite-desc">
+          <DialogHeader>
+            <DialogTitle>Import sprite sheet</DialogTitle>
+            <DialogDescription id="sprite-desc">White glyphs on a solid dark background, cells in app order. Remove any cell you do not want.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <label className="flex items-center gap-2">Columns
+              <input type="number" min={1} max={24} value={columns} aria-label="Sprite columns" className="w-16 rounded border bg-background px-2 py-1"
+                onChange={(e) => { const n = Math.max(1, Math.min(24, Number(e.target.value) || 1)); setColumns(n); if (file) void slice(file, n, auto); }} />
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={auto} onChange={(e) => { setAuto(e.target.checked); if (file) void slice(file, columns, e.target.checked); }} />
+              Auto-detect grid
+            </label>
+            <span className="text-xs text-muted-foreground">{chosen.length} of {slices.length} selected</span>
+          </div>
+          {slicing ? (
+            <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Slicing...</div>
+          ) : (
+            <ul className="grid grid-cols-4 sm:grid-cols-6 gap-3" data-testid="sprite-slices">
+              {slices.map((x) => {
+                const on = !off.has(x.pkg);
+                return (
+                  <li key={x.pkg} className={`relative flex flex-col items-center gap-1 rounded-md p-1 transition-opacity ${on ? "" : "opacity-30"}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={x.url} alt={x.label} className="h-14 w-14 rounded-xl bg-slate-800 object-contain p-1" />
+                    <span className="w-full truncate text-center text-[10px]">{x.label}</span>
+                    <button type="button" aria-label={on ? `Unassign ${x.label}` : `Assign ${x.label}`} aria-pressed={!on}
+                      className="absolute right-0 top-0 rounded-full bg-background/90 p-0.5 border hover:text-destructive"
+                      onClick={() => setOff((s) => { const n = new Set(s); if (n.has(x.pkg)) n.delete(x.pkg); else n.add(x.pkg); return n; })}>
+                      {on ? <X className="h-3 w-3" /> : <RotateCcw className="h-3 w-3" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {error && (
+            <div role="alert" className="flex items-center gap-3 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+              <span className="flex-1">{error}</span>
+              {slices.length > 0 && !progress && <button type="button" className="inline-flex items-center gap-1 underline" onClick={apply}><RotateCcw className="h-3 w-3" />Retry</button>}
+              {slices.length === 0 && file && <button type="button" className="inline-flex items-center gap-1 underline" onClick={() => slice(file, columns, auto)}><RotateCcw className="h-3 w-3" />Retry</button>}
+            </div>
+          )}
+          <div className="flex items-center justify-end gap-3">
+            {progress && <span className="text-sm" role="status">Uploading {progress.done} / {progress.total}</span>}
+            <button type="button" className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50" disabled={Boolean(progress)} onClick={close}>Cancel</button>
+            <button type="button" className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50" disabled={Boolean(progress) || slicing || !chosen.length} onClick={apply}>
+              {progress ? <Loader2 className="h-4 w-4 animate-spin" aria-label="Uploading" /> : `Apply ${chosen.length} icons`}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: Apps; onChange: (next: Apps) => void; tile?: string; kitInfo?: { packName: string; style?: string; glyph?: string } }) {
@@ -132,6 +270,8 @@ export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: App
           ))}
         </ul>
       )}
+
+      <SpriteImport onApply={(assets) => { const next = { ...appsRef.current, ...assets }; appsRef.current = next; onChange(next); }} />
 
       <label
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}

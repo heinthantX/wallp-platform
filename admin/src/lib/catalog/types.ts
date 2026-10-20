@@ -183,6 +183,7 @@ export interface ThemeDetail {
   id: string;
   rev: number;
   festivalId: string;
+  categoryIds?: string[];
   name: Localized;
   subtitle?: Localized;
   style?: ThemeStyle;
@@ -209,6 +210,7 @@ export interface ThemeSummary {
   id: string;
   rev: number;
   festivalId: string;
+  categoryIds?: string[];
   name: Localized;
   subtitle?: Localized;
   style?: ThemeStyle;
@@ -312,6 +314,7 @@ export interface WallpaperImage {
 export interface Wallpaper {
   id: string;
   festivalId?: string;
+  categoryIds?: string[];
   name: Localized;
   kind: "scene" | "image";
   scene?: Scene;

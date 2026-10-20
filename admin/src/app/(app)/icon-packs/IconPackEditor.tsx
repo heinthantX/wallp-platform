@@ -21,6 +21,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
   const save = useSaveIconPack();
   const action = useIconPackAction();
   const upload = useUploadAsset();
+  const [modeOverride, setModeOverride] = React.useState<"image" | "none" | null>(null);
 
   return (
     <ItemEditorShell<IconPackForm>
@@ -37,6 +38,19 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
     >
       {({ control, watch, setValue, formState: { errors } }, item) => {
         const bgAsset = watch("background");
+        const tileColor = watch("tile");
+        const mode = modeOverride ?? (bgAsset || tileColor ? "image" : "none");
+        const chooseMode = (m: "image" | "none") => {
+          setModeOverride(m);
+          if (m === "none") {
+            // react-hook-form's dirty check crashes diffing the default background object against null/undefined,
+            // so clear it without shouldDirty; the tile change below marks the form dirty.
+            setValue("background", null);
+            setValue("tile", "", { shouldDirty: true, shouldValidate: true });
+          } else if (!tileColor) {
+            setValue("tile", defaultIconPack.tile, { shouldDirty: true });
+          }
+        };
         const onFile = async (file?: File) => {
           if (!file) return;
           try {
@@ -69,19 +83,33 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Background tile</CardTitle>
-                <CardDescription>Square PNG or WebP, at least 256 px, edge to edge with no border or rounded corners.</CardDescription>
+                <CardDescription>Pick a background image (square PNG or WebP, at least 256 px, edge to edge) or go transparent.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {bgAsset && <code className="text-xs font-mono">{bgAsset.sha256.slice(0, 12)}.{bgAsset.format} ({Math.round(bgAsset.bytes / 1024)} KB)</code>}
-                {errors.background && <p role="alert" className="text-xs text-destructive">{errors.background.message ?? "Upload the background tile"}</p>}
-                <label className="flex items-center gap-2 text-sm cursor-pointer w-fit rounded-md border px-3 py-2 hover:bg-muted">
-                  <Upload className="h-4 w-4" />
-                  {upload.isPending ? "Uploading..." : "Upload tile"}
-                  <input type="file" accept="image/png,image/webp" className="sr-only" aria-label="Upload background tile" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
-                </label>
+                <div role="radiogroup" aria-label="Background mode" className="flex gap-2">
+                  {([["image", "Background image"], ["none", "No background"]] as const).map(([m, label]) => (
+                    <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => chooseMode(m)}
+                      className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${mode === m ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {mode === "none" ? (
+                  <p className="text-xs text-muted-foreground">Transparent: only the app logo is drawn, in the glyph colour.</p>
+                ) : (
+                  <>
+                    {bgAsset && <code className="text-xs font-mono">{bgAsset.sha256.slice(0, 12)}.{bgAsset.format} ({Math.round(bgAsset.bytes / 1024)} KB)</code>}
+                    {errors.background && <p role="alert" className="text-xs text-destructive">{errors.background.message ?? "Upload the background tile"}</p>}
+                    <label className="flex items-center gap-2 text-sm cursor-pointer w-fit rounded-md border px-3 py-2 hover:bg-muted">
+                      <Upload className="h-4 w-4" />
+                      {upload.isPending ? "Uploading..." : bgAsset ? "Replace tile" : "Upload tile"}
+                      <input type="file" accept="image/png,image/webp" className="sr-only" aria-label="Upload background tile" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
+                    </label>
+                  </>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  {(["tile", "glyph", "ring"] as const).map((k) => (
-                    <Controller key={k} name={k} control={control} render={({ field }) => <ColorField label={k} value={field.value || "#000000"} onChange={field.onChange} error={errors[k]?.message} />} />
+                  {(mode === "none" ? (["glyph", "ring"] as const) : (["tile", "glyph", "ring"] as const)).map((k) => (
+                    <Controller key={k} name={k} control={control} render={({ field }) => <ColorField label={k === "tile" ? "tile colour (behind image)" : k} value={field.value || "#000000"} onChange={field.onChange} error={errors[k]?.message} />} />
                   ))}
                 </div>
               </CardContent>
@@ -90,7 +118,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
             <Card>
               <CardHeader><CardTitle className="text-base">Preview</CardTitle><CardDescription>Default shape; users can change it in the app.</CardDescription></CardHeader>
               <CardContent>
-                <IconPackPreview shape={watch("shape")} onShapeChange={(s) => setValue("shape", s, { shouldDirty: true })} tile={watch("tile")} glyph={watch("glyph")} ring={watch("ring")} background={bgAsset} />
+                <IconPackPreview shape={watch("shape")} onShapeChange={(s) => setValue("shape", s, { shouldDirty: true })} tile={mode === "none" ? undefined : tileColor} glyph={watch("glyph")} ring={watch("ring")} background={mode === "none" ? undefined : bgAsset} />
               </CardContent>
             </Card>
             {watch("kind") === "images" && (

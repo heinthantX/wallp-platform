@@ -29,7 +29,13 @@ Release gate (`internal/checks`), publish pipeline and public catalog serving (`
 - Catalog size codes `catalog_over_1mb` (warning-level path) and `catalog_over_2mb` (error) are checked during publish.
 - Rollback leaves the release history intact; the target release's status updates and the current one moves to rolled_back.
 - Broken or missing asset on a candidate item blocks publish (`asset_missing`, `asset_sha_mismatch`).
-- Mock catalog may carry legitimate warnings; tests assert those codes rather than zero issues.
+- Mock catalog may carry legitimate warnings; tests assert those codes rather than zero issues. Checks match the app (store-flow prototype): the Flutter mock catalog imports and publishes with 0 errors.
+- `accent_contrast_low` is a WARNING (the app shows "Hard to read here"), not an error.
+- `festival_few_dates` is skipped for festival kind "collection".
+- `theme_no_preview` is skipped when the theme has a scene engine (the app builds previews from the scene).
+- `ref_missing` also covers unknown `categoryIds` on themes and wallpapers (specs/categories.md). Categories are candidates like banners (review required).
+- Release summary pluralises "category" as "categories".
+- The built-in Flutter catalog (`assets/builtin/catalog`) imports but cannot publish alone: its font files live only in `assets/mock/catalog/v1/assets`.
 
 ## Autonomous UX Polish
 - DX: check report groups issues by level and gives JSON-path fields so the admin can deep-link.

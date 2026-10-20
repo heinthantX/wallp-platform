@@ -20,15 +20,16 @@ export const iconPackSchema = z.object({
   tile: optHex,
   glyph: optHex,
   ring: optHex,
-  background: z.object(
-    {
+  // Optional: "no background" packs are transparent (no background image, no tile colour).
+  background: z
+    .object({
       url: z.string(),
       sha256: z.string(),
       bytes: z.number(),
       format: z.enum(["png", "webp"]),
-    },
-    { required_error: "Upload the background tile", invalid_type_error: "Upload the background tile" }
-  ),
+    })
+    .nullable()
+    .optional(),
   apps: z.record(asset).optional(),
   appsFallbackStyle: z.string().optional(),
 });

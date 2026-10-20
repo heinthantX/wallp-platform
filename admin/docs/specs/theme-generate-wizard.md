@@ -20,6 +20,11 @@ Admin page `/themes/generate/` that turns inputs into a saved theme using the ba
 - More like this sends the option palette as `around`.
 - Prefill: query params fill step 1, so the editor's "Regenerate from saved inputs" link works.
 
+## Quick wizard (`/themes/quick`)
+- Steps: Wallpaper, Icon pack, Font (search-as-you-type picker), Live scene (optional), Create. No palette step: palette and accents are derived silently from the wallpaper via the from-image generator (top candidate).
+- Scene wallpapers (no image) are sampled from their rendered canvas thumbnail; the theme reuses the wallpaper's scene.
+- Polish: skeletons, empty states linking to create wallpaper or import fonts, Retry on generator failure, Enter = Next, Esc = Back.
+
 ## Edge Cases
 - Locks are kept exactly. An impossible lock shows the backend's failed check message.
 - Generation failure keeps the previous six options on screen.

@@ -93,6 +93,27 @@ How to draw an app icon with such a pack (stop at the first step that works):
 
 A failed download goes on to step 2, so one broken file never blanks the home screen. Images are square, at least 192 px and at most 1 MB (the server checks this before publishing).
 
+Per-app images made from an icon sheet in the dashboard are white glyphs on a transparent background (192 x 192 PNG). Draw them over the pack's background, or tint them with `glyph`.
+
+A pack may have no background at all: `background` is missing or `null`, and `tile` is missing or an empty string `""`. Then draw only the glyph or per-app image, with no tile behind it (transparent), over the wallpaper.
+
+### Categories (new)
+
+The catalog has a new top-level `categories` array, ordered by `sort` then `id`:
+
+```json
+"categories": [
+  {"id": "anime", "name": {"en": "Anime"}, "sort": 0, "tags": ["manga"]},
+  {"id": "nature", "name": {"en": "Nature"}, "sort": 1}
+]
+```
+
+Themes (in the catalog's `themes` summaries and in each `themes/<id>.<rev>.json` file) and wallpapers have a new `categoryIds` array (for example `["anime", "dark"]`). An item can be in many categories, or in none (the field is then missing). `festivalId` is unchanged and still drives the festival pages.
+
+- A category page shows every theme and wallpaper whose `categoryIds` contains its `id`.
+- An id in `categoryIds` that is not in `categories` never ships: the server's publish checks reject it.
+- Old apps ignore both fields.
+
 ### Immutability rules
 
 - Never overwrite a cached catalog, theme or asset file under the same name. A changed theme gets a new `rev` and a new file.

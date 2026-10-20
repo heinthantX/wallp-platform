@@ -25,5 +25,17 @@ Root cause: defaults like "creepster" did not match the font catalog's kebab ids
 ## Concurrent identical uploads raced on sha256 (B16)
 Root cause: check-then-insert on the unique sha256 column. Fix: insert `ON CONFLICT (sha256) DO NOTHING`; RowsAffected 0 means deduped, return the existing row.
 
+## Theme publish blocked by stricter checks than the app
+Root cause: release checks were stricter than the app; the app's own Snowy Pines accents (2.0:1, 1.8:1) errored. Fix: `accent_contrast_low` is a warning.
+
+## Icon pack "No background" crashed the editor
+Root cause: react-hook-form `getDirtyFields` crashes diffing a default object against null/undefined. Fix: clear `background` without `shouldDirty` and mark dirty via `tile`.
+
+## Node environment on this Mac
+Root cause: Homebrew node@22 is broken (missing libsimdjson). Use `/opt/homebrew/bin/node` (v26). Under Node 26, 3 tests in admin `src/lib/api/client*.test.ts` fail (AbortSignal vs jsdom) on clean main too: environment, not code.
+
+## Built-in Flutter catalog cannot publish alone
+Root cause: `assets/builtin/catalog` font files live only in `assets/mock/catalog/v1/assets`. It imports fine but needs those assets to publish.
+
 ## CORS "Failed to fetch" from cached img response (B17)
 Root cause: CORS responses lacked `Vary: Origin`, so a copy cached by an `<img>` load (no Origin header) was reused by `fetch()` and failed CORS. Fix: server adds `Vary: Origin`; the quick wizard fetches with `cache: "no-store"`.

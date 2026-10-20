@@ -16,6 +16,7 @@ export const wallpaperSchema = z
       .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Must be lowercase kebab-case (e.g. night-sky)"),
     name: z.object({ en: z.string().min(1, "English name is required") }).catchall(z.string()),
     festivalId: z.string().optional(),
+    categoryIds: z.array(z.string()).optional(),
     kind: z.enum(["image", "scene"]),
     tags: z.array(z.string()).optional(),
     image: z

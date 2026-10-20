@@ -47,6 +47,14 @@ type Festival struct {
 	CoverThemeID *string       `json:"coverThemeId,omitempty"`
 }
 
+// Category represents a catalog category grouping.
+type Category struct {
+	ID   string    `json:"id"`
+	Name Localized `json:"name"`
+	Sort int       `json:"sort"`
+	Tags []string  `json:"tags,omitempty"`
+}
+
 // Palette defines the five core theme colors plus an optional motif color.
 type Palette struct {
 	Background string  `json:"background"`
@@ -150,6 +158,7 @@ type ThemeDetail struct {
 	ID            string     `json:"id"`
 	Rev           int        `json:"rev"`
 	FestivalID    string     `json:"festivalId"`
+	CategoryIDs   []string   `json:"categoryIds,omitempty"`
 	Name          Localized  `json:"name"`
 	Subtitle      Localized  `json:"subtitle,omitempty"`
 	Style         string     `json:"style"`
@@ -177,6 +186,7 @@ type ThemeSummary struct {
 	ID              string    `json:"id"`
 	Rev             int       `json:"rev"`
 	FestivalID      string    `json:"festivalId"`
+	CategoryIDs     []string  `json:"categoryIds,omitempty"`
 	Name            Localized `json:"name"`
 	Subtitle        Localized `json:"subtitle,omitempty"`
 	Style           string    `json:"style"`
@@ -213,6 +223,7 @@ type WallpaperImage struct {
 type Wallpaper struct {
 	ID            string          `json:"id"`
 	FestivalID    string          `json:"festivalId"`
+	CategoryIDs   []string        `json:"categoryIds,omitempty"`
 	Name          Localized       `json:"name"`
 	Kind          string          `json:"kind"`
 	PublishedAt   string          `json:"publishedAt"`
@@ -320,6 +331,7 @@ type Engines struct {
 type Catalog struct {
 	CatalogVersion    string         `json:"catalogVersion"`
 	Festivals         []Festival     `json:"festivals"`
+	Categories        []Category     `json:"categories"`
 	Themes            []ThemeSummary `json:"themes"`
 	Wallpapers        []Wallpaper    `json:"wallpapers"`
 	Fonts             []Font         `json:"fonts"`

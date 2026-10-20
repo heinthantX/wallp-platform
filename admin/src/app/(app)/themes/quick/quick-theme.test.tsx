@@ -48,11 +48,17 @@ describe("Quick theme wizard", () => {
     });
   });
 
-  it("validates each step and saves a draft with wallpaper, palette and icon pack", async () => {
+  it("validates each step and saves a draft with wallpaper, icon pack and font", async () => {
     vi.spyOn(client, "GET").mockImplementation((async (path: string) => {
       if (path === "/admin/v1/festivals") return { data: { items: [item("diwali", { name: { en: "Diwali" } })], total: 1 } };
       if (path === "/admin/v1/icon-packs") return { data: { items: [item("pack1", { name: { en: "Pack One" } })], total: 1 } };
-      if (path === "/admin/v1/fonts") return { data: { items: [item("creepster", { family: "Creepster" })], total: 1 } };
+      if (path === "/admin/v1/fonts")
+        return {
+          data: {
+            items: [item("creepster", { family: "Creepster" }), item("orbitron", { family: "Orbitron" })],
+            total: 2,
+          },
+        };
       return { data: { items: [], total: 0 } };
     }) as never);
     const posts: Record<string, unknown> = {};
@@ -77,30 +83,40 @@ describe("Quick theme wizard", () => {
     const nextBtn = () => screen.getByRole("button", { name: "Next" });
     expect(nextBtn()).toBeDisabled();
     await pick(/^Festival$/, "Diwali");
-    expect(nextBtn()).toBeDisabled(); // still no image
+    expect(nextBtn()).toBeDisabled(); // still no wallpaper
     fireEvent.change(screen.getByTestId("quick-image-input"), {
       target: { files: [new File(["x"], "shot.png", { type: "image/png" })] },
     });
     await waitFor(() => expect(nextBtn()).toBeEnabled());
     fireEvent.click(nextBtn());
 
-    // Step 2: palette required
-    fireEvent.click(await screen.findByText("Candidate 2"));
-    expect(nextBtn()).toBeEnabled();
-    fireEvent.click(nextBtn());
-    // Step 3: scene optional
-    fireEvent.click(nextBtn());
-    // Step 4: clock font required
+    // Step 2: icon pack required; no palette step anywhere
+    await screen.findByRole("combobox", { name: /Icon pack/ });
+    expect(screen.queryByText("Palette")).toBeNull();
+    expect(screen.queryByText("Candidate 1")).toBeNull();
     expect(nextBtn()).toBeDisabled();
     await pick(/Icon pack/, "Pack One");
-    await pick(/Clock font/, "Creepster");
+    fireEvent.click(nextBtn());
+
+    // Step 3: font required, search filters
+    const search = await screen.findByLabelText("Search fonts");
+    await screen.findByText("Creepster");
+    expect(screen.getByText("Orbitron")).toBeTruthy();
+    expect(nextBtn()).toBeDisabled();
+    fireEvent.change(search, { target: { value: "creep" } });
+    expect(screen.queryByText("Orbitron")).toBeNull();
+    fireEvent.click(screen.getByText("Creepster"));
+    expect(screen.getByTestId("font-preview").textContent).toContain("Creepster");
+    fireEvent.click(nextBtn());
+
+    // Step 4: scene optional
     fireEvent.click(nextBtn());
     fireEvent.click(await screen.findByRole("button", { name: /Create draft theme/ }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/themes/edit/?id=cand-2"));
     const saved = JSON.parse(posts["/admin/v1/themes"] as string);
     expect(saved.wallpaperIds).toEqual(["shot-abcdef"]);
-    expect(saved.palette).toEqual(PALETTE);
+    expect(saved.palette).toEqual(PALETTE); // derived from generator top candidate
     expect(saved.iconPackId).toBe("pack1");
     expect(saved.festivalId).toBe("diwali");
     expect(saved.fonts.display).toBe("creepster");

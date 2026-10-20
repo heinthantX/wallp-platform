@@ -41,6 +41,7 @@ import {
   EngineSelect,
   EventIconSelect,
   JsonEditor,
+  CategoriesField,
 } from "@/components/fields";
 import { ReviewBar, AuditTimeline, StatusBadge } from "@/components/items";
 import { PhonePreview } from "@/components/preview";
@@ -149,6 +150,7 @@ const themeSchema = z.object({
     .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Must be lowercase kebab-case (e.g. spider-night)"),
   rev: z.number().optional(),
   festivalId: z.string().optional(),
+  categoryIds: z.array(z.string()).optional(),
   name: z
     .object({
       en: z.string().min(1, "English title is required"),
@@ -853,6 +855,14 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                         )}
                       />
                     </div>
+
+                    <Controller
+                      name="categoryIds"
+                      control={control}
+                      render={({ field }) => (
+                        <CategoriesField value={field.value ?? []} onChange={field.onChange} />
+                      )}
+                    />
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">

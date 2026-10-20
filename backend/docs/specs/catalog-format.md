@@ -10,6 +10,8 @@
 
 - Banner `look.image` (`BannerLook.Image`): optional Asset. Check `banner_image_contrast` (warning) flags poor text contrast over it.
 - Icon pack `apps` (`IconPack.Apps`): `map[package]Asset`, max 200 keys, key regex `^[a-zA-Z][\w]*(\.[a-zA-Z][\w]*)+$` (else `invalid_package`); optional `appsFallbackStyle`. Checks: `icon_app_bad_package`, `icon_app_not_square`, `icon_app_too_small` (<192 px), `icon_app_duplicate` (warning). App fallback order: docs/api/app-client.md.
+- `Category {id kebab, name Localized, sort, tags}`; themes (detail and summary) and wallpapers carry optional `categoryIds []string`. Validation rejects non-kebab or duplicate ids. Published catalog has top-level `categories` sorted by `sort` then `id`. See specs/categories.md.
+- Icon pack `kind: "images"` no longer requires `background` (may be null with tile ""); the old "image pack needs its background tile" rule and `icon_pack_no_background` are removed.
 - Festival default fonts use kebab ids matching the font catalog (e.g. `creepster`).
 
 ## Edge Cases

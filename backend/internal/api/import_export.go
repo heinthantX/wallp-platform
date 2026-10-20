@@ -33,6 +33,7 @@ type ImportInput struct {
 
 type ImportResult struct {
 	Festivals  int `json:"festivals"`
+	Categories int `json:"categories"`
 	Themes     int `json:"themes"`
 	Wallpapers int `json:"wallpapers"`
 	Fonts      int `json:"fonts"`
@@ -55,6 +56,7 @@ type ExportCatalogOutput struct {
 
 type ExportBundle struct {
 	Festivals         []json.RawMessage      `json:"festivals"`
+	Categories        []json.RawMessage      `json:"categories"`
 	Themes            []json.RawMessage      `json:"themes"`
 	Wallpapers        []json.RawMessage      `json:"wallpapers"`
 	Fonts             []json.RawMessage      `json:"fonts"`
@@ -311,6 +313,10 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 	if rf, ok := rawCatalog["festivals"]; ok {
 		_ = json.Unmarshal(rf, &rawFestivals)
 	}
+	var rawCategories []json.RawMessage
+	if rc, ok := rawCatalog["categories"]; ok {
+		_ = json.Unmarshal(rc, &rawCategories)
+	}
 	// An export bundle carries full themes inline (they have "accents"); an app catalog
 	// carries summaries and ships full themes as separate files.
 	if len(themeFiles) == 0 {
@@ -391,6 +397,7 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 		}
 
 		festStore := items.NewStore(d.DB, items.FestivalKind)
+		catStore := items.NewStore(d.DB, items.CategoryKind)
 		themeStore := items.NewStore(d.DB, items.ThemeKind)
 		wpStore := items.NewStore(d.DB, items.WallpaperKind)
 		fontStore := items.NewStore(d.DB, items.FontKind)
@@ -401,6 +408,13 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 		for _, fb := range rawFestivals {
 			if _, err := festStore.ImportItemAs(ctx, tx, fb, 1, &defaultPublishedAt, actor, statusOf("festivals", fb)); err != nil {
 				return fmt.Errorf("import festival: %w", err)
+			}
+		}
+
+		// Categories (imported before themes and wallpapers)
+		for _, cb := range rawCategories {
+			if _, err := catStore.ImportItemAs(ctx, tx, cb, 1, &defaultPublishedAt, actor, statusOf("categories", cb)); err != nil {
+				return fmt.Errorf("import category: %w", err)
 			}
 		}
 
@@ -492,6 +506,7 @@ func RunImport(ctx context.Context, d *Deps, catBytes []byte, themeFiles []FileE
 
 	return &ImportResult{
 		Festivals:     len(rawFestivals),
+		Categories:    len(rawCategories),
 		Themes:        len(themeFiles),
 		Wallpapers:    len(rawWallpapers),
 		Fonts:         len(rawFonts),
@@ -519,6 +534,7 @@ func (b *ExportBundle) noteStatuses(coll string, rows []items.ItemRow) {
 func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	bundle := &ExportBundle{
 		Festivals:  []json.RawMessage{},
+		Categories: []json.RawMessage{},
 		Themes:     []json.RawMessage{},
 		Wallpapers: []json.RawMessage{},
 		Fonts:      []json.RawMessage{},
@@ -538,6 +554,20 @@ func RunExport(ctx context.Context, d *Deps) (*ExportBundle, error) {
 	bundle.noteStatuses("festivals", festRows)
 	for _, r := range festRows {
 		bundle.Festivals = append(bundle.Festivals, json.RawMessage(r.Data))
+	}
+
+	// Categories (ordered by sort ASC, id ASC)
+	var catRows []items.ItemRow
+	if err := d.DB.NewSelect().Table("categories").
+		Where("status != ?", model.StatusArchived).
+		Order("sort ASC", "id ASC").
+		Column("id", "status", "data").
+		Scan(ctx, &catRows); err != nil {
+		return nil, err
+	}
+	bundle.noteStatuses("categories", catRows)
+	for _, r := range catRows {
+		bundle.Categories = append(bundle.Categories, json.RawMessage(r.Data))
 	}
 
 	// 2. Themes (full data, ordered by id ASC)

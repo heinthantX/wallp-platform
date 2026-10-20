@@ -26,6 +26,18 @@ User choice (P1b): admin role may approve from draft without requesting review. 
 ## AI is optional; status and 501 shape
 Hybrid ladder, only the prompt kit built. `GET /admin/v1/ai/status` (any role) returns booleans and env key names, never values. Missing keys give 501 `ai_not_configured` in the standard apierr shape with `details[].field` per missing key (not a flat body). Keys: OPENROUTER_API_KEY, OPENROUTER_MODEL, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_AI_TOKEN, GEMINI_API_KEY. No provider client yet. See specs/ai-creation.md.
 
+## Categories are a banner-like catalog entity
+Chose a first-class `categories` table and top-level published `categories` (sorted by sort, id) with optional `categoryIds` on themes and wallpapers, over overloading `festivalId`, because categories are many-to-many and independent of festivals. They go through review/approve like banners; only festivals publish without review (by design). Publish check `ref_missing` covers unknown ids. See specs/categories.md.
+
+## Release checks match the app, not stricter
+Chose to relax checks to what the Flutter app tolerates: `accent_contrast_low` is a warning, `festival_few_dates` skipped for kind "collection", `theme_no_preview` skipped for scene-engine themes. Replaces accent_contrast_low as an error and the "mock catalog has 2 accent errors" note. See specs/checks-and-releases.md.
+
+## Icon packs may have no background
+Chose to drop the "image pack needs its background tile" rule: `background` null with tile "" is valid; the app logo glyph is drawn in front. Sprite-sheet import is client-side in the admin (192x192 white PNGs into `apps[pkg]`). See specs/ai-creation.md.
+
+## Quick wizard derives palette silently
+Chose no palette step: palette and accents come from the wallpaper via the from-image generator (top candidate); scene wallpapers are sampled from their canvas thumbnail. Replaces the "Palette: pick a candidate" step. See specs/admin-editor-ux.md.
+
 ## Catalog package and validation
 `internal/catalog`: typed structs for validation and summaries. `Catalog.Validate()` is implemented and runs inside `checks.Run` (cross-item and soft references). See specs/checks-and-releases.md.
 

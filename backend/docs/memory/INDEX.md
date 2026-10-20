@@ -8,6 +8,10 @@
 | Import status | Export is a backup (statuses of unpublished items); import keeps draft/in_review/approved, not always published | architecture.md | 2026-10-19 |
 | Approve flow | Admin role can approve straight from draft | architecture.md | 2026-10-19 |
 | AI optional | /admin/v1/ai/status (booleans only); missing keys give 501 ai_not_configured in apierr shape, details[].field per key | architecture.md | 2026-10-19 |
+| Categories | First-class entity, categoryIds on themes/wallpapers, banner-like review; ref_missing for unknown ids | architecture.md | 2026-10-20 |
+| Release checks | Match the app: accent_contrast_low is a warning; skip few_dates for collection and no_preview for scene themes | architecture.md | 2026-10-20 |
+| Icon pack background | Image packs may have no background (null, tile ""); sprite-sheet import is admin-side | architecture.md | 2026-10-20 |
+| Quick wizard | No palette step; palette derived silently from the wallpaper | architecture.md | 2026-10-20 |
 | Checks scope | One candidate rule shared by checks.Run and releases.Publish | architecture.md | 2026-10-18 |
 | Release files | Manifest written last (atomic); rollback rewrites manifest only | architecture.md | 2026-10-18 |
 | Assets | Content-addressed sha256 files; WOFF2 rejected; WebP 1080/1440 variants | architecture.md | 2026-10-18 |
@@ -24,4 +28,8 @@
 | Inline themes (B13) | RunImport imports inline-accents themes when no theme files | fixes.md | 2026-10-19 |
 | Festival fonts (B14) | Default font ids must be kebab ids from the font catalog | fixes.md | 2026-10-19 |
 | Upload race (B16) | Asset insert ON CONFLICT (sha256) DO NOTHING; RowsAffected 0 = deduped | fixes.md | 2026-10-19 |
+| Strict checks | App's own accents errored (2.0:1); made accent_contrast_low a warning | fixes.md | 2026-10-20 |
+| No-background crash | RHF getDirtyFields vs null; clear background without shouldDirty, dirty via tile | fixes.md | 2026-10-20 |
+| Node env | Use /opt/homebrew/bin/node (v26); 3 admin client tests fail on clean main (env) | fixes.md | 2026-10-20 |
+| Builtin catalog | assets/builtin/catalog imports but cannot publish alone (fonts only in mock assets) | fixes.md | 2026-10-20 |
 | CORS cache (B17) | Send Vary: Origin; wizard fetches with cache "no-store" | fixes.md | 2026-10-19 |

@@ -31,6 +31,7 @@ func (t ThemeDetail) Summary() ThemeSummary {
 		ID:              t.ID,
 		Rev:             t.Rev,
 		FestivalID:      t.FestivalID,
+		CategoryIDs:     t.CategoryIDs,
 		Name:            t.Name,
 		Subtitle:        t.Subtitle,
 		Style:           t.Style,

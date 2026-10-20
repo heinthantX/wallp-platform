@@ -74,22 +74,15 @@ func codes(issues []checks.Issue) []string {
 func TestChecksMockCatalog(t *testing.T) {
 	s := importedServer(t)
 	rep := runChecks(t, s)
-	// The mock's Snowy Pines accents (Berry red 2.0:1, Pine 1.8:1) really are under 3:1 on its background.
-	if got := codes(rep.Errors); len(got) != 2 || got[0] != "accent_contrast_low:christmas-eve" || got[1] != "accent_contrast_low:christmas-eve" {
+	// The app's own mock catalog must publish: no errors.
+	if len(rep.Errors) != 0 {
 		t.Fatalf("unexpected errors: %+v", rep.Errors)
 	}
-	want := map[string]bool{"festival_few_dates:heroes": true, "festival_few_dates:neon": true}
-	for _, id := range []string{"christmas-eve", "halloween-night", "neon-night", "spider-night", "thingyan-water"} {
-		want["theme_no_preview:"+id] = true
-	}
+	// Snowy Pines accents (Berry red 2.0:1, Pine 1.8:1) are under 3:1: the app says "Hard to read here", so a warning.
+	// Collections (Heroes, Neon) have no dates; scene themes need no preview image.
 	got := codes(rep.Warnings)
-	if len(got) != len(want) {
+	if len(got) != 2 || got[0] != "accent_contrast_low:christmas-eve" || got[1] != "accent_contrast_low:christmas-eve" {
 		t.Fatalf("unexpected warnings: %v", got)
-	}
-	for _, g := range got {
-		if !want[g] {
-			t.Fatalf("unexpected warning %s in %v", g, got)
-		}
 	}
 	if len(rep.Infos) != 0 {
 		t.Fatalf("unexpected infos: %+v", rep.Infos)

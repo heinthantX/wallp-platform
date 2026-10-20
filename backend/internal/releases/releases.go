@@ -63,6 +63,7 @@ type kindInfo struct {
 
 var kinds = []kindInfo{
 	{items.FestivalKind, "festivals"},
+	{items.CategoryKind, "categories"},
 	{items.ThemeKind, "themes"},
 	{items.WallpaperKind, "wallpapers"},
 	{items.FontKind, "fonts"},
@@ -73,6 +74,7 @@ var kinds = []kindInfo{
 type catalogDoc struct {
 	CatalogVersion    string                 `json:"catalogVersion"`
 	Festivals         []json.RawMessage      `json:"festivals"`
+	Categories        []json.RawMessage      `json:"categories"`
 	Themes            []catalog.ThemeSummary `json:"themes"`
 	Wallpapers        []json.RawMessage      `json:"wallpapers"`
 	Fonts             []json.RawMessage      `json:"fonts"`
@@ -154,7 +156,7 @@ func build(ctx context.Context, db *bun.DB, storageDir string, rel *model.Releas
 	}
 
 	err := db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		doc := catalogDoc{CatalogVersion: rel.Version, Festivals: []json.RawMessage{}, Themes: []catalog.ThemeSummary{},
+		doc := catalogDoc{CatalogVersion: rel.Version, Festivals: []json.RawMessage{}, Categories: []json.RawMessage{}, Themes: []catalog.ThemeSummary{},
 			Wallpapers: []json.RawMessage{}, Fonts: []json.RawMessage{}, IconPacks: []json.RawMessage{}, Banners: []json.RawMessage{}}
 		ch := Changes{Added: map[string]int{}, Edited: map[string]int{}, Removed: map[string]int{}}
 		var going []goingRow
@@ -169,7 +171,7 @@ func build(ctx context.Context, db *bun.DB, storageDir string, rel *model.Releas
 				return err
 			}
 			sort.Slice(rows, func(i, j int) bool {
-				if (k == items.FestivalKind || k == items.BannerKind) && rows[i].Sort != rows[j].Sort {
+				if (k == items.FestivalKind || k == items.CategoryKind || k == items.BannerKind) && rows[i].Sort != rows[j].Sort {
 					return rows[i].Sort < rows[j].Sort
 				}
 				return rows[i].ID < rows[j].ID
@@ -238,6 +240,8 @@ func build(ctx context.Context, db *bun.DB, storageDir string, rel *model.Releas
 					doc.Themes = append(doc.Themes, sum)
 				case items.FestivalKind:
 					doc.Festivals = append(doc.Festivals, data)
+				case items.CategoryKind:
+					doc.Categories = append(doc.Categories, data)
 				case items.WallpaperKind:
 					doc.Wallpapers = append(doc.Wallpapers, data)
 				case items.FontKind:
@@ -486,6 +490,9 @@ func summaryText(c Changes) string {
 func plural(name string, n int) string {
 	if n == 1 {
 		return name
+	}
+	if strings.HasSuffix(name, "y") {
+		return strings.TrimSuffix(name, "y") + "ies"
 	}
 	return name + "s"
 }

@@ -78,6 +78,17 @@ type ReorderBannersInput struct {
 	}
 }
 
+type ReorderCategoriesInput struct {
+	Body struct {
+		IDs []string `json:"ids"`
+	}
+}
+
+type ListCategoriesInput struct {
+	ListParams
+	Status string `query:"status" enum:"draft,in_review,approved,scheduled,published,archived,"`
+}
+
 type ListWallpapersInput struct {
 	ListParams
 	Festival string `query:"festival"`
@@ -218,8 +229,10 @@ func registerCatalogItems(h huma.API, d *Deps) {
 	fonts := items.NewStore(d.DB, items.FontKind)
 	iconPacks := items.NewStore(d.DB, items.IconPackKind)
 	banners := items.NewStore(d.DB, items.BannerKind)
+	categories := items.NewStore(d.DB, items.CategoryKind)
 
 	festivalTags := []string{"Festivals"}
+	categoryTags := []string{"Categories"}
 	themeTags := []string{"Themes"}
 	wallpaperTags := []string{"Wallpapers"}
 	fontTags := []string{"Fonts"}
@@ -232,6 +245,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 	fontp := adminPrefix + "/fonts"
 	ip := adminPrefix + "/icon-packs"
 	bp := adminPrefix + "/banners"
+	cp := adminPrefix + "/categories"
 
 	// --- Festivals ---
 	fp := adminPrefix + "/festivals"
@@ -745,6 +759,48 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		return &ListItemsOutput{Body: *res}, nil
 	})
 	registerItemStandardRoutes(h, banners, "banner", bp, bannerTags)
+
+	// --- Categories ---
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "reorder-categories",
+		Method:      http.MethodPut,
+		Path:        cp + "/order",
+		Summary:     "Reorder categories",
+		Tags:        categoryTags,
+	}, model.RoleAdmin), func(ctx context.Context, in *ReorderCategoriesInput) (*SimpleOKOutput, error) {
+		me := auth.From(ctx)
+		updater := "system"
+		if me != nil {
+			updater = me.Name
+		}
+		if err := categories.Reorder(ctx, in.Body.IDs, updater); err != nil {
+			return nil, err
+		}
+		out := &SimpleOKOutput{}
+		out.Body.OK = true
+		return out, nil
+	})
+
+	huma.Register(h, auth.Admin(huma.Operation{
+		OperationID: "list-categories",
+		Method:      http.MethodGet,
+		Path:        cp,
+		Summary:     "List categories",
+		Tags:        categoryTags,
+	}), func(ctx context.Context, in *ListCategoriesInput) (*ListItemsOutput, error) {
+		res, err := categories.List(ctx, items.ListFilter{
+			Page:    in.Page,
+			PerPage: in.PerPage,
+			Sort:    in.Sort,
+			Q:       in.Q,
+			Status:  in.Status,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &ListItemsOutput{Body: *res}, nil
+	})
+	registerItemStandardRoutes(h, categories, "category", cp, categoryTags)
 
 	// --- Engines ---
 	huma.Register(h, auth.Admin(huma.Operation{
