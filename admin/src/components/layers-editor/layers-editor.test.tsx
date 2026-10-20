@@ -3,8 +3,14 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Layer, Palette } from "@/lib/catalog/types";
+import { toast } from "sonner";
 import { LayersEditor } from "./LayersEditor";
 import { layersSchema, isLive } from "./schema";
+
+const mutate = vi.fn();
+vi.mock("@/lib/api/hooks/useAiStatus", () => ({ useAiStatus: () => ({ data: { providers: [{ id: "openrouter", configured: true }] } }) }));
+vi.mock("@/lib/api/hooks/useAiImages", () => ({ useAiScene: () => ({ mutate, isPending: false, isError: false }) }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), warning: vi.fn() } }));
 
 const palette: Palette = { background: "#000000", deep: "#000000", surface: "#111111", text: "#ffffff", textMuted: "#999999" };
 const grad: Layer = { type: "gradient", colors: ["#111111", "#222222"] };
@@ -86,5 +92,20 @@ describe("LayersEditor", () => {
     fireEvent.click(screen.getByText("particles"));
     expect(screen.getByLabelText("Count")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("1 to 150")).toBeInTheDocument();
+  });
+
+  it("AI scene replaces layers (invalid dropped) and Undo restores", () => {
+    const { onChange } = setup([grad]);
+    fireEvent.click(screen.getByText("AI scene"));
+    fireEvent.change(screen.getByLabelText("Describe the scene"), { target: { value: "dawn hills" } });
+    fireEvent.click(screen.getByText("Generate"));
+    expect(mutate.mock.calls[0][0]).toMatchObject({ description: "dawn hills", withArt: false });
+    const bad = particles({ count: 999 } as never);
+    mutate.mock.calls[0][1].onSuccess({ scene: { params: { layers: [grad, shape(), bad] } } });
+    expect(onChange.mock.calls[0][0]).toEqual([grad, shape()]);
+    expect(toast.warning).toHaveBeenCalledWith("Dropped 1 invalid layer");
+    const opts = vi.mocked(toast.success).mock.calls[0][1] as unknown as { action: { onClick: () => void } };
+    opts.action.onClick();
+    expect(onChange.mock.calls[1][0]).toEqual([grad]);
   });
 });

@@ -136,6 +136,10 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                   <AiButtons
                     kind="iconPack"
                     defaultDescription={[watch("name")?.en, info.style].filter(Boolean).join(", ")}
+                    missingApps={COMMON_APPS.filter((a) => !(watch("apps") ?? {})[a.pkg])}
+                    styleHint={[watch("name")?.en, info.style, watch("tile") && `tile ${watch("tile")}`, info.glyph && `glyph ${info.glyph}`].filter(Boolean).join(", ")}
+                    // watch() reads the live form values, so icons arriving one by one merge against the latest apps
+                    onIcons={(a) => setValue("apps", { ...(watch("apps") ?? {}), ...a }, { shouldDirty: true, shouldValidate: true })}
                     onPickName={(n) => setValue("name", { ...watch("name"), en: n.en, ...(n.my ? { my: n.my } : {}) }, { shouldDirty: true, shouldValidate: true })}
                   />
                   <PerAppIcons kitInfo={info} apps={watch("apps")} tile={watch("tile")} onChange={(next) => setValue("apps", next, { shouldDirty: true, shouldValidate: true })} />

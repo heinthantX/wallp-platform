@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,9 @@ import {
   useWallpaper,
   useWallpapers,
 } from "@/lib/api/hooks";
+import { useAiStatus } from "@/lib/api/hooks/useAiStatus";
+import { useAiScene } from "@/lib/api/hooks/useAiImages";
+import { useAiSuggest, type AiSuggestion } from "@/lib/api/hooks/useAiSuggest";
 import type { GeneratorOption } from "@/lib/generator/types";
 import type { WallpaperImage } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
@@ -125,6 +128,89 @@ function WallpaperGrid({ value, onChange }: { value?: string; onChange: (id: str
   );
 }
 
+type AiPick = { id: string; scene: GeneratorOption["data"]["scene"]; suggestion?: AiSuggestion };
+
+function DescribePanel({ festivalId, pick, onPick, onError }: { festivalId?: string; pick?: AiPick; onPick: (p: AiPick) => void; onError: (m?: string) => void }) {
+  const { data, isLoading } = useAiStatus();
+  const suggest = useAiSuggest();
+  const scene = useAiScene();
+  const saveWallpaper = useSaveWallpaper();
+  const [text, setText] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const providers = data?.providers ?? [];
+  const ok = (ids: string[]) => providers.some((p) => ids.includes(p.id) && p.configured);
+  const why = isLoading
+    ? "Checking AI status..."
+    : !ok(["openrouter", "gemini"]) || !ok(["cloudflare"])
+      ? `Set ${providers.find((p) => p.id === "cloudflare")?.envKeys?.join(" and ") || "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN"} and a text AI key (OpenRouter or Gemini) to enable`
+      : !festivalId
+        ? "Pick a festival first"
+        : null;
+
+  const run = async () => {
+    const description = text.trim();
+    if (!description || why || busy) return;
+    setBusy(true);
+    onError(undefined);
+    try {
+      const [s, sg] = await Promise.allSettled([
+        scene.mutateAsync({ description, withArt: true }),
+        suggest.mutateAsync({ description, kind: "theme" }),
+      ]);
+      if (s.status === "rejected") throw s.reason;
+      const suggestion = sg.status === "fulfilled" ? sg.value : undefined;
+      const name = suggestion?.names?.[0]?.en || s.value.name;
+      const id = `${slugify(name) || "ai-scene"}-${Math.random().toString(16).slice(2, 8).padEnd(6, "0")}`;
+      await saveWallpaper.mutateAsync({
+        id,
+        isNew: true,
+        data: { id, name: { en: name }, kind: "scene", scene: s.value.scene, festivalId },
+      });
+      onPick({ id, scene: s.value.scene as AiPick["scene"], suggestion });
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "AI generation failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label htmlFor="quick-describe" className="text-sm font-medium">
+        Describe with AI
+      </label>
+      <textarea
+        id="quick-describe"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            void run();
+          }
+        }}
+        rows={3}
+        maxLength={500}
+        disabled={Boolean(why)}
+        placeholder="Warm lantern-lit Diwali night, deep indigo sky with golden sparks"
+        className="w-full rounded-md border bg-transparent px-3 py-2 text-sm disabled:opacity-60"
+      />
+      <div className="flex items-center gap-3">
+        <Button type="button" size="sm" onClick={run} disabled={!text.trim() || Boolean(why) || busy} className="gap-2">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {pick && !busy ? "Try again" : "Generate"}
+        </Button>
+        <span className="text-xs text-muted-foreground">{busy ? "Designing theme... (art can take ~20 s)" : why}</span>
+      </div>
+      {pick && (
+        <div data-wallpaper-id={pick.id} className="overflow-hidden rounded-lg border animate-in fade-in [&_canvas]:h-auto [&_canvas]:w-full">
+          <LayersCanvas scene={pick.scene as never} palette={NEUTRAL_PALETTE} width={320} height={192} animate={false} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FontPicker({ value, onChange }: { value?: string; onChange: (id: string) => void }) {
   const { data, isLoading, isError, refetch } = useFonts({ perPage: 100 });
   const [q, setQ] = React.useState("");
@@ -210,6 +296,7 @@ export default function QuickThemePage() {
   const [wallpaperScene, setWallpaperScene] = React.useState<GeneratorOption["data"]["scene"]>();
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string>();
+  const [aiPick, setAiPick] = React.useState<AiPick>();
 
   const existing = useWallpaper(existingId);
 
@@ -265,6 +352,19 @@ export default function QuickThemePage() {
               data: { id: wid, name: { en: base }, kind: "image", image: toWallpaperImage(result), festivalId },
             });
           } else wid = wallpaperId;
+        } else if (aiPick && aiPick.id === existingId) {
+          const layer = ((aiPick.scene?.params as { layers?: unknown[] } | undefined)?.layers?.[0] ?? {}) as { type?: string; asset?: { url?: string } };
+          setWallpaperScene(aiPick.scene);
+          if (layer.type === "image" && layer.asset?.url) {
+            // Prefer the generated art itself: the preview canvas can be CORS-tainted by it.
+            const blob = await (await fetch(assetSrc(layer.asset.url), { cache: "no-store" })).blob();
+            img = new File([blob], `${existingId}.webp`, { type: blob.type || "image/webp" });
+          } else {
+            const canvas = document.querySelector<HTMLCanvasElement>(`[data-wallpaper-id="${existingId}"] canvas`);
+            const blob = canvas && (await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png")));
+            if (!blob) throw new Error("Could not read this scene's colours. Try again in a moment.");
+            img = new File([blob], `${existingId}.png`, { type: "image/png" });
+          }
         } else {
           const raw = existing.data?.data;
           const d = (typeof raw === "string" ? JSON.parse(raw) : raw) as
@@ -306,8 +406,13 @@ export default function QuickThemePage() {
 
   const create = async () => {
     if (!chosen || !festivalId || !wallpaperId || !fontId || !iconPackId) return;
+    const ai = aiPick?.id === wallpaperId ? aiPick.suggestion : undefined;
+    const aiName = ai?.names?.[0];
     const data = {
       ...chosen.data,
+      ...(aiName && { name: { en: aiName.en, ...(aiName.my && { my: aiName.my }) } }),
+      ...(ai?.tags?.length && { tags: ai.tags }),
+      ...(ai?.subtitle?.en && { subtitle: { en: ai.subtitle.en } }),
       festivalId,
       wallpaperIds: [wallpaperId],
       iconPackId,
@@ -354,7 +459,7 @@ export default function QuickThemePage() {
             <Zap className="h-6 w-6 text-primary" />
             Quick theme
           </h1>
-          <p className="text-xs text-muted-foreground">Wallpaper, icon pack and font to a draft theme. Colours are derived automatically.</p>
+          <p className="text-xs text-muted-foreground">Describe it or pick a wallpaper; icon pack and font to a draft theme. Colours are derived automatically.</p>
         </div>
       </div>
 
@@ -370,6 +475,17 @@ export default function QuickThemePage() {
               value={existingId}
               onChange={(v) => {
                 setExistingId(v);
+                setFile(null);
+              }}
+            />
+            <p className="text-center text-xs text-muted-foreground">or</p>
+            <DescribePanel
+              festivalId={festivalId}
+              pick={aiPick}
+              onError={setError}
+              onPick={(p) => {
+                setAiPick(p);
+                setExistingId(p.id);
                 setFile(null);
               }}
             />

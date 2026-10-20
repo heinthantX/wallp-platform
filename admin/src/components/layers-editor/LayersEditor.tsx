@@ -5,11 +5,15 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { motion, useReducedMotion } from "framer-motion";
-import { Blend, Circle, Copy, Eye, EyeOff, GripVertical, ImageIcon, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Blend, Circle, Copy, Eye, EyeOff, GripVertical, ImageIcon, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { Layer, Palette, Accent } from "@/lib/catalog/types";
 import { LayersCanvas } from "@/components/preview/LayersCanvas";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useAiStatus } from "@/lib/api/hooks/useAiStatus";
+import { useAiScene } from "@/lib/api/hooks/useAiImages";
 import { cn } from "@/lib/utils";
 import { LayerForm } from "./LayerForms";
 import { PARTICLE_BUDGET, isLive, layerErrors, sceneCost } from "./schema";
@@ -34,6 +38,75 @@ const NEW: Record<Layer["type"], (t: boolean) => Layer> = {
 };
 let uid = 0;
 const newId = () => `layer-${++uid}`;
+
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+function AiSceneButton({ layers, allowTokens, palette, replace }: { layers: Layer[]; allowTokens: boolean; palette: Palette; replace: (next: Layer[]) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [text, setText] = React.useState("");
+  const [art, setArt] = React.useState(true);
+  const status = useAiStatus();
+  const scene = useAiScene();
+  const providers = status.data?.providers ?? [];
+  const textOk = providers.some((p) => ["openrouter", "gemini"].includes(p.id) && p.configured);
+  const imageOk = providers.some((p) => p.id === "cloudflare" && p.configured);
+  const withArt = art && imageOk;
+  if (!textOk)
+    return <Button type="button" variant="outline" size="sm" disabled title="Set OPENROUTER_API_KEY to enable"><Sparkles className="mr-1 h-3.5 w-3.5" /> AI scene</Button>;
+
+  const run = () => {
+    const description = text.trim();
+    if (!description || scene.isPending) return;
+    const colors = Object.values(palette).filter((c): c is string => typeof c === "string" && HEX.test(c)).slice(0, 6);
+    scene.mutate({ description, withArt, ...(colors.length ? { palette: colors } : {}) }, {
+      onSuccess: (r) => {
+        const raw = ((r.scene?.params as { layers?: Layer[] } | undefined)?.layers ?? []) as Layer[];
+        const bad = layerErrors(raw, allowTokens);
+        const next = raw.filter((_, i) => !Object.keys(bad).some((k) => k.startsWith(`${i}.`)));
+        if (raw.length > next.length) toast.warning(`Dropped ${raw.length - next.length} invalid layer${raw.length - next.length > 1 ? "s" : ""}`);
+        if (!next.length) return;
+        const prev = layers;
+        replace(next);
+        setOpen(false);
+        toast.success(prev.length ? "Scene replaced" : "Scene added", prev.length ? { action: { label: "Undo", onClick: () => replace(prev) } } : undefined);
+      },
+    });
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" size="sm"><Sparkles className="mr-1 h-3.5 w-3.5" /> AI scene</Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 space-y-3" align="start">
+        <label className="block space-y-1 text-sm">
+          <span className="font-medium">Describe the scene</span>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(); } }}
+            rows={3}
+            maxLength={500}
+            placeholder="Misty pagoda hills at dawn with drifting fireflies"
+            aria-label="Describe the scene"
+            className="w-full rounded-md border bg-background px-2 py-1 text-sm"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={withArt} disabled={!imageOk} onChange={(e) => setArt(e.target.checked)} />
+          Generate background art
+        </label>
+        {!imageOk && <p className="text-xs text-muted-foreground">Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN to enable art.</p>}
+        <Button type="button" size="sm" onClick={run} disabled={!text.trim() || scene.isPending}>
+          {scene.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Sparkles className="mr-1 h-4 w-4" />}
+          {scene.isPending ? "Designing scene..." : "Generate"}
+        </Button>
+        {scene.isPending && withArt && <p className="text-xs text-muted-foreground">Art can take ~20 s</p>}
+        {scene.isError && <p role="alert" className="text-xs text-destructive">{scene.error.message}</p>}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function Row({
   id, layer, index, selected, hidden, hasError, dragging, onSelect, onToggle, onDup, onDelete,
@@ -105,6 +178,10 @@ export function LayersEditor({ value, onChange, allowTokens, palette, accent, pr
   const commit = (next: Layer[], nextIds: string[]) => {
     ids.current = nextIds;
     onChange(next);
+  };
+  const replaceAll = (next: Layer[]) => {
+    commit(next, next.map(() => newId()));
+    setSelected(null);
   };
   const add = (t: Layer["type"]) => {
     const id = newId();
@@ -215,7 +292,7 @@ export function LayersEditor({ value, onChange, allowTokens, palette, accent, pr
           </DndContext>
           {layers.length === 0 && <p className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">No layers yet. Add a background to start.</p>}
           {errors[""] && <p className="text-xs text-destructive">{errors[""]}</p>}
-          <div className="relative">
+          <div className="relative flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setAdding((a) => !a)} aria-expanded={adding}>
               <Plus className="mr-1 h-3.5 w-3.5" /> Add layer
             </Button>
@@ -231,6 +308,7 @@ export function LayersEditor({ value, onChange, allowTokens, palette, accent, pr
                 })}
               </div>
             )}
+            <AiSceneButton layers={layers} allowTokens={allowTokens} palette={palette} replace={replaceAll} />
           </div>
         </div>
 

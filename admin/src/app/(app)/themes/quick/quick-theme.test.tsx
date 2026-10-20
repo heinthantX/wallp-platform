@@ -121,4 +121,42 @@ describe("Quick theme wizard", () => {
     expect(saved.festivalId).toBe("diwali");
     expect(saved.fonts.display).toBe("creepster");
   });
+
+  it("describes a theme with AI: calls suggest + scene, saves a scene wallpaper and selects it", async () => {
+    vi.spyOn(client, "GET").mockImplementation((async (path: string) => {
+      if (path === "/admin/v1/festivals") return { data: { items: [item("diwali", { name: { en: "Diwali" } })], total: 1 } };
+      if (path === "/admin/v1/ai/status")
+        return { data: { anyConfigured: true, providers: [{ id: "openrouter", configured: true }, { id: "cloudflare", configured: true }] } };
+      return { data: { items: [], total: 0 } };
+    }) as never);
+    const posts: Record<string, unknown> = {};
+    vi.spyOn(client, "POST").mockImplementation((async (path: string, init: { body: unknown }) => {
+      posts[path] = init.body;
+      if (path === "/admin/v1/ai/scene")
+        return { data: { scene: { engine: "layers", params: { layers: [] } }, name: "Lantern", artPrompt: "", artSkipped: true, model: "m" } };
+      if (path === "/admin/v1/ai/suggest")
+        return { data: { names: [{ en: "Golden Lanterns", my: "x" }], tags: ["diwali"], subtitle: { en: "Warm" }, moodWords: [], model: "m" } };
+      return { data: { id: "x", status: "draft", data: "{}" } };
+    }) as never);
+
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <QuickThemePage />
+      </QueryClientProvider>
+    );
+    await pick(/^Festival$/, "Diwali");
+    const box = screen.getByLabelText("Describe with AI");
+    await waitFor(() => expect(box).not.toBeDisabled());
+    fireEvent.change(box, { target: { value: "lantern night" } });
+    fireEvent.click(screen.getByRole("button", { name: "Generate" }));
+
+    await waitFor(() => expect(posts["/admin/v1/wallpapers"]).toBeDefined());
+    expect(posts["/admin/v1/ai/scene"]).toMatchObject({ description: "lantern night", withArt: true });
+    expect(posts["/admin/v1/ai/suggest"]).toMatchObject({ description: "lantern night", kind: "theme" });
+    const saved = JSON.parse(posts["/admin/v1/wallpapers"] as string);
+    expect(saved.kind).toBe("scene");
+    expect(saved.id).toMatch(/^golden-lanterns-[0-9a-f]{6}$/);
+    await waitFor(() => expect(document.querySelector(`[data-wallpaper-id="${saved.id}"]`)).not.toBeNull());
+  });
 });
