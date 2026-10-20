@@ -9,7 +9,7 @@
 | Approve flow | Admin role can approve straight from draft | architecture.md | 2026-10-19 |
 | AI optional | /admin/v1/ai/status (booleans only); missing keys give 501 ai_not_configured in apierr shape, details[].field per key | architecture.md | 2026-10-19 |
 | Categories | First-class entity, categoryIds on themes/wallpapers, banner-like review; ref_missing for unknown ids | architecture.md | 2026-10-20 |
-| Category festivals | Category has optional festivalIds (hard ref); app chips data-driven, no hardcoded Myanmar/Minimal | architecture.md | 2026-10-20 |
+| Category festivals | Category has optional festivalIds (hard ref); Flutter app does not read categories yet | architecture.md | 2026-10-20 |
 | Release checks | Match the app: accent_contrast_low is a warning; skip few_dates for collection and no_preview for scene themes | architecture.md | 2026-10-20 |
 | Icon pack background | Image packs may have no background (null, tile ""); sprite-sheet import is admin-side | architecture.md | 2026-10-20 |
 | Quick wizard | No palette step; palette derived silently from the wallpaper | architecture.md | 2026-10-20 |
