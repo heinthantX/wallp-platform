@@ -411,29 +411,108 @@ func Tick(ctx context.Context, db *bun.DB, storageDir string, checker Checker) (
 }
 
 // RunScheduler ticks until ctx is done. Errors are logged, never fatal.
+// After a failed publish it waits for an item edit, or for a backoff that
+// doubles up to an hour, so a blocking check is not retried every tick.
 func RunScheduler(ctx context.Context, db *bun.DB, storageDir string, checker Checker, every time.Duration) {
 	t := time.NewTicker(every)
 	defer t.Stop()
 	var lastPrune time.Time
+	gate := failGate{every: every}
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-t.C:
-			if now := time.Now().UTC(); now.Sub(lastPrune) >= 24*time.Hour {
+			now := time.Now().UTC()
+			if now.Sub(lastPrune) >= 24*time.Hour {
 				if err := stats.Prune(ctx, db, now); err != nil {
 					slog.Error("event retention failed", "err", err)
 				} else {
 					lastPrune = now
 				}
 			}
-			if ok, err := Tick(ctx, db, storageDir, checker); err != nil {
+			mark, err := editMark(ctx, db)
+			if err != nil {
 				slog.Error("scheduled publish failed", "err", err)
-			} else if ok {
+				continue
+			}
+			if !gate.ready(now, mark) {
+				continue
+			}
+			ok, err := Tick(ctx, db, storageDir, checker)
+			if err != nil {
+				if gate.failed(now, mark, err) {
+					slog.Error("scheduled publish failed", "err", err, "issues", issueLines(err), "retry_at", gate.retryAt)
+				}
+				continue
+			}
+			gate.reset()
+			if ok {
 				slog.Info("scheduled publish done")
 			}
 		}
 	}
+}
+
+// failGate holds back scheduled publishes after a failure.
+type failGate struct {
+	every   time.Duration
+	backoff time.Duration
+	retryAt time.Time
+	mark    string // editMark when the last publish failed
+	lastErr string
+}
+
+// ready reports whether to try a publish: no failure is pending, the backoff
+// has run out, or an item changed since the failure.
+func (g *failGate) ready(now time.Time, mark string) bool {
+	return g.retryAt.IsZero() || !now.Before(g.retryAt) || mark != g.mark
+}
+
+// failed records a failure and reports whether it is new and worth logging.
+func (g *failGate) failed(now time.Time, mark string, err error) bool {
+	g.backoff = min(max(g.backoff*2, 2*g.every), time.Hour)
+	g.retryAt = now.Add(g.backoff)
+	g.mark = mark
+	msg := strings.Join(append([]string{err.Error()}, issueLines(err)...), "\n")
+	if msg == g.lastErr {
+		return false
+	}
+	g.lastErr = msg
+	return true
+}
+
+func (g *failGate) reset() {
+	g.backoff, g.retryAt, g.mark, g.lastErr = 0, time.Time{}, "", ""
+}
+
+// editMark changes whenever any catalog item is added, edited or removed.
+func editMark(ctx context.Context, db bun.IDB) (string, error) {
+	var b strings.Builder
+	for _, ki := range kinds {
+		var n int
+		var last sql.NullString
+		if err := db.NewSelect().Table(ki.kind.Plural).ColumnExpr("COUNT(*)").ColumnExpr("MAX(updated_at)").
+			Scan(ctx, &n, &last); err != nil {
+			return "", err
+		}
+		fmt.Fprintf(&b, "%s:%d:%s;", ki.key, n, last.String)
+	}
+	return b.String(), nil
+}
+
+// issueLines lists the check details of a failed publish, e.g.
+// "theme/x#iconPackId  ref_missing: icon pack "y" does not exist".
+func issueLines(err error) []string {
+	var ae *apierr.Error
+	if !errors.As(err, &ae) {
+		return nil
+	}
+	out := make([]string, 0, len(ae.Err.Details))
+	for _, d := range ae.Err.Details {
+		out = append(out, d.Field+"  "+d.Message)
+	}
+	return out
 }
 
 func inProgress() *apierr.Error {
