@@ -41,6 +41,9 @@ Root cause: `assets/builtin/catalog` font files live only in `assets/mock/catalo
 Root cause: `RunScheduler` retried on every tick and logged only "N check error(s)". Staging logged this 646+ times from 2026-10-19 because of data: scheduled theme `new-years-eve-copy` referenced missing icon pack `champagne-sparkle` and wallpaper `midnight-fireworks`, and approved banner `new-years` targeted festival `spider-night` (a theme id) and unpublished art theme `new-years-eve`. Fix (6f5298f): `failGate` retries only after an item change (`editMark`) or a backoff (2 ticks, doubling, cap 1h), and logs the check details once. Data left as-is.
 Project fact: on 2026-10-20 the 27 extra themes from the app's older catalog (wallp repo 91e7cd7, `test/fixtures/catalog/v1`) were imported to staging with only ids staging lacked (store settings stripped). They are `published` in the DB but not in a release until the next successful publish.
 
+## Scheduler backoff outlived a scheduled item coming due (2026-10-21)
+Root cause: on staging (2026-10-20) theme `thadingyut-still-henz` stayed unpublished ~30 min after its checks were clean. A scheduled publish failed at 09:26:48 (its wallpaper, scheduled for 09:27, was not yet due, so `ref_missing`); the backoff grew to 32 min and the gate only woke on item edits, and the wallpaper coming due was not an edit. Fix: `editMark(ctx, db, now)` also counts, per kind, `status=scheduled` rows with `scheduled_at <= now`, so the gate wakes when a scheduled item comes due (test in `scheduler_test.go`).
+
 ## CORS "Failed to fetch" from cached img response (B17)
 Root cause: CORS responses lacked `Vary: Origin`, so a copy cached by an `<img>` load (no Origin header) was reused by `fetch()` and failed CORS. Fix: server adds `Vary: Origin`; the quick wizard fetches with `cache: "no-store"`.
 
