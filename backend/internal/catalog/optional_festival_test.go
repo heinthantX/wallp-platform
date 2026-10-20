@@ -24,3 +24,14 @@ func TestNoFestivalNoPublishedAtIsValid(t *testing.T) {
 		t.Error("a non-empty, non-UTC publishedAt must still fail")
 	}
 }
+
+func TestCategoryFestivalIDs(t *testing.T) {
+	c := catalog.Category{ID: "myanmar", Name: catalog.Localized{"en": "Myanmar"}, FestivalIDs: []string{"thingyan", "thingyan", "Bad_Id"}}
+	got := map[string]bool{}
+	for _, e := range c.Validate() {
+		got[e.Field+" "+e.Code] = true
+	}
+	if !got["festivalIds[1] duplicate_id"] || !got["festivalIds[2] invalid_id"] || len(got) != 2 {
+		t.Fatalf("unexpected errors: %v", got)
+	}
+}

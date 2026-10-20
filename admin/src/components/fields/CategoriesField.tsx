@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { useCategories } from "@/lib/api/hooks/useCategories";
+import { useFestivals } from "@/lib/api/hooks/useFestivals";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -17,17 +18,25 @@ function nameOf(data: unknown, id: string): string {
   }
 }
 
-/** Multi-select of catalog categories, stored as `categoryIds`. */
+const LISTS = {
+  categories: { useList: useCategories, noun: "categories", newHref: "/categories/new", hint: "Pick any number. Shown on each category page in the app." },
+  festivals: { useList: useFestivals, noun: "festivals", newHref: "/festivals/new", hint: "Every theme and wallpaper of these festivals shows under this category." },
+} as const;
+
+/** Multi-select of catalog categories (`categoryIds`) or festivals (`festivalIds`). */
 export function CategoriesField({
   value = [],
   onChange,
   label = "Categories",
+  kind = "categories",
 }: {
   value?: string[];
   onChange: (ids: string[]) => void;
   label?: string;
+  kind?: keyof typeof LISTS;
 }) {
-  const { data, isLoading, isError, refetch } = useCategories({ perPage: 100 });
+  const list = LISTS[kind];
+  const { data, isLoading, isError, refetch } = list.useList({ perPage: 100 });
   const items = (data?.items ?? []).filter((i) => i.status !== "archived");
   const known = new Set(items.map((i) => i.id));
   const toggle = (id: string) =>
@@ -40,15 +49,15 @@ export function CategoriesField({
         <Skeleton className="h-8 w-full" />
       ) : isError ? (
         <p className="text-xs text-destructive">
-          Could not load categories.{" "}
+          Could not load {list.noun}.{" "}
           <button type="button" className="underline" onClick={() => refetch()}>
             Retry
           </button>
         </p>
       ) : items.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No categories yet.{" "}
-          <Link href="/categories/new" className="underline">
+          No {list.noun} yet.{" "}
+          <Link href={list.newHref} className="underline">
             Create one
           </Link>
         </p>
@@ -78,7 +87,7 @@ export function CategoriesField({
               <button
                 key={id}
                 type="button"
-                title="Not in the category list: click to remove"
+                title={`Not in the ${list.noun} list: click to remove`}
                 onClick={() => toggle(id)}
                 className="rounded-full border border-destructive px-2.5 py-1 text-xs text-destructive"
               >
@@ -87,7 +96,7 @@ export function CategoriesField({
             ))}
         </div>
       )}
-      <p className="text-[11px] text-muted-foreground">Pick any number. Shown on each category page in the app.</p>
+      <p className="text-[11px] text-muted-foreground">{list.hint}</p>
     </div>
   );
 }

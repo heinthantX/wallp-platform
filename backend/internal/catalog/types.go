@@ -53,6 +53,8 @@ type Category struct {
 	Name Localized `json:"name"`
 	Sort int       `json:"sort"`
 	Tags []string  `json:"tags,omitempty"`
+	// FestivalIDs pulls every theme and wallpaper of these festivals into the category.
+	FestivalIDs []string `json:"festivalIds,omitempty"`
 }
 
 // Palette defines the five core theme colors plus an optional motif color.

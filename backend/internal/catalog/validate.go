@@ -247,25 +247,30 @@ func (c *Category) Validate() []FieldError {
 		})
 	}
 	errs = append(errs, validateLocalized(c.Name, "name")...)
+	errs = append(errs, validateIDList(c.FestivalIDs, "festivalIds")...)
 	return errs
 }
 
-func validateCategoryIDs(ids []string) []FieldError {
+func validateCategoryIDs(ids []string) []FieldError { return validateIDList(ids, "categoryIds") }
+
+// validateIDList checks a list field of kebab-case ids ("categoryIds", "festivalIds") for format and duplicates.
+func validateIDList(ids []string, field string) []FieldError {
+	one := strings.TrimSuffix(field, "s")
 	var errs []FieldError
 	seen := make(map[string]bool, len(ids))
 	for i, id := range ids {
 		if !isValidID(id) {
 			errs = append(errs, FieldError{
-				Field:   fmt.Sprintf("categoryIds[%d]", i),
+				Field:   fmt.Sprintf("%s[%d]", field, i),
 				Code:    "invalid_id",
-				Message: "categoryId must be lowercase kebab-case",
+				Message: one + " must be lowercase kebab-case",
 			})
 		}
 		if seen[id] {
 			errs = append(errs, FieldError{
-				Field:   fmt.Sprintf("categoryIds[%d]", i),
+				Field:   fmt.Sprintf("%s[%d]", field, i),
 				Code:    "duplicate_id",
-				Message: fmt.Sprintf("duplicate categoryId %q", id),
+				Message: fmt.Sprintf("duplicate %s %q", one, id),
 			})
 		}
 		seen[id] = true
@@ -1619,6 +1624,11 @@ func (c *Catalog) Validate() []FieldError {
 	ref := func(set map[string]struct{}, id, field, what string) {
 		if _, ok := set[id]; !ok && !(what == "festival" && id == "") {
 			errs = append(errs, FieldError{Field: field, Code: "ref_missing", Message: fmt.Sprintf("%s %q does not exist in the catalog", what, id)})
+		}
+	}
+	for i, cat := range c.Categories {
+		for j, fid := range cat.FestivalIDs {
+			ref(festivals, fid, fmt.Sprintf("categories[%d].festivalIds[%d]", i, j), "festival")
 		}
 	}
 	for i, f := range c.Festivals {

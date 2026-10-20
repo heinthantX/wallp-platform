@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Controller } from "react-hook-form";
 import { useCategory, useSaveCategory, useCategoryAction } from "@/lib/api/hooks/useCategories";
-import { IdField, LocalizedField, TagsField } from "@/components/fields";
+import { CategoriesField, IdField, LocalizedField, TagsField } from "@/components/fields";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,7 @@ export function CategoryEditor({ isNew }: { isNew?: boolean }) {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Category</CardTitle>
-            <CardDescription>A store category (Anime, Nature, Dark…). Themes and wallpapers can be in many.</CardDescription>
+            <CardDescription>A store filter chip (Myanmar, Minimal, Anime…). Themes and wallpapers join it by picking it, or through a linked festival.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Controller
@@ -52,6 +52,7 @@ export function CategoryEditor({ isNew }: { isNew?: boolean }) {
               <Label htmlFor="sort">Sort</Label>
               <Controller name="sort" control={control} render={({ field }) => <Input id="sort" type="number" value={field.value ?? 0} onChange={(e) => field.onChange(e.target.value)} />} />
             </div>
+            <Controller name="festivalIds" control={control} render={({ field }) => <CategoriesField kind="festivals" label="Linked festivals" value={field.value} onChange={field.onChange} />} />
             <Controller name="tags" control={control} render={({ field }) => <TagsField label="Tags" value={field.value} onChange={field.onChange} />} />
           </CardContent>
         </Card>
