@@ -302,59 +302,69 @@ func registerAISuggest(h huma.API) {
 			return &AISuggestOutput{Body: cached}, nil
 		}
 
-		baseURL := strings.TrimRight(strings.TrimSpace(os.Getenv("OPENROUTER_BASE_URL")), "/")
-		if baseURL == "" {
-			baseURL = "https://openrouter.ai/api/v1"
-		}
-
-		modelName := strings.TrimSpace(os.Getenv("OPENROUTER_MODEL"))
-		if modelName == "" {
-			modelName = "openrouter/free"
-		}
-
-		reqBody := openRouterReqBody{
-			Model: modelName,
-			Messages: []openRouterReqMessage{
-				{Role: "system", Content: aiSuggestSystemPrompt},
-				{Role: "user", Content: fmt.Sprintf("Kind: %s\nDescription: %s", kind, description)},
-			},
-			Temperature: 0.8,
-		}
-		reqBody.ResponseFormat.Type = "json_object"
-
-		reqBytes, err := json.Marshal(reqBody)
-		if err != nil {
-			return nil, apierr.New(http.StatusBadGateway, "ai_upstream_error", "Failed to encode upstream request")
-		}
-
 		reqCtx, cancel := context.WithTimeout(ctx, aiSuggestContextTimeout)
 		defer cancel()
+
+		userPrompt := fmt.Sprintf("Kind: %s\nDescription: %s", kind, description)
 
 		// Free models vary: one unusable answer gets one retry, which the router often sends to another model.
 		var result AISuggestResult
 		for attempt := 0; ; attempt++ {
-			result, err = suggestOnce(reqCtx, baseURL, apiKey, modelName, reqBytes)
+			rawContent, respModel, err := openRouterJSON(reqCtx, aiSuggestSystemPrompt, userPrompt)
+			if err == nil {
+				result, err = parseSuggestContent(rawContent, respModel)
+			}
 			var ae *apierr.Error
 			if err == nil || attempt == 1 || !errors.As(err, &ae) || ae.Err.Code != "ai_bad_output" {
+				if err != nil {
+					return nil, err
+				}
 				break
 			}
-		}
-		if err != nil {
-			return nil, err
 		}
 		putAISuggestCache(cacheKey, result)
 		return &AISuggestOutput{Body: result}, nil
 	})
 }
 
-func suggestOnce(reqCtx context.Context, baseURL, apiKey, modelName string, reqBytes []byte) (AISuggestResult, error) {
+func openRouterJSON(ctx context.Context, system, user string) (content string, model string, err error) {
+	apiKey := strings.TrimSpace(os.Getenv("OPENROUTER_API_KEY"))
+	if apiKey == "" {
+		return "", "", aiNotConfigured("openrouter")
+	}
+
+	baseURL := strings.TrimRight(strings.TrimSpace(os.Getenv("OPENROUTER_BASE_URL")), "/")
+	if baseURL == "" {
+		baseURL = "https://openrouter.ai/api/v1"
+	}
+
+	modelName := strings.TrimSpace(os.Getenv("OPENROUTER_MODEL"))
+	if modelName == "" {
+		modelName = "openrouter/free"
+	}
+
+	reqBody := openRouterReqBody{
+		Model: modelName,
+		Messages: []openRouterReqMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+		Temperature: 0.8,
+	}
+	reqBody.ResponseFormat.Type = "json_object"
+
+	reqBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", "", apierr.New(http.StatusBadGateway, "ai_upstream_error", "Failed to encode upstream request")
+	}
+
 	httpClient := &http.Client{
 		Timeout: aiSuggestClientTimeout,
 	}
 
-	req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, baseURL+"/chat/completions", bytes.NewReader(reqBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+"/chat/completions", bytes.NewReader(reqBytes))
 	if err != nil {
-		return AISuggestResult{}, apierr.New(http.StatusBadGateway, "ai_upstream_error", "Failed to create upstream request")
+		return "", "", apierr.New(http.StatusBadGateway, "ai_upstream_error", "Failed to create upstream request")
 	}
 
 	req.Header.Set("Authorization", "Bearer "+apiKey)
@@ -364,48 +374,57 @@ func suggestOnce(reqCtx context.Context, baseURL, apiKey, modelName string, reqB
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) || errors.Is(reqCtx.Err(), context.DeadlineExceeded) || os.IsTimeout(err) {
-			return AISuggestResult{}, apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) || os.IsTimeout(err) {
+			return "", "", apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
 		}
 		var netErr net.Error
 		if errors.As(err, &netErr) && netErr.Timeout() {
-			return AISuggestResult{}, apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
+			return "", "", apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
 		}
-		return AISuggestResult{}, apierr.New(http.StatusBadGateway, "ai_upstream_error", "OpenRouter connection failed")
+		return "", "", apierr.New(http.StatusBadGateway, "ai_upstream_error", "OpenRouter connection failed")
 	}
 	defer resp.Body.Close()
 
 	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) || errors.Is(reqCtx.Err(), context.DeadlineExceeded) || os.IsTimeout(err) {
-			return AISuggestResult{}, apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) || os.IsTimeout(err) {
+			return "", "", apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
 		}
 		var netErr net.Error
 		if errors.As(err, &netErr) && netErr.Timeout() {
-			return AISuggestResult{}, apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
+			return "", "", apierr.New(http.StatusGatewayTimeout, "ai_timeout", "OpenRouter took too long, try again.")
 		}
-		return AISuggestResult{}, apierr.New(http.StatusBadGateway, "ai_upstream_error", "Failed to read OpenRouter response")
+		return "", "", apierr.New(http.StatusBadGateway, "ai_upstream_error", "Failed to read OpenRouter response")
 	}
 
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return AISuggestResult{}, apierr.New(http.StatusTooManyRequests, "ai_rate_limited", "OpenRouter free limit reached. Free keys allow about 50 requests a day; try again after 00:00 UTC.")
+		return "", "", apierr.New(http.StatusTooManyRequests, "ai_rate_limited", "OpenRouter free limit reached. Free keys allow about 50 requests a day; try again after 00:00 UTC.")
 	}
 	if resp.StatusCode == http.StatusPaymentRequired {
-		return AISuggestResult{}, apierr.New(http.StatusPaymentRequired, "ai_no_credit", "OpenRouter says the account has no credit (a negative balance blocks free models too).")
+		return "", "", apierr.New(http.StatusPaymentRequired, "ai_no_credit", "OpenRouter says the account has no credit (a negative balance blocks free models too).")
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return AISuggestResult{}, apierr.New(http.StatusBadGateway, "ai_upstream_error", fmt.Sprintf("OpenRouter returned %d", resp.StatusCode))
+		return "", "", apierr.New(http.StatusBadGateway, "ai_upstream_error", fmt.Sprintf("OpenRouter returned %d", resp.StatusCode))
 	}
 
 	var orResp openRouterRespBody
 	if err := json.Unmarshal(respBytes, &orResp); err != nil {
-		return AISuggestResult{}, apierr.New(http.StatusBadGateway, "ai_bad_output", "The model did not return usable JSON, try again.")
+		return "", "", apierr.New(http.StatusBadGateway, "ai_bad_output", "The model did not return usable JSON, try again.")
 	}
 	if len(orResp.Choices) == 0 {
-		return AISuggestResult{}, apierr.New(http.StatusBadGateway, "ai_bad_output", "The model did not return usable JSON, try again.")
+		return "", "", apierr.New(http.StatusBadGateway, "ai_bad_output", "The model did not return usable JSON, try again.")
 	}
 
-	cleaned := jsonObject(orResp.Choices[0].Message.Content)
+	respModel := strings.TrimSpace(orResp.Model)
+	if respModel == "" {
+		respModel = modelName
+	}
+
+	return orResp.Choices[0].Message.Content, respModel, nil
+}
+
+func parseSuggestContent(content, respModel string) (AISuggestResult, error) {
+	cleaned := jsonObject(content)
 
 	var raw rawSuggestOutput
 	if err := json.Unmarshal([]byte(cleaned), &raw); err != nil {
@@ -461,11 +480,6 @@ func suggestOnce(reqCtx context.Context, baseURL, apiKey, modelName string, reqB
 	}
 	if moodWords == nil {
 		moodWords = []string{}
-	}
-
-	respModel := strings.TrimSpace(orResp.Model)
-	if respModel == "" {
-		respModel = modelName
 	}
 
 	result := AISuggestResult{

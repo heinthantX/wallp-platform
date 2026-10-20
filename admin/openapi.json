@@ -1,6 +1,85 @@
 {
   "components": {
     "schemas": {
+      "AIImagesInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AIImagesInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Image generation prompt",
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "purpose": {
+            "default": "art",
+            "description": "Image purpose",
+            "enum": [
+              "icon",
+              "wallpaper",
+              "art"
+            ],
+            "type": "string"
+          },
+          "seed": {
+            "description": "Random seed",
+            "format": "int64",
+            "type": "integer"
+          },
+          "steps": {
+            "default": 4,
+            "description": "Inference steps",
+            "format": "int64",
+            "maximum": 8,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "AIImagesResult": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AIImagesResult.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/UploadAssetResult"
+          },
+          "model": {
+            "examples": [
+              "@cf/black-forest-labs/flux-2-klein-9b"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset",
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
       "AIProvider": {
         "additionalProperties": false,
         "properties": {
@@ -35,6 +114,83 @@
           "kind",
           "configured",
           "envKeys"
+        ],
+        "type": "object"
+      },
+      "AISceneInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AISceneInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "Theme or wallpaper description",
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "palette": {
+            "description": "Up to 6 #RRGGBB hex colors",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "withArt": {
+            "default": true,
+            "description": "Generate wallpaper art via Cloudflare if configured",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "type": "object"
+      },
+      "AISceneResult": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AISceneResult.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "artPrompt": {
+            "type": "string"
+          },
+          "artSkipped": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scene": {
+            "$ref": "#/components/schemas/Scene"
+          }
+        },
+        "required": [
+          "scene",
+          "name",
+          "artPrompt",
+          "artSkipped",
+          "model"
         ],
         "type": "object"
       },
@@ -3776,6 +3932,100 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/v1/ai/images": {
+      "post": {
+        "description": "Roles: admin, designer",
+        "operationId": "ai-images",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIImagesInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIImagesResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate an image via Cloudflare Workers AI",
+        "tags": [
+          "AI"
+        ]
+      }
+    },
+    "/admin/v1/ai/scene": {
+      "post": {
+        "description": "Roles: admin, designer, reviewer",
+        "operationId": "ai-scene",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AISceneInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AISceneResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate layers scene definition from a description",
+        "tags": [
+          "AI"
+        ]
+      }
+    },
     "/admin/v1/ai/status": {
       "get": {
         "description": "Booleans and env key names only, never values. Any dashboard role may read it.",

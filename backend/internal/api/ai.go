@@ -43,6 +43,15 @@ func aiConfigured(p AIProvider) bool {
 	return true
 }
 
+func isProviderConfigured(id string) bool {
+	for _, p := range aiProviders {
+		if p.ID == id {
+			return aiConfigured(p)
+		}
+	}
+	return false
+}
+
 func aiStatus() AIStatus {
 	st := AIStatus{Providers: make([]AIProvider, len(aiProviders))}
 	for i, p := range aiProviders {
@@ -70,7 +79,7 @@ func aiNotConfigured(id string) *apierr.Error {
 	return e
 }
 
-func registerAI(h huma.API, _ *Deps) {
+func registerAI(h huma.API, d *Deps) {
 	huma.Register(h, auth.Admin(huma.Operation{
 		OperationID: "ai-status",
 		Method:      http.MethodGet,
@@ -82,4 +91,6 @@ func registerAI(h huma.API, _ *Deps) {
 		return &AIStatusOutput{Body: aiStatus()}, nil
 	})
 	registerAISuggest(h)
+	registerAIImages(h, d)
+	registerAIScene(h, d)
 }

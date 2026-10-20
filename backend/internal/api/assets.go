@@ -103,6 +103,171 @@ func toAssetItem(a *model.Asset) AssetItem {
 	}
 }
 
+// ingestAssetBytes stores image/font bytes; wallpaper adds the phone-size variants.
+func ingestAssetBytes(ctx context.Context, d *Deps, data []byte, isWallpaper bool, actor string) (UploadAssetResult, error) {
+	if int64(len(data)) > assets.MaxAssetSize {
+		return UploadAssetResult{}, apierr.New(http.StatusUnprocessableEntity, "oversized", "File exceeds 10 MB limit")
+	}
+
+	// Sniff format
+	format, mimeType, err := assets.Sniff(data)
+	if err != nil {
+		return UploadAssetResult{}, err
+	}
+
+	// Calculate sha256
+	hVal := sha256.Sum256(data)
+	shaHex := hex.EncodeToString(hVal[:])
+
+
+	// Deduplication check in DB
+	var existing model.Asset
+	err = d.DB.NewSelect().Model(&existing).Where("sha256 = ?", shaHex).Scan(ctx)
+	if err == nil {
+		// Found existing row -> Dedupe!
+		// Ensure file exists on disk
+		_, _ = assets.StoreAsset(d.Cfg.StorageDir, shaHex, format, data)
+
+		var variants map[string]AssetItem
+		if isWallpaper && (format == "png" || format == "jpg" || format == "webp") {
+			variants = loadOrGenerateWallpaperVariants(ctx, d, data, actor)
+		}
+
+		return UploadAssetResult{
+			URL:      fmt.Sprintf("assets/%s.%s", existing.SHA256, existing.Format),
+			SHA256:   existing.SHA256,
+			Bytes:    existing.Bytes,
+			Format:   existing.Format,
+			Width:    existing.Width,
+			Height:   existing.Height,
+			Blurhash: existing.Blurhash,
+			Dominant: existing.Dominant,
+			Deduped:  true,
+			Variants: variants,
+			Warnings: []string{},
+		}, nil
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return UploadAssetResult{}, err
+	}
+
+	// New asset: process images
+	isImage := format == "png" || format == "jpg" || format == "webp"
+	var meta assets.ImageMeta
+	var variants map[string]AssetItem
+
+	if isImage {
+		img, imgMeta, err := assets.ProcessImage(data, isWallpaper)
+		if err != nil {
+			return UploadAssetResult{}, err
+		}
+		meta = imgMeta
+
+		if isWallpaper {
+			varMap, err := assets.CreateWallpaperVariants(img)
+			if err != nil {
+				return UploadAssetResult{}, err
+			}
+			variants = make(map[string]AssetItem, len(varMap))
+			now := time.Now().UTC().Truncate(time.Millisecond)
+
+			err = d.DB.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+				for key, v := range varMap {
+					if _, err := assets.StoreAsset(d.Cfg.StorageDir, v.SHA256, v.Format, v.Bytes); err != nil {
+						return err
+					}
+
+					var vExisting model.Asset
+					vErr := tx.NewSelect().Model(&vExisting).Where("sha256 = ?", v.SHA256).Scan(ctx)
+					if errors.Is(vErr, sql.ErrNoRows) {
+						vAsset := &model.Asset{
+							SHA256:    v.SHA256,
+							Format:    v.Format,
+							Mime:      items.MimeForFormat(v.Format),
+							Bytes:     int64(len(v.Bytes)),
+							Width:     v.Width,
+							Height:    v.Height,
+							Blurhash:  v.Blurhash,
+							Dominant:  v.Dominant,
+							CreatedBy: actor,
+							CreatedAt: now,
+						}
+						if _, err := tx.NewInsert().Model(vAsset).Exec(ctx); err != nil {
+							return err
+						}
+						if err := audit.Record(ctx, tx, "create", "asset", v.SHA256, nil, vAsset); err != nil {
+							return err
+						}
+						variants[key] = toAssetItem(vAsset)
+					} else if vErr == nil {
+						variants[key] = toAssetItem(&vExisting)
+					} else {
+						return vErr
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return UploadAssetResult{}, err
+			}
+		}
+	}
+
+	// Store primary asset file
+	if _, err := assets.StoreAsset(d.Cfg.StorageDir, shaHex, format, data); err != nil {
+		return UploadAssetResult{}, err
+	}
+
+	now := time.Now().UTC().Truncate(time.Millisecond)
+	newAsset := &model.Asset{
+		SHA256:    shaHex,
+		Format:    format,
+		Mime:      mimeType,
+		Bytes:     int64(len(data)),
+		Width:     meta.Width,
+		Height:    meta.Height,
+		Blurhash:  meta.Blurhash,
+		Dominant:  meta.Dominant,
+		CreatedBy: actor,
+		CreatedAt: now,
+	}
+
+	deduped := false
+	err = d.DB.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		// A parallel upload of the same bytes may have inserted it since the lookup above.
+		res, err := tx.NewInsert().Model(newAsset).On("CONFLICT (sha256) DO NOTHING").Exec(ctx)
+		if err != nil {
+			return err
+		}
+		if n, _ := res.RowsAffected(); n == 0 {
+			deduped = true
+			return nil
+		}
+		return audit.Record(ctx, tx, "create", "asset", newAsset.SHA256, nil, newAsset)
+	})
+	if err != nil {
+		return UploadAssetResult{}, err
+	}
+
+	warnings := meta.Warnings
+	if warnings == nil {
+		warnings = []string{}
+	}
+
+	return UploadAssetResult{
+		URL:      fmt.Sprintf("assets/%s.%s", newAsset.SHA256, newAsset.Format),
+		SHA256:   newAsset.SHA256,
+		Bytes:    newAsset.Bytes,
+		Format:   newAsset.Format,
+		Width:    newAsset.Width,
+		Height:   newAsset.Height,
+		Blurhash: newAsset.Blurhash,
+		Dominant: newAsset.Dominant,
+		Deduped:  deduped,
+		Variants: variants,
+		Warnings: warnings,
+	}, nil
+}
+
 func registerAssets(h huma.API, r *gin.Engine, d *Deps) {
 	assetTags := []string{"Assets"}
 
@@ -159,170 +324,12 @@ func registerAssets(h huma.API, r *gin.Engine, d *Deps) {
 		if err != nil {
 			return nil, err
 		}
-		if int64(len(data)) > assets.MaxAssetSize {
-			return nil, apierr.New(http.StatusUnprocessableEntity, "oversized", "File exceeds 10 MB limit")
-		}
 
-		// Sniff format
-		format, mimeType, err := assets.Sniff(data)
+		res, err := ingestAssetBytes(ctx, d, data, in.Variants == "wallpaper", actor)
 		if err != nil {
 			return nil, err
 		}
-
-		// Calculate sha256
-		hVal := sha256.Sum256(data)
-		shaHex := hex.EncodeToString(hVal[:])
-
-		// Deduplication check in DB
-		var existing model.Asset
-		err = d.DB.NewSelect().Model(&existing).Where("sha256 = ?", shaHex).Scan(ctx)
-		if err == nil {
-			// Found existing row -> Dedupe!
-			// Ensure file exists on disk
-			_, _ = assets.StoreAsset(d.Cfg.StorageDir, shaHex, format, data)
-
-			var variants map[string]AssetItem
-			if in.Variants == "wallpaper" && (format == "png" || format == "jpg" || format == "webp") {
-				variants = loadOrGenerateWallpaperVariants(ctx, d, data, actor)
-			}
-
-			return &UploadAssetOutput{
-				Body: UploadAssetResult{
-					URL:      fmt.Sprintf("assets/%s.%s", existing.SHA256, existing.Format),
-					SHA256:   existing.SHA256,
-					Bytes:    existing.Bytes,
-					Format:   existing.Format,
-					Width:    existing.Width,
-					Height:   existing.Height,
-					Blurhash: existing.Blurhash,
-					Dominant: existing.Dominant,
-					Deduped:  true,
-					Variants: variants,
-					Warnings: []string{},
-				},
-			}, nil
-		} else if !errors.Is(err, sql.ErrNoRows) {
-			return nil, err
-		}
-
-		// New asset: process images
-		isImage := format == "png" || format == "jpg" || format == "webp"
-		var meta assets.ImageMeta
-		var variants map[string]AssetItem
-
-		if isImage {
-			img, imgMeta, err := assets.ProcessImage(data, in.Variants == "wallpaper")
-			if err != nil {
-				return nil, err
-			}
-			meta = imgMeta
-
-			if in.Variants == "wallpaper" {
-				varMap, err := assets.CreateWallpaperVariants(img)
-				if err != nil {
-					return nil, err
-				}
-				variants = make(map[string]AssetItem, len(varMap))
-				now := time.Now().UTC().Truncate(time.Millisecond)
-
-				err = d.DB.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-					for key, v := range varMap {
-						if _, err := assets.StoreAsset(d.Cfg.StorageDir, v.SHA256, v.Format, v.Bytes); err != nil {
-							return err
-						}
-
-						var vExisting model.Asset
-						vErr := tx.NewSelect().Model(&vExisting).Where("sha256 = ?", v.SHA256).Scan(ctx)
-						if errors.Is(vErr, sql.ErrNoRows) {
-							vAsset := &model.Asset{
-								SHA256:    v.SHA256,
-								Format:    v.Format,
-								Mime:      items.MimeForFormat(v.Format),
-								Bytes:     int64(len(v.Bytes)),
-								Width:     v.Width,
-								Height:    v.Height,
-								Blurhash:  v.Blurhash,
-								Dominant:  v.Dominant,
-								CreatedBy: actor,
-								CreatedAt: now,
-							}
-							if _, err := tx.NewInsert().Model(vAsset).Exec(ctx); err != nil {
-								return err
-							}
-							if err := audit.Record(ctx, tx, "create", "asset", v.SHA256, nil, vAsset); err != nil {
-								return err
-							}
-							variants[key] = toAssetItem(vAsset)
-						} else if vErr == nil {
-							variants[key] = toAssetItem(&vExisting)
-						} else {
-							return vErr
-						}
-					}
-					return nil
-				})
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
-
-		// Store primary asset file
-		if _, err := assets.StoreAsset(d.Cfg.StorageDir, shaHex, format, data); err != nil {
-			return nil, err
-		}
-
-		now := time.Now().UTC().Truncate(time.Millisecond)
-		newAsset := &model.Asset{
-			SHA256:    shaHex,
-			Format:    format,
-			Mime:      mimeType,
-			Bytes:     int64(len(data)),
-			Width:     meta.Width,
-			Height:    meta.Height,
-			Blurhash:  meta.Blurhash,
-			Dominant:  meta.Dominant,
-			CreatedBy: actor,
-			CreatedAt: now,
-		}
-
-		deduped := false
-		err = d.DB.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-			// A parallel upload of the same bytes may have inserted it since the lookup above.
-			res, err := tx.NewInsert().Model(newAsset).On("CONFLICT (sha256) DO NOTHING").Exec(ctx)
-			if err != nil {
-				return err
-			}
-			if n, _ := res.RowsAffected(); n == 0 {
-				deduped = true
-				return nil
-			}
-			return audit.Record(ctx, tx, "create", "asset", newAsset.SHA256, nil, newAsset)
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		warnings := meta.Warnings
-		if warnings == nil {
-			warnings = []string{}
-		}
-
-		return &UploadAssetOutput{
-			Body: UploadAssetResult{
-				URL:      fmt.Sprintf("assets/%s.%s", newAsset.SHA256, newAsset.Format),
-				SHA256:   newAsset.SHA256,
-				Bytes:    newAsset.Bytes,
-				Format:   newAsset.Format,
-				Width:    newAsset.Width,
-				Height:   newAsset.Height,
-				Blurhash: newAsset.Blurhash,
-				Dominant: newAsset.Dominant,
-				Deduped:  deduped,
-				Variants: variants,
-				Warnings: warnings,
-			},
-		}, nil
+		return &UploadAssetOutput{Body: res}, nil
 	})
 
 	// --- List Assets ---
