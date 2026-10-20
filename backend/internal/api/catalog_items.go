@@ -521,7 +521,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		Method:      http.MethodPost,
 		Path:        tp + "/{id}/review",
 		Summary:     "Transition a theme review status",
-		Description: "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.",
+		Description: "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly. Approving also approves the theme's never-published draft or in-review wallpapers (409 `linked_wallpaper_invalid` if one has errors).",
 		Tags:        themeTags,
 	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *ReviewInput) (*ItemOutput, error) {
 		me := auth.From(ctx)
@@ -540,6 +540,7 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		Method:      http.MethodPost,
 		Path:        tp + "/{id}/schedule",
 		Summary:     "Schedule or unschedule a theme",
+		Description: "Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.",
 		Tags:        themeTags,
 	}, model.RoleReviewer), func(ctx context.Context, in *ScheduleInput) (*ItemOutput, error) {
 		me := auth.From(ctx)

@@ -1411,6 +1411,9 @@ func (s *Store) Transition(ctx context.Context, id, action string, note *string,
 				existing.Status, existing.UpdatedBy, existing.UpdatedAt, existing.ID); err != nil {
 				return err
 			}
+			if err := s.syncThemeWallpapers(ctx, tx, existing, callerName, now); err != nil {
+				return err
+			}
 			outView = s.kind.ToView(existing)
 			return audit.Record(ctx, tx, "review_approve", s.kind.Name, existing.ID, s.kind.ToView(existing), outView)
 
@@ -1489,6 +1492,9 @@ func (s *Store) Schedule(ctx context.Context, id string, at *time.Time, callerNa
 			return err
 		}
 
+		if err := s.syncThemeWallpapers(ctx, tx, existing, callerName, now); err != nil {
+			return err
+		}
 		beforeView := s.kind.ToView(existing)
 		outView = s.kind.ToView(existing)
 		return audit.Record(ctx, tx, "schedule", s.kind.Name, existing.ID, beforeView, outView)
@@ -1651,4 +1657,55 @@ var safeIdent = regexp.MustCompile(`^[a-z_]+$`)
 func likeContains(s string) string {
 	r := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
 	return "%" + r.Replace(strings.ToLower(s)) + "%"
+}
+
+// syncThemeWallpapers moves the never-published wallpapers a theme uses along with the
+// theme (approved, scheduled at the same time, or back to approved), so a theme never
+// ships pointing at a wallpaper the release leaves out. Quick themes save theirs as drafts.
+func (s *Store) syncThemeWallpapers(ctx context.Context, tx bun.Tx, theme *ItemRow, callerName string, now time.Time) error {
+	if s.kind != ThemeKind {
+		return nil
+	}
+	var t struct {
+		WallpaperIDs []string `json:"wallpaperIds"`
+	}
+	if json.Unmarshal(theme.Data, &t) != nil || len(t.WallpaperIDs) == 0 {
+		return nil
+	}
+	var rows []ItemRow
+	q := tx.NewSelect().Table(WallpaperKind.Plural).
+		Where("id IN (?)", bun.In(t.WallpaperIDs)).
+		Where("first_published IS NULL").
+		Where("status <> ?", model.StatusArchived)
+	for _, col := range baseColumns {
+		q = q.Column(col)
+	}
+	if err := q.Scan(ctx, &rows); err != nil {
+		return err
+	}
+	for i := range rows {
+		w := &rows[i]
+		before := WallpaperKind.ToView(w)
+		pending := w.Status == model.StatusDraft || w.Status == model.StatusInReview
+		switch {
+		case theme.Status == model.StatusScheduled:
+			w.Status, w.ScheduledAt = model.StatusScheduled, theme.ScheduledAt
+		case theme.Status == model.StatusApproved && (pending || w.Status == model.StatusScheduled):
+			w.Status, w.ScheduledAt = model.StatusApproved, nil
+		default:
+			continue
+		}
+		if pending && len(WallpaperKind.Validate(w.Data)) > 0 {
+			return apierr.Conflict("linked_wallpaper_invalid", fmt.Sprintf("Wallpaper %q used by this theme has errors. Fix it, then try again", w.ID))
+		}
+		w.UpdatedBy, w.UpdatedAt = callerName, now
+		if _, err := tx.ExecContext(ctx, fmt.Sprintf("UPDATE %s SET status = ?, scheduled_at = ?, updated_by = ?, updated_at = ? WHERE id = ?", WallpaperKind.Plural),
+			w.Status, w.ScheduledAt, w.UpdatedBy, w.UpdatedAt, w.ID); err != nil {
+			return err
+		}
+		if err := audit.Record(ctx, tx, "theme_link_"+w.Status, WallpaperKind.Name, w.ID, before, WallpaperKind.ToView(w)); err != nil {
+			return err
+		}
+	}
+	return nil
 }

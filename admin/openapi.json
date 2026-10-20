@@ -9805,7 +9805,7 @@
     },
     "/admin/v1/themes/{id}/review": {
       "post": {
-        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.\n\nRoles: admin, designer, reviewer",
+        "description": "Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly. Approving also approves the theme's never-published draft or in-review wallpapers (409 `linked_wallpaper_invalid` if one has errors).\n\nRoles: admin, designer, reviewer",
         "operationId": "review-theme",
         "parameters": [
           {
@@ -9863,7 +9863,7 @@
     },
     "/admin/v1/themes/{id}/schedule": {
       "post": {
-        "description": "Roles: admin, reviewer",
+        "description": "Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.\n\nRoles: admin, reviewer",
         "operationId": "schedule-theme",
         "parameters": [
           {

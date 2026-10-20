@@ -1673,7 +1673,7 @@ export interface paths {
         put?: never;
         /**
          * Transition a theme review status
-         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly.
+         * @description Designers can only `request` review; `approve` and `reject` need reviewer or admin (403 otherwise). Admins may approve a draft directly. Approving also approves the theme's never-published draft or in-review wallpapers (409 `linked_wallpaper_invalid` if one has errors).
          *
          *     Roles: admin, designer, reviewer
          */
@@ -1695,7 +1695,9 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a theme
-         * @description Roles: admin, reviewer
+         * @description Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.
+         *
+         *     Roles: admin, reviewer
          */
         post: operations["schedule-theme"];
         delete?: never;

@@ -165,6 +165,10 @@ export function useThemeAction() {
     },
     onSuccess: (result, vars) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.allThemes });
+      // Approving or scheduling a theme also moves its unpublished wallpapers.
+      if (vars.action.type === "review" || vars.action.type === "schedule") {
+        queryClient.invalidateQueries({ queryKey: queryKeys.allWallpapers });
+      }
       if (vars.id) {
         queryClient.invalidateQueries({ queryKey: queryKeys.theme(vars.id) });
       }
