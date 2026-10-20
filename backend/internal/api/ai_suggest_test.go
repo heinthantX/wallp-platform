@@ -198,7 +198,7 @@ func TestAISuggest_Cache(t *testing.T) {
 			"choices": []any{
 				map[string]any{
 					"message": map[string]any{
-						"role": "assistant",
+						"role":    "assistant",
 						"content": `{"names":[{"en":"Cyber City","my":"ဆိုက်ဘာမြို့တော်"}],"subtitle":{"en":"Neon vibe"},"tags":["cyberpunk"],"moodWords":["electric"]}`,
 					},
 				},
@@ -457,5 +457,50 @@ func TestAISuggest_RolesAndFiltering(t *testing.T) {
 	})
 	if statusAdmin != http.StatusOK {
 		t.Fatalf("admin status = %d, want 200", statusAdmin)
+	}
+}
+
+// Free models answer in looser shapes and sometimes with prose; a bad first answer is retried once.
+func TestAISuggest_LooseShapesAndRetry(t *testing.T) {
+	api.ResetAISuggestCache()
+	t.Cleanup(api.ResetAISuggestCache)
+
+	var calls atomic.Int32
+	replies := []string{
+		"Sorry, I cannot help with that.",
+		`Here you go: {"names":["Night Glyphs",{"name":"Navy Line"}],"subtitle":"White on navy","tags":"Minimal, Dark Navy","moodWords":["calm"]} Enjoy!`,
+	}
+	fakeOpenRouter := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n := calls.Add(1)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"model":   "some/free-model",
+			"choices": []any{map[string]any{"message": map[string]any{"role": "assistant", "content": replies[min(int(n), len(replies))-1]}}},
+		})
+	}))
+	defer fakeOpenRouter.Close()
+
+	t.Setenv("OPENROUTER_BASE_URL", fakeOpenRouter.URL)
+	t.Setenv("OPENROUTER_API_KEY", "test-key")
+
+	s := newServer(t)
+	toks := setupRoleUsers(t, s)
+
+	status, body := s.do(t, "POST", "/admin/v1/ai/suggest", toks.designer, map[string]any{"description": "white glyphs", "kind": "iconPack"})
+	if status != http.StatusOK {
+		t.Fatalf("status = %d; body = %v", status, body)
+	}
+	if calls.Load() != 2 {
+		t.Fatalf("upstream calls = %d, want 2 (one retry)", calls.Load())
+	}
+	names := body["names"].([]any)
+	if len(names) != 2 || names[0].(map[string]any)["en"] != "Night Glyphs" || names[1].(map[string]any)["en"] != "Navy Line" {
+		t.Fatalf("names = %v", names)
+	}
+	if body["subtitle"].(map[string]any)["en"] != "White on navy" {
+		t.Fatalf("subtitle = %v", body["subtitle"])
+	}
+	tags := body["tags"].([]any)
+	if len(tags) != 2 || tags[0] != "minimal" || tags[1] != "dark-navy" {
+		t.Fatalf("tags = %v", tags)
 	}
 }
