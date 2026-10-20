@@ -32,4 +32,5 @@
 | No-background crash | RHF getDirtyFields vs null; clear background without shouldDirty, dirty via tile | fixes.md | 2026-10-20 |
 | Node env | Use /opt/homebrew/bin/node (v26); 3 admin client tests fail on clean main (env) | fixes.md | 2026-10-20 |
 | Builtin catalog | assets/builtin/catalog imports but cannot publish alone (fonts only in mock assets) | fixes.md | 2026-10-20 |
+| Scheduler backoff | Failed scheduled publish retries only on item change or backoff (2 ticks, x2, cap 1h); logs check details once | fixes.md | 2026-10-20 |
 | CORS cache (B17) | Send Vary: Origin; wizard fetches with cache "no-store" | fixes.md | 2026-10-19 |

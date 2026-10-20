@@ -37,5 +37,9 @@ Root cause: Homebrew node@22 is broken (missing libsimdjson). Use `/opt/homebrew
 ## Built-in Flutter catalog cannot publish alone
 Root cause: `assets/builtin/catalog` font files live only in `assets/mock/catalog/v1/assets`. It imports fine but needs those assets to publish.
 
+## Scheduler retried a failing publish every minute
+Root cause: `RunScheduler` retried on every tick and logged only "N check error(s)". Staging logged this 646+ times from 2026-10-19 because of data: scheduled theme `new-years-eve-copy` referenced missing icon pack `champagne-sparkle` and wallpaper `midnight-fireworks`, and approved banner `new-years` targeted festival `spider-night` (a theme id) and unpublished art theme `new-years-eve`. Fix (6f5298f): `failGate` retries only after an item change (`editMark`) or a backoff (2 ticks, doubling, cap 1h), and logs the check details once. Data left as-is.
+Project fact: on 2026-10-20 the 27 extra themes from the app's older catalog (wallp repo 91e7cd7, `test/fixtures/catalog/v1`) were imported to staging with only ids staging lacked (store settings stripped). They are `published` in the DB but not in a release until the next successful publish.
+
 ## CORS "Failed to fetch" from cached img response (B17)
 Root cause: CORS responses lacked `Vary: Origin`, so a copy cached by an `<img>` load (no Origin header) was reused by `fetch()` and failed CORS. Fix: server adds `Vary: Origin`; the quick wizard fetches with `cache: "no-store"`.

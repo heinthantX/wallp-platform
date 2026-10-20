@@ -22,8 +22,11 @@ Release gate (`internal/checks`), publish pipeline and public catalog serving (`
 - `POST /admin/v1/releases/{version}/rollback` (admin): rewrites `manifest.json` from the stored manifest only. Audit `rollback`. Files are kept (90-day retention noted, not enforced).
 - Public (no auth, outside `/admin`): `/catalog/v1/manifest.json` (`max-age=300`), `/catalog/v1/catalog.<version>.json`, `/catalog/v1/themes/<id>.<rev>.json`, `/catalog/v1/assets/<sha>.<ext>` (immutable). Strong ETag is `"sha256"` of bytes; `If-None-Match` returns 304.
 - Scheduler tick publishes when any approved item has `scheduled_at <= now`, actor `scheduler`, `ackWarnings=true`. Errors are logged with slog and never crash the process.
+- Failure backoff (`failGate` in `releases.go`): after a failed scheduled publish the scheduler skips ticks until (a) `editMark()` changes (per-kind COUNT(*) + MAX(updated_at) over all catalog item tables, i.e. an item was added/edited/removed) or (b) the backoff expires (2 ticks, doubling per failure, capped at 1 hour). Success resets the gate. Tests: `scheduler_test.go`.
+- The failure is logged once with `issues` (`issueLines()`: `<type>/<id>#<field>  <code>: <message>`) and `retry_at`; an unchanged failure is not logged again.
 
 ## Edge Cases
+- One broken scheduled item still blocks the whole scheduled release (unchanged); the backoff only limits retry and log noise.
 - Concurrent publish: one succeeds, the other gets `409 publish_in_progress`.
 - Traversal and bad names on public routes return 404 JSON error shape. Regexes are strict.
 - Catalog size codes `catalog_over_1mb` (warning-level path) and `catalog_over_2mb` (error) are checked during publish.
@@ -40,5 +43,5 @@ Release gate (`internal/checks`), publish pipeline and public catalog serving (`
 ## Autonomous UX Polish
 - DX: check report groups issues by level and gives JSON-path fields so the admin can deep-link.
 - Publish result includes the new version and a summary such as "+2 themes, 1 banner edited".
-- Scheduler failures are logged with the item id and reason for quick triage.
+- Scheduler failures are logged once with every failing check (type/id#field, code, message) and retry_at, not a bare error count.
 - Manifest and theme responses carry ETag so clients revalidate cheaply (304).
