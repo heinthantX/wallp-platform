@@ -52,3 +52,6 @@ Files are stored as `STORAGE_DIR/assets/<sha256>.<ext>`, so identical bytes dedu
 
 ## Events: popularity from decayed counts
 Popularity is a 7-day decayed score (applies x1, favourites x2, half-life 3 days) written into ThemeSummary only when above 0. Event ingestion returns 202 and drops unknown types silently, so the app never depends on telemetry. See specs/events-and-stats.md.
+
+## Categories link to festivals via festivalIds
+Chose Option A (categories stay separate, optional `festivalIds` on a category, hard ref check) over merging categories into festivals. App rule: item is in category C if `categoryIds` has C.id OR its festivalId is in C.festivalIds. The app's Themes chips are data-driven (All, Festivals, non-empty categories by sort then name, Favourites); hardcoded Myanmar and Minimal chips are gone, so recreate them as categories (Myanmar: thingyan, thadingyut; Minimal: minimal). Staging had zero categories on 2026-10-20. See specs/catalog-format.md.

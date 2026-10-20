@@ -10,7 +10,7 @@ Admin pages for the categories catalog entity. Backend contract: `docs/specs/cat
 
 ## Core Flows
 - List shows name, status, theme count and wallpaper count; drag reorder saves via `PUT /categories/order`.
-- Editor: id (kebab, fixed), localized name, sort, tags; review, schedule, duplicate, archive, restore, export as banners.
+- Editor: id (kebab, fixed), localized name, sort, tags, "Linked festivals" multi-select (`festivalIds`, via `CategoriesField` with `kind="festivals"`; default `kind="categories"`; schema in `categories/schema.ts`); review, schedule, duplicate, archive, restore, export as banners.
 - Themes list page (`themes/page.tsx`) filters and shows categories; cards render the real scene (LayersCanvas with palette and first accent).
 
 ## Edge Cases
