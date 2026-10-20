@@ -915,7 +915,6 @@ export function ThemeEditor({ id: initialId, isNew = false }: ThemeEditorProps) 
                     <PromptKitButton kit={() => buildPromptKit({
                       packName: themeNameEn ?? "",
                       style: typeof watch("style") === "string" ? watch("style") : "",
-                      tile: watch("palette")?.background,
                       glyph: watch("palette")?.text,
                       accent: watch("accents")?.[0]?.colors?.[0],
                       apps: COMMON_APPS,

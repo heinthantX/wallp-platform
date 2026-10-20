@@ -309,7 +309,7 @@ export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: App
           {showMissing ? "Hide" : "Show"} missing
         </button>
         {missing.length > 0 && (
-          <PromptKitButton tip={false} label="Copy kit for missing" kit={() => buildPromptKit({ packName: kitInfo?.packName ?? "", style: kitInfo?.style, tile, glyph: kitInfo?.glyph, apps: missing })} />
+          <PromptKitButton tip={false} label="Copy kit for missing" kit={() => buildPromptKit({ packName: kitInfo?.packName ?? "", style: kitInfo?.style, glyph: kitInfo?.glyph, apps: missing })} />
         )}
       </div>
       {showMissing && (

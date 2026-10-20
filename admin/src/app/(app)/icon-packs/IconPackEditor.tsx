@@ -131,7 +131,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                   <PromptKitButton kit={() => {
                     const have = watch("apps") ?? {};
                     const miss = COMMON_APPS.filter((a) => !have[a.pkg]);
-                    return buildPromptKit({ packName: watch("name")?.en ?? "", style: info.style, tile: watch("tile"), glyph: info.glyph, accent: "", apps: miss.length ? miss : COMMON_APPS });
+                    return buildPromptKit({ packName: watch("name")?.en ?? "", style: info.style, glyph: info.glyph, accent: "", apps: miss.length ? miss : COMMON_APPS });
                   }} />
                   <AiButtons
                     kind="iconPack"
