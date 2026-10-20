@@ -1,4 +1,4 @@
-// Slices a "white glyphs on a dark solid background" sprite sheet into 192 px transparent PNGs.
+// Slices a sprite sheet (glyphs on a solid background) into 192 px transparent PNGs: white masks, or the original colours.
 // Pure pixel functions are separate from the canvas wrapper so they can be unit-tested without a canvas.
 import { COMMON_APPS } from "./common-apps";
 
@@ -43,6 +43,18 @@ export function alphaMap(img: PixelData, bg: RGB): Float32Array {
   const out = new Float32Array(img.width * img.height);
   for (let i = 0; i < out.length; i++) out[i] = alphaOf(img.data[i * 4], img.data[i * 4 + 1], img.data[i * 4 + 2], bg);
   return out;
+}
+
+/** True when a real share of the ink is coloured (not white/grey), so the import should keep colours. */
+export function isColourful(img: PixelData, bg: RGB, alpha = alphaMap(img, bg)): boolean {
+  let ink = 0, coloured = 0;
+  for (let i = 0; i < alpha.length; i++) {
+    if (alpha[i] < 0.5) continue;
+    ink++;
+    const r = img.data[i * 4], g = img.data[i * 4 + 1], b = img.data[i * 4 + 2];
+    if (Math.max(r, g, b) - Math.min(r, g, b) > 60) coloured++;
+  }
+  return ink > 0 && coloured / ink > 0.1;
 }
 
 const uniform = (len: number, n: number) => Array.from({ length: n + 1 }, (_, i) => Math.round((i * len) / n));
@@ -123,10 +135,22 @@ export function inkBounds(alpha: Float32Array, stride: number, cell: Rect): Rect
   return x1 < 0 ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-/** Render one cell to a square RGBA buffer: white RGB, alpha from distance to the background; null when the cell is empty. */
-export function renderCell(alpha: Float32Array, stride: number, cell: Rect, size = OUT_SIZE, pad = PADDING): PixelData | null {
+/** Source pixels for colour mode: the sheet and its background colour. */
+export interface ColourSource { img: PixelData; bg: RGB }
+
+/**
+ * Render one cell to a square RGBA buffer, alpha from distance to the background; null when the cell is empty.
+ * Without `colour` the RGB is white (a mask the app tints). With it, alpha is scaled so the cell's strongest ink is
+ * opaque, and the colour is un-blended from the background so anti-aliased edges keep the ink's own colour.
+ */
+export function renderCell(alpha: Float32Array, stride: number, cell: Rect, size = OUT_SIZE, pad = PADDING, colour?: ColourSource): PixelData | null {
   const b = inkBounds(alpha, stride, cell);
   if (!b) return null;
+  let level = 1;
+  if (colour) {
+    level = 0;
+    for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) level = Math.max(level, alpha[y * stride + x]);
+  }
   const side = Math.max(b.w, b.h) / (1 - 2 * pad);
   const ox = b.x + b.w / 2 - side / 2;
   const oy = b.y + b.h / 2 - side / 2;
@@ -141,10 +165,19 @@ export function renderCell(alpha: Float32Array, stride: number, cell: Rect, size
       const sy = oy + ((py + 0.5) * side) / size - 0.5;
       const x0 = Math.floor(sx), y0 = Math.floor(sy);
       const fx = sx - x0, fy = sy - y0;
-      const v = at(x0, y0) * (1 - fx) * (1 - fy) + at(x0 + 1, y0) * fx * (1 - fy) + at(x0, y0 + 1) * (1 - fx) * fy + at(x0 + 1, y0 + 1) * fx * fy;
+      const w = [(1 - fx) * (1 - fy), fx * (1 - fy), (1 - fx) * fy, fx * fy];
+      const pts = [[x0, y0], [x0 + 1, y0], [x0, y0 + 1], [x0 + 1, y0 + 1]];
+      const v = Math.min(1, pts.reduce((sum, [x, y], k) => sum + at(x, y) * w[k], 0) / level);
       const i = (py * size + px) * 4;
       data[i] = data[i + 1] = data[i + 2] = 255;
       data[i + 3] = Math.round(v * 255);
+      if (colour && v > 0) {
+        for (let c = 0; c < 3; c++) {
+          // bilinear source colour, then undo the blend with the background: src = bg + v * (ink - bg)
+          const src = pts.reduce((sum, [x, y], k) => sum + (at(x, y) > 0 ? colour.img.data[(y * stride + x) * 4 + c] : colour.bg[c]) * w[k], 0);
+          data[i + c] = Math.round(colour.bg[c] + (src - colour.bg[c]) / v);
+        }
+      }
     }
   }
   return { width: size, height: size, data };
@@ -157,7 +190,8 @@ export interface Slice {
   url: string; // object URL for the preview; revoke when done
 }
 
-export interface SliceOptions { columns: number; auto: boolean }
+/** keepColours: true keeps the sheet's colours, false makes white masks, undefined decides from the sheet. */
+export interface SliceOptions { columns: number; auto: boolean; keepColours?: boolean }
 
 /** Pure part of slicing: pixel data in, per-app square buffers out (empty cells skipped). */
 export function sliceSheet(img: PixelData, opts: SliceOptions, apps = COMMON_APPS): Array<{ pkg: string; label: string; pixels: PixelData }> {
@@ -166,14 +200,14 @@ export function sliceSheet(img: PixelData, opts: SliceOptions, apps = COMMON_APP
   const alpha = alphaMap(img, bg);
   const out: Array<{ pkg: string; label: string; pixels: PixelData }> = [];
   gridRects(grid, apps.length).forEach((cell, i) => {
-    const pixels = renderCell(alpha, img.width, cell);
+    const pixels = renderCell(alpha, img.width, cell, OUT_SIZE, PADDING, opts.keepColours ? { img, bg } : undefined);
     if (pixels) out.push({ pkg: apps[i].pkg, label: apps[i].label, pixels });
   });
   return out;
 }
 
 /** Browser wrapper: decode the file, slice, encode each cell as PNG. */
-export async function sliceSheetFile(file: File, opts: SliceOptions): Promise<Slice[]> {
+export async function sliceSheetFile(file: File, opts: SliceOptions): Promise<{ slices: Slice[]; keepColours: boolean }> {
   const bmp = await createImageBitmap(file);
   const c = document.createElement("canvas");
   c.width = bmp.width;
@@ -183,7 +217,8 @@ export async function sliceSheetFile(file: File, opts: SliceOptions): Promise<Sl
   ctx.drawImage(bmp, 0, 0);
   bmp.close?.();
   const img = ctx.getImageData(0, 0, c.width, c.height);
-  const parts = sliceSheet(img, opts);
+  const keepColours = opts.keepColours ?? isColourful(img, sampleBackground(img));
+  const parts = sliceSheet(img, { ...opts, keepColours });
   const out = document.createElement("canvas");
   out.width = out.height = OUT_SIZE;
   const octx = out.getContext("2d");
@@ -195,5 +230,5 @@ export async function sliceSheetFile(file: File, opts: SliceOptions): Promise<Sl
     if (!blob) throw new Error("PNG encoding failed");
     slices.push({ pkg: p.pkg, label: p.label, blob, url: URL.createObjectURL(blob) });
   }
-  return slices;
+  return { slices, keepColours };
 }

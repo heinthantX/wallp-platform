@@ -64,6 +64,7 @@ function SpriteImport({ onApply, incoming, onIncoming }: { onApply: (assets: App
   const [file, setFile] = React.useState<File | null>(null);
   const [columns, setColumns] = React.useState(DEFAULT_COLUMNS);
   const [auto, setAuto] = React.useState(true);
+  const [colours, setColours] = React.useState<boolean | null>(null); // null: decide from the sheet
   const [slices, setSlices] = React.useState<Slice[]>([]);
   const [off, setOff] = React.useState<Set<string>>(new Set());
   const [slicing, setSlicing] = React.useState(false);
@@ -75,11 +76,12 @@ function SpriteImport({ onApply, incoming, onIncoming }: { onApply: (assets: App
   const revoke = () => { urls.current.forEach((u) => URL.revokeObjectURL(u)); urls.current = []; };
   React.useEffect(() => revoke, []);
 
-  const slice = React.useCallback(async (f: File, cols: number, detect: boolean) => {
+  const slice = React.useCallback(async (f: File, cols: number, detect: boolean, keep: boolean | null) => {
     setSlicing(true);
     setError(null);
     try {
-      const next = await sliceSheetFile(f, { columns: cols, auto: detect });
+      const { slices: next, keepColours } = await sliceSheetFile(f, { columns: cols, auto: detect, keepColours: keep ?? undefined });
+      setColours(keepColours);
       revoke();
       urls.current = next.map((x) => x.url);
       setSlices(next);
@@ -96,7 +98,8 @@ function SpriteImport({ onApply, incoming, onIncoming }: { onApply: (assets: App
     if (!f) return;
     done.current = {};
     setFile(f);
-    void slice(f, columns, auto);
+    setColours(null);
+    void slice(f, columns, auto, null);
   };
   const pickRef = React.useRef(pick);
   pickRef.current = pick;
@@ -148,16 +151,20 @@ function SpriteImport({ onApply, incoming, onIncoming }: { onApply: (assets: App
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" aria-describedby="sprite-desc">
           <DialogHeader>
             <DialogTitle>Import sprite sheet</DialogTitle>
-            <DialogDescription id="sprite-desc">White glyphs on a solid dark background, cells in app order. Remove any cell you do not want.</DialogDescription>
+            <DialogDescription id="sprite-desc">Icons on a solid background, cells in app order. Coloured sheets keep their colours; white sheets become tintable white icons. Remove any cell you do not want.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <label className="flex items-center gap-2">Columns
               <input type="number" min={1} max={24} value={columns} aria-label="Sprite columns" className="w-16 rounded border bg-background px-2 py-1"
-                onChange={(e) => { const n = Math.max(1, Math.min(24, Number(e.target.value) || 1)); setColumns(n); if (file) void slice(file, n, auto); }} />
+                onChange={(e) => { const n = Math.max(1, Math.min(24, Number(e.target.value) || 1)); setColumns(n); if (file) void slice(file, n, auto, colours); }} />
             </label>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={auto} onChange={(e) => { setAuto(e.target.checked); if (file) void slice(file, columns, e.target.checked); }} />
+              <input type="checkbox" checked={auto} onChange={(e) => { setAuto(e.target.checked); if (file) void slice(file, columns, e.target.checked, colours); }} />
               Auto-detect grid
+            </label>
+            <label className="flex items-center gap-2" title="Off: white icons the app tints with the glyph colour">
+              <input type="checkbox" checked={colours ?? false} onChange={(e) => { setColours(e.target.checked); if (file) void slice(file, columns, auto, e.target.checked); }} />
+              Keep original colours
             </label>
             <span className="text-xs text-muted-foreground">{chosen.length} of {slices.length} selected</span>
           </div>
@@ -186,7 +193,7 @@ function SpriteImport({ onApply, incoming, onIncoming }: { onApply: (assets: App
             <div role="alert" className="flex items-center gap-3 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
               <span className="flex-1">{error}</span>
               {slices.length > 0 && !progress && <button type="button" className="inline-flex items-center gap-1 underline" onClick={apply}><RotateCcw className="h-3 w-3" />Retry</button>}
-              {slices.length === 0 && file && <button type="button" className="inline-flex items-center gap-1 underline" onClick={() => slice(file, columns, auto)}><RotateCcw className="h-3 w-3" />Retry</button>}
+              {slices.length === 0 && file && <button type="button" className="inline-flex items-center gap-1 underline" onClick={() => slice(file, columns, auto, colours)}><RotateCcw className="h-3 w-3" />Retry</button>}
             </div>
           )}
           <div className="flex items-center justify-end gap-3">

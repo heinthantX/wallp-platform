@@ -91,7 +91,7 @@ Out of P7: any provider client, model discovery, and the glyph filler.
 - OEM variants go in the alias table: `com.samsung.android.dialer`, `com.sec.android.app.camera`, `com.miui.gallery`.
 - Runners disagreed on some ids (KBZPay `com.kbzbank.kpaycustomer` vs `com.kbzbank.kbzpay`; camera `com.android.camera` vs `camera2`). Verify every id once against the Play Store `?id=` URL before locking the list.
 
-**Sprite-sheet import (built, admin-only, no AI; realises option E):** one image of white glyphs on a dark solid background, default 8 columns, cells in COMMON_APPS order (51 apps, Phone to Brave). The grid is auto-detected with a fixed-grid fallback, the background becomes alpha, and each cell is uploaded as a 192x192 white PNG to `apps[pkg]` via `POST /admin/v1/assets`. Backend validation no longer requires `background` for kind "images" (background may be null, tile "").
+**Sprite-sheet import (built, admin-only, no AI; realises option E):** one image of icons on a solid background, default 8 columns, cells in COMMON_APPS order (51 apps, Phone to Brave). The grid is auto-detected with a fixed-grid fallback, the background becomes alpha, and each cell is uploaded as a 192x192 PNG to `apps[pkg]` (white mask, or original colours with "Keep original colours", auto-on for coloured sheets) via `POST /admin/v1/assets`. Backend validation no longer requires `background` for kind "images" (background may be null, tile "").
 
 **Admin "Per-app icons" tab** (images packs only):
 - A phone-mock grid with a 4x5 home screen per page. Each slot shows the pack image, or the fallback render greyed out.
