@@ -437,7 +437,7 @@ func RunScheduler(ctx context.Context, db *bun.DB, storageDir string, checker Ch
 					lastPrune = now
 				}
 			}
-			mark, err := editMark(ctx, db)
+			mark, err := editMark(ctx, db, now)
 			if err != nil {
 				slog.Error("scheduled publish failed", "err", err)
 				continue
@@ -492,8 +492,9 @@ func (g *failGate) reset() {
 	g.backoff, g.retryAt, g.mark, g.lastErr = 0, time.Time{}, "", ""
 }
 
-// editMark changes whenever any catalog item is added, edited or removed.
-func editMark(ctx context.Context, db bun.IDB) (string, error) {
+// editMark changes whenever any catalog item is added, edited or removed, or a
+// scheduled item comes due, so a failed scheduled publish retries right away.
+func editMark(ctx context.Context, db bun.IDB, now time.Time) (string, error) {
 	var b strings.Builder
 	for _, ki := range kinds {
 		var n int
@@ -502,7 +503,12 @@ func editMark(ctx context.Context, db bun.IDB) (string, error) {
 			Scan(ctx, &n, &last); err != nil {
 			return "", err
 		}
-		fmt.Fprintf(&b, "%s:%d:%s;", ki.key, n, last.String)
+		due, err := db.NewSelect().Table(ki.kind.Plural).
+			Where("status = ?", model.StatusScheduled).Where("scheduled_at <= ?", now).Count(ctx)
+		if err != nil {
+			return "", err
+		}
+		fmt.Fprintf(&b, "%s:%d:%s:%d;", ki.key, n, last.String, due)
 	}
 	return b.String(), nil
 }

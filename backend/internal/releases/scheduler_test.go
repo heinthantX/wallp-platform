@@ -58,7 +58,7 @@ func TestEditMarkChangesOnItemEdit(t *testing.T) {
 	ctx := context.Background()
 	bdb := openTestDB(t)
 
-	m1, err := editMark(ctx, bdb)
+	m1, err := editMark(ctx, bdb, time.Now().UTC())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,12 +66,35 @@ func TestEditMarkChangesOnItemEdit(t *testing.T) {
 		VALUES ('dark', 'draft', 0, '', '{}', 0, 't', 't', ?, ?)`, time.Now().UTC(), time.Now().UTC()); err != nil {
 		t.Fatal(err)
 	}
-	m2, err := editMark(ctx, bdb)
+	m2, err := editMark(ctx, bdb, time.Now().UTC())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if m1 == m2 {
 		t.Fatalf("mark did not change: %q", m1)
+	}
+}
+
+// A scheduled item coming due must wake a scheduler held back by a failure,
+// even though no row was edited (2026-10-20: a theme waited 32 min in backoff).
+func TestEditMarkChangesWhenScheduledItemComesDue(t *testing.T) {
+	ctx := context.Background()
+	bdb := openTestDB(t)
+	at := time.Now().UTC().Add(time.Hour)
+	if _, err := bdb.ExecContext(ctx, `INSERT INTO categories (id, status, sort, search, data, rev, scheduled_at, created_by, updated_by, created_at, updated_at)
+		VALUES ('dark', 'scheduled', 0, '', '{}', 0, ?, 't', 't', ?, ?)`, at, time.Now().UTC(), time.Now().UTC()); err != nil {
+		t.Fatal(err)
+	}
+	before, err := editMark(ctx, bdb, at.Add(-time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	after, err := editMark(ctx, bdb, at.Add(time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if before == after {
+		t.Fatalf("mark did not change when the item came due: %q", before)
 	}
 }
 
