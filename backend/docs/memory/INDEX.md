@@ -6,7 +6,7 @@
 | Theme generator | No LLM anywhere; deterministic seeded OKLCH; recipes, keywords, photo, feedback, breed all built (5c) | architecture.md | 2026-10-18 |
 | Catalog import | Dir import is 403 in production; every imported item audited as "import" | architecture.md | 2026-10-18 |
 | Import status | Export is a backup (statuses of unpublished items); import keeps draft/in_review/approved, not always published | architecture.md | 2026-10-19 |
-| Approve flow | Admin role can approve straight from draft | architecture.md | 2026-10-19 |
+| Approve flow | Admin can approve or schedule straight from draft/in_review; other roles need approved to schedule (422) | architecture.md | 2026-10-20 |
 | AI optional | /admin/v1/ai/status (booleans only); missing keys give 501 ai_not_configured in apierr shape, details[].field per key | architecture.md | 2026-10-19 |
 | Categories | First-class entity, categoryIds on themes/wallpapers, banner-like review; ref_missing for unknown ids | architecture.md | 2026-10-20 |
 | Category festivals | Category has optional festivalIds (hard ref); Flutter app does not read categories yet | architecture.md | 2026-10-20 |

@@ -22,6 +22,7 @@ Chose export-as-backup (user choice a): `ExportBundle.statuses` lists unpublishe
 
 ## Admin approves straight from draft
 User choice (P1b): admin role may approve from draft without requesting review. Replaces "request review required before approve" for admins. See specs/admin-editor-ux.md.
+Admins may also schedule a draft or in-review item directly (2026-10-20): `Store.Schedule` takes `callerRole`, validates and sets scheduled with no approve step. Reviewers/designers still need approved (422 "Item must be approved to schedule"). Approve stays on admin drafts to mark an item finished: approved ships on the next manual Publish, drafts only when scheduled.
 
 ## AI is optional; status and 501 shape
 Hybrid ladder, only the prompt kit built. `GET /admin/v1/ai/status` (any role) returns booleans and env key names, never values. Missing keys give 501 `ai_not_configured` in the standard apierr shape with `details[].field` per missing key (not a flat body). Keys: OPENROUTER_API_KEY, OPENROUTER_MODEL, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_AI_TOKEN, GEMINI_API_KEY. No provider client yet. See specs/ai-creation.md.

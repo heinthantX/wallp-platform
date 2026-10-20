@@ -19,6 +19,7 @@ Dashboard-side behaviour. Backend contracts live in catalog-format.md, ai-creati
 - Per-app icons tab: sprite-sheet import (preview grid with per-cell unassign, "Uploading n / N", Retry failed, Esc closes), plus bulk drop, filename resolve (exact id, alias, else unmatched with a select), missing count, "Copy kit for missing only".
 - Prompt kit: built from pack/theme data in the admin, no endpoint. AI buttons are disabled placeholders (specs/ai-creation.md).
 - Approve-from-draft (P1b, user choice): an admin-role user can approve directly from draft; requesting review first is no longer required for admins. Other roles keep the review step.
+- Review bar (`ReviewBar.tsx`): admin on a draft sees Save draft, Approve, Schedule release (Approve marks it finished; Schedule works without approving). Designers: Request review. Reviewers: Approve/Reject on in-review, Schedule on approved. `ItemEditorShell` (fonts, banners, icon packs, categories) has Schedule release too; festivals have none. Toasts "Release scheduled" or the error message on schedule.
 
 ## Edge Cases
 - Unsaved items hide review, duplicate and archive actions.
