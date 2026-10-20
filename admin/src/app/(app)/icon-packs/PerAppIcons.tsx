@@ -46,7 +46,20 @@ async function checkDims(file: File): Promise<string | null> {
   return null;
 }
 
-function SpriteImport({ onApply }: { onApply: (assets: Apps) => void }) {
+// A single image whose name names no app and whose shape is not one icon (wide, or big) is a whole sheet.
+export async function looksLikeSheet(file: File): Promise<boolean> {
+  if (resolveAppFile(file.name).source !== "unmatched" || typeof createImageBitmap !== "function") return false;
+  try {
+    const bmp = await createImageBitmap(file);
+    const { width: w, height: h } = bmp;
+    bmp.close?.();
+    return Math.abs(w - h) / Math.max(w, h) > 0.1 || Math.min(w, h) >= 768;
+  } catch {
+    return false;
+  }
+}
+
+function SpriteImport({ onApply, incoming, onIncoming }: { onApply: (assets: Apps) => void; incoming?: File | null; onIncoming?: () => void }) {
   const upload = useUploadAsset();
   const [file, setFile] = React.useState<File | null>(null);
   const [columns, setColumns] = React.useState(DEFAULT_COLUMNS);
@@ -85,6 +98,13 @@ function SpriteImport({ onApply }: { onApply: (assets: Apps) => void }) {
     setFile(f);
     void slice(f, columns, auto);
   };
+  const pickRef = React.useRef(pick);
+  pickRef.current = pick;
+  React.useEffect(() => {
+    if (!incoming) return;
+    pickRef.current(incoming);
+    onIncoming?.();
+  }, [incoming, onIncoming]);
   const close = () => { if (progress) return; revoke(); setFile(null); setSlices([]); setError(null); };
   const chosen = slices.filter((x) => !off.has(x.pkg));
 
@@ -206,8 +226,15 @@ export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: App
     }
   }, [patch, upload]);
 
-  const addFiles = (list: FileList | File[]) => {
+  const [sheet, setSheet] = React.useState<File | null>(null);
+  const takeSheet = React.useCallback(() => setSheet(null), []);
+
+  const addFiles = async (list: FileList | File[]) => {
     const files = Array.from(list);
+    if (files.length === 1 && EXT.test(files[0].name) && (await looksLikeSheet(files[0]))) {
+      setSheet(files[0]);
+      return;
+    }
     const bad = files.filter((f) => !EXT.test(f.name));
     if (bad.length) toast.error(`Only PNG, WebP or JPG: ${bad.map((f) => f.name).join(", ")}`);
     const fresh: Row[] = files.filter((f) => EXT.test(f.name)).map((file) => {
@@ -220,6 +247,21 @@ export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: App
     const worker = async () => { for (let r = queue.shift(); r; r = queue.shift()) await run(r); };
     Array.from({ length: Math.min(MAX_PARALLEL, queue.length) }, worker);
   };
+
+  // Cmd/Ctrl+V anywhere on the page: pasted images go through the same path as a drop.
+  const addRef = React.useRef(addFiles);
+  addRef.current = addFiles;
+  React.useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const imgs = Array.from(e.clipboardData?.files ?? []).filter((f) => f.type.startsWith("image/"));
+      if (!imgs.length) return;
+      e.preventDefault();
+      // Clipboard images arrive as "image.png" or with no extension; name them so the type check passes.
+      void addRef.current(imgs.map((f) => (EXT.test(f.name) ? f : new File([f], `pasted.${f.type.split("/")[1] || "png"}`, { type: f.type }))));
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, []);
 
   // Commit finished, mapped rows into the form (a second file for a package replaces the first).
   React.useEffect(() => {
@@ -271,19 +313,19 @@ export function PerAppIcons({ apps = {}, onChange, tile, kitInfo }: { apps?: App
         </ul>
       )}
 
-      <SpriteImport onApply={(assets) => { const next = { ...appsRef.current, ...assets }; appsRef.current = next; onChange(next); }} />
+      <SpriteImport incoming={sheet} onIncoming={takeSheet} onApply={(assets) => { const next = { ...appsRef.current, ...assets }; appsRef.current = next; onChange(next); }} />
 
       <label
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
-        onDrop={(e) => { e.preventDefault(); setDrag(false); addFiles(e.dataTransfer.files); }}
+        onDrop={(e) => { e.preventDefault(); setDrag(false); void addFiles(e.dataTransfer.files); }}
         className={`flex flex-col items-center gap-1 rounded-md border-2 border-dashed p-6 text-sm cursor-pointer transition-colors ${drag ? "border-primary bg-primary/5" : "hover:bg-muted"}`}
       >
         <Upload className="h-4 w-4" />
-        Drop app icons here or click to choose
-        <span className="text-xs text-muted-foreground">Name files by package (com.whatsapp.png) or app (maps.png). Square, 192 px or more, under 1 MB.</span>
+        Drop or paste app icons, or a whole sprite sheet
+        <span className="text-xs text-muted-foreground">Name files by package (com.whatsapp.png) or app (maps.png). Square, 192 px or more, under 1 MB. A sheet opens the slicer.</span>
         <input type="file" multiple accept="image/png,image/webp,image/jpeg" className="sr-only" aria-label="Upload app icons"
-          onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
+          onChange={(e) => { const fs = e.target.files ? Array.from(e.target.files) : []; e.target.value = ""; if (fs.length) void addFiles(fs); }} />
       </label>
 
       {(entries.length > 0 || pending.length > 0) && (

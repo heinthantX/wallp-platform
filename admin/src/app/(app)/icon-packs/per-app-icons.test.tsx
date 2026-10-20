@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { PerAppIcons } from "./PerAppIcons";
@@ -36,5 +36,34 @@ describe("PerAppIcons sprite import", () => {
   it("offers the import button", () => {
     render(<Harness spy={() => {}} />);
     expect(screen.getByLabelText("Import sprite sheet")).toBeInTheDocument();
+  });
+
+  describe("whole sheet dropped or pasted", () => {
+    beforeEach(() => {
+      vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1536, height: 1024, close() {} })));
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("opens the slicer for one wide image with no app name", async () => {
+      render(<Harness spy={() => {}} />);
+      fireEvent.change(screen.getByLabelText("Upload app icons"), { target: { files: [png("Minimalist White App Icon Grid.png")] } });
+      expect(await screen.findByRole("dialog", { name: "Import sprite sheet" })).toBeInTheDocument();
+      expect(screen.queryByTestId("pending-row")).not.toBeInTheDocument();
+    });
+
+    it("opens the slicer for a pasted image", async () => {
+      render(<Harness spy={() => {}} />);
+      const paste = new Event("paste") as Event & { clipboardData: { files: File[] } };
+      paste.clipboardData = { files: [new File(["x"], "image", { type: "image/png" })] };
+      window.dispatchEvent(paste);
+      expect(await screen.findByRole("dialog", { name: "Import sprite sheet" })).toBeInTheDocument();
+    });
+
+    it("keeps a named app icon as a single upload", async () => {
+      render(<Harness spy={() => {}} />);
+      fireEvent.change(screen.getByLabelText("Upload app icons"), { target: { files: [png("maps.png")] } });
+      await waitFor(() => expect(screen.getAllByTestId("app-row")).toHaveLength(1));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
   });
 });

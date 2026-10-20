@@ -133,7 +133,11 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
                     const miss = COMMON_APPS.filter((a) => !have[a.pkg]);
                     return buildPromptKit({ packName: watch("name")?.en ?? "", style: info.style, tile: watch("tile"), glyph: info.glyph, accent: "", apps: miss.length ? miss : COMMON_APPS });
                   }} />
-                  <AiButtons />
+                  <AiButtons
+                    kind="iconPack"
+                    defaultDescription={[watch("name")?.en, info.style].filter(Boolean).join(", ")}
+                    onPickName={(n) => setValue("name", { ...watch("name"), en: n.en, ...(n.my ? { my: n.my } : {}) }, { shouldDirty: true, shouldValidate: true })}
+                  />
                   <PerAppIcons kitInfo={info} apps={watch("apps")} tile={watch("tile")} onChange={(next) => setValue("apps", next, { shouldDirty: true, shouldValidate: true })} />
                 </CardContent>
               </Card>

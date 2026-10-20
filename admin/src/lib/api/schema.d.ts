@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/ai/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suggest names, subtitle, tags and mood words from a description
+         * @description Roles: admin, designer, reviewer
+         */
+        post: operations["ai-suggest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/assets": {
         parameters: {
             query?: never;
@@ -2103,6 +2123,46 @@ export interface components {
             anyConfigured: boolean;
             providers: components["schemas"]["AIProvider"][] | null;
         };
+        AISuggestInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/AISuggestInputBody.json
+             */
+            readonly $schema?: string;
+            /** @description Theme, icon pack, wallpaper or font description */
+            description: string;
+            /**
+             * @description Catalog item kind
+             * @default theme
+             * @enum {string}
+             */
+            kind: "iconPack" | "theme" | "wallpaper" | "font";
+        };
+        AISuggestName: {
+            /** @example Autumn Whisper */
+            en: string;
+            /** @example ဆောင်းဦးတီးတိုးသံ */
+            my: string;
+        };
+        AISuggestResult: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example http://localhost:8080/schemas/AISuggestResult.json
+             */
+            readonly $schema?: string;
+            /** @example openrouter/free */
+            model: string;
+            moodWords: string[] | null;
+            names: components["schemas"]["AISuggestName"][] | null;
+            subtitle: components["schemas"]["AISuggestSubtitle"];
+            tags: string[] | null;
+        };
+        AISuggestSubtitle: {
+            /** @example Warm amber tones and cozy vibes */
+            en: string;
+        };
         Accent: {
             /** Format: int64 */
             angle?: number;
@@ -3297,6 +3357,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AIStatus"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "ai-suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AISuggestInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AISuggestResult"];
                 };
             };
             /** @description Error */

@@ -122,6 +122,7 @@ Out of P7: any provider client, model discovery, and the glyph filler.
 1. D glyph filler: "Fill N missing with simple icons". About 30 min, no keys, and it writes into `apps` like an upload.
 2. C `POST /admin/v1/ai/images {prompt, count, seed, size}` with `auth.Admin(op, model.RoleDesigner)`. It returns asset rows into the same mapping table and records the provider and prompt in the asset `source` for takedown. Add `ai_jobs` only if fan-out needs progress tracking.
 3. B or F `POST /admin/v1/ai/suggest {description}` with `auth.Admin(op, model.RoleDesigner, model.RoleReviewer)`, returning names, subtitle, tags and mood words that become `Interpret` chips. Include a 15 s timeout, a cache by input hash, and 402/429 handling.
+   - Built: B (2026-10-20): `POST /admin/v1/ai/suggest` with `OPENROUTER_API_KEY` (base URL override `OPENROUTER_BASE_URL`, default `https://openrouter.ai/api/v1`; model override `OPENROUTER_MODEL`, default `openrouter/free`). In-memory 24 h sha256 cache (max 200 entries, evict oldest). Errors: 501 `ai_not_configured`, 402 `ai_no_credit`, 429 `ai_rate_limited`, 502 `ai_bad_output` / `ai_upstream_error`, 504 `ai_timeout`.
 4. (E sprite-sheet slicer: built client-side in the admin, see above.)
 5. A provenance field on assets (`origin: upload|glyph|ai`, provider, prompt) for later takedown.
 

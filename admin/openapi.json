@@ -69,6 +69,140 @@
         ],
         "type": "object"
       },
+      "AISuggestInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AISuggestInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "Theme, icon pack, wallpaper or font description",
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "default": "theme",
+            "description": "Catalog item kind",
+            "enum": [
+              "iconPack",
+              "theme",
+              "wallpaper",
+              "font"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "type": "object"
+      },
+      "AISuggestName": {
+        "additionalProperties": false,
+        "properties": {
+          "en": {
+            "examples": [
+              "Autumn Whisper"
+            ],
+            "type": "string"
+          },
+          "my": {
+            "examples": [
+              "ဆောင်းဦးတီးတိုးသံ"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "en",
+          "my"
+        ],
+        "type": "object"
+      },
+      "AISuggestResult": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "http://localhost:8080/schemas/AISuggestResult.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "model": {
+            "examples": [
+              "openrouter/free"
+            ],
+            "type": "string"
+          },
+          "moodWords": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "names": {
+            "items": {
+              "$ref": "#/components/schemas/AISuggestName"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "subtitle": {
+            "$ref": "#/components/schemas/AISuggestSubtitle"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "names",
+          "subtitle",
+          "tags",
+          "moodWords",
+          "model"
+        ],
+        "type": "object"
+      },
+      "AISuggestSubtitle": {
+        "additionalProperties": false,
+        "properties": {
+          "en": {
+            "examples": [
+              "Warm amber tones and cozy vibes"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "en"
+        ],
+        "type": "object"
+      },
       "Accent": {
         "additionalProperties": false,
         "properties": {
@@ -3674,6 +3808,53 @@
           }
         ],
         "summary": "Which optional AI providers have their env keys",
+        "tags": [
+          "AI"
+        ]
+      }
+    },
+    "/admin/v1/ai/suggest": {
+      "post": {
+        "description": "Roles: admin, designer, reviewer",
+        "operationId": "ai-suggest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AISuggestInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AISuggestResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suggest names, subtitle, tags and mood words from a description",
         "tags": [
           "AI"
         ]

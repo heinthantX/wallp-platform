@@ -81,4 +81,5 @@ func registerAI(h huma.API, _ *Deps) {
 	}), func(ctx context.Context, _ *struct{}) (*AIStatusOutput, error) {
 		return &AIStatusOutput{Body: aiStatus()}, nil
 	})
+	registerAISuggest(h)
 }
