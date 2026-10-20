@@ -35,3 +35,14 @@ describe("icon preview background modes", () => {
     expect(bgOf().style.backgroundImage).toContain("repeating-conic-gradient");
   });
 });
+
+describe("icon preview per-app icons", () => {
+  it("shows imported app icons first, then sample glyphs", () => {
+    const apps = { "com.whatsapp": { url: "assets/a.png" }, "com.android.chrome": { url: "assets/b.png" } };
+    render(<IconPackPreview shape="squircle" tile="#111111" apps={apps} />);
+    const imgs = screen.getAllByTestId("app-icon");
+    expect(imgs).toHaveLength(2);
+    expect(imgs[0].getAttribute("src")).toContain("assets/a.png");
+    expect(screen.getAllByTestId("icon-tile")).toHaveLength(6);
+  });
+});

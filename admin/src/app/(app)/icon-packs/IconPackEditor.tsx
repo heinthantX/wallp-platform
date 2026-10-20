@@ -118,7 +118,7 @@ export function IconPackEditor({ isNew }: { isNew?: boolean }) {
             <Card>
               <CardHeader><CardTitle className="text-base">Preview</CardTitle><CardDescription>Default shape; users can change it in the app.</CardDescription></CardHeader>
               <CardContent>
-                <IconPackPreview shape={watch("shape")} onShapeChange={(s) => setValue("shape", s, { shouldDirty: true })} tile={mode === "none" ? undefined : tileColor} glyph={watch("glyph")} ring={watch("ring")} background={mode === "none" ? undefined : bgAsset} />
+                <IconPackPreview shape={watch("shape")} onShapeChange={(s) => setValue("shape", s, { shouldDirty: true })} tile={mode === "none" ? undefined : tileColor} glyph={watch("glyph")} ring={watch("ring")} background={mode === "none" ? undefined : bgAsset} apps={watch("apps")} />
               </CardContent>
             </Card>
             {watch("kind") === "images" && (

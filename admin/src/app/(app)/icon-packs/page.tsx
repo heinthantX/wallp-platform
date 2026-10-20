@@ -56,7 +56,7 @@ export default function IconPacksPage() {
                 </div>
                 <StatusBadge status={item.status} />
               </div>
-              <IconPackPreview shape={(p.shape ?? "squircle") as TileShape} tile={p.tile} glyph={p.glyph} ring={p.ring} background={p.background} />
+              <IconPackPreview shape={(p.shape ?? "squircle") as TileShape} tile={p.tile} glyph={p.glyph} ring={p.ring} background={p.background} apps={p.apps} />
               <Button variant="ghost" size="sm" asChild className="h-8 px-2">
                 <Link href={`/icon-packs/edit?id=${encodeURIComponent(item.id)}`}><Edit className="h-3.5 w-3.5 mr-1" />Edit</Link>
               </Button>

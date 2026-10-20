@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Camera, Mail, MessageCircle, Landmark, Music, Map as MapIcon, Phone, Image as ImageIcon } from "lucide-react";
 import { useAuthStore, apiBase } from "@/lib/auth/store";
+import { assetSrc } from "@/lib/api/hooks/useAssets";
 import { cn } from "@/lib/utils";
 import { TILE_SHAPES } from "./schema";
 
@@ -35,6 +36,7 @@ export function IconPackPreview({
   glyph,
   ring,
   background,
+  apps,
 }: {
   shape: TileShape;
   onShapeChange?: (s: TileShape) => void;
@@ -42,7 +44,10 @@ export function IconPackPreview({
   glyph?: string;
   ring?: string;
   background?: { sha256: string; format: string } | null;
+  /** Per-app icons (sprite sheet / uploads): shown first, each as the whole tile. */
+  apps?: Record<string, { url: string }> | null;
 }) {
+  const appIcons = Object.values(apps ?? {}).slice(0, SAMPLES.length);
   const apiUrl = apiBase(useAuthStore((s) => s.apiUrl));
   const none = !background && !tile;
   const bg = background ? `url(${apiUrl}/assets/${background.sha256}.${background.format})` : undefined;
@@ -64,7 +69,11 @@ export function IconPackPreview({
         ))}
       </div>
       <div className="grid grid-cols-4 gap-4 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 p-4" data-testid="icon-preview" data-shape={shape} data-background={background ? "image" : tile ? "color" : "none"}>
-        {SAMPLES.map((Icon, i) => (
+        {appIcons.map((a, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={`app-${i}`} src={assetSrc(a.url)} alt="" data-testid="app-icon" style={{ ...shapeStyle(shape), transition: "border-radius 200ms" }} className="aspect-square w-full object-cover" />
+        ))}
+        {SAMPLES.slice(appIcons.length).map((Icon, i) => (
           <div
             key={i}
             data-testid="icon-tile"
@@ -79,7 +88,7 @@ export function IconPackPreview({
             }}
             className="flex aspect-square items-center justify-center"
           >
-            <Icon className="h-1/2 w-1/2" style={{ color: i < 6 ? LOGO_COLORS[i] : glyph }} />
+            <Icon className="h-1/2 w-1/2" style={{ color: i + appIcons.length < 6 ? LOGO_COLORS[i + appIcons.length] : glyph }} />
           </div>
         ))}
       </div>
