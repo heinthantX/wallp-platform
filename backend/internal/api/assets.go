@@ -119,7 +119,6 @@ func ingestAssetBytes(ctx context.Context, d *Deps, data []byte, isWallpaper boo
 	hVal := sha256.Sum256(data)
 	shaHex := hex.EncodeToString(hVal[:])
 
-
 	// Deduplication check in DB
 	var existing model.Asset
 	err = d.DB.NewSelect().Model(&existing).Where("sha256 = ?", shaHex).Scan(ctx)

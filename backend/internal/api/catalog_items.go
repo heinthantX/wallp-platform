@@ -154,7 +154,7 @@ type SimpleOKOutput struct {
 
 type GenerateThemeInput struct {
 	Body struct {
-		FestivalID  string            `json:"festivalId" doc:"Festival ID (must exist)"`
+		FestivalID  string            `json:"festivalId,omitempty" doc:"Festival ID (optional; must exist when set)"`
 		Mood        string            `json:"mood,omitempty" doc:"Theme mood: classic, cozy, minimal, cute"`
 		BaseColor   string            `json:"baseColor,omitempty" doc:"Hex color code"`
 		Engine      string            `json:"engine,omitempty" doc:"Engine (halloween, christmas, thingyan, layers)"`
@@ -842,25 +842,23 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		Summary:     "Generate theme options",
 		Tags:        themeTags,
 	}, model.RoleDesigner, model.RoleReviewer), func(ctx context.Context, in *GenerateThemeInput) (*GenerateThemeOutput, error) {
-		if strings.TrimSpace(in.Body.FestivalID) == "" {
-			return nil, apierr.Invalid("festivalId", "festivalId is required")
-		}
-
-		// 1. Festival must exist
-		var festRow items.ItemRow
-		err := d.DB.NewSelect().Table("festivals").
-			Where("id = ?", in.Body.FestivalID).
-			Column("data").
-			Scan(ctx, &festRow)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return nil, apierr.NotFound("Festival " + in.Body.FestivalID)
-			}
-			return nil, err
-		}
+		// 1. Festival is optional; when set it must exist.
 		var fest catalog.Festival
-		if err := json.Unmarshal(festRow.Data, &fest); err != nil {
-			return nil, err
+		if in.Body.FestivalID = strings.TrimSpace(in.Body.FestivalID); in.Body.FestivalID != "" {
+			var festRow items.ItemRow
+			err := d.DB.NewSelect().Table("festivals").
+				Where("id = ?", in.Body.FestivalID).
+				Column("data").
+				Scan(ctx, &festRow)
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return nil, apierr.NotFound("Festival " + in.Body.FestivalID)
+				}
+				return nil, err
+			}
+			if err := json.Unmarshal(festRow.Data, &fest); err != nil {
+				return nil, err
+			}
 		}
 
 		// 2. Load recipe: if recipeId given, use that; else first enabled recipe for the festival; else default recipe.

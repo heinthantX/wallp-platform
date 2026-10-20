@@ -143,9 +143,7 @@ function DescribePanel({ festivalId, pick, onPick, onError }: { festivalId?: str
     ? "Checking AI status..."
     : !ok(["openrouter", "gemini"]) || !ok(["cloudflare"])
       ? `Set ${providers.find((p) => p.id === "cloudflare")?.envKeys?.join(" and ") || "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN"} and a text AI key (OpenRouter or Gemini) to enable`
-      : !festivalId
-        ? "Pick a festival first"
-        : null;
+      : null;
 
   const run = async () => {
     const description = text.trim();
@@ -323,7 +321,6 @@ export default function QuickThemePage() {
   const blocker: string | undefined = (() => {
     if (busy) return "Working...";
     if (step === 1) {
-      if (!festivalId) return "Pick a festival";
       if (!file && !existingId) return "Pick a wallpaper or upload an image";
       if (existingId && !file && !existing.data) return "Loading wallpaper...";
     }
@@ -405,7 +402,7 @@ export default function QuickThemePage() {
   const back = () => (step > 1 ? setStep(step - 1) : router.push("/themes"));
 
   const create = async () => {
-    if (!chosen || !festivalId || !wallpaperId || !fontId || !iconPackId) return;
+    if (!chosen || !wallpaperId || !fontId || !iconPackId) return;
     const ai = aiPick?.id === wallpaperId ? aiPick.suggestion : undefined;
     const aiName = ai?.names?.[0];
     const data = {
@@ -413,7 +410,7 @@ export default function QuickThemePage() {
       ...(aiName && { name: { en: aiName.en, ...(aiName.my && { my: aiName.my }) } }),
       ...(ai?.tags?.length && { tags: ai.tags }),
       ...(ai?.subtitle?.en && { subtitle: { en: ai.subtitle.en } }),
-      festivalId,
+      festivalId: festivalId ?? "",
       wallpaperIds: [wallpaperId],
       iconPackId,
       fonts: { ...chosen.data.fonts, display: fontId },
@@ -470,7 +467,7 @@ export default function QuickThemePage() {
       <Card className="space-y-5 p-6">
         {step === 1 && (
           <>
-            <RelationSelect kind="festivals" label="Festival" value={festivalId} onChange={setFestivalId} />
+            <RelationSelect kind="festivals" label="Festival" optional noneLabel="None (all year)" value={festivalId} onChange={(v) => setFestivalId(v || undefined)} />
             <WallpaperGrid
               value={existingId}
               onChange={(v) => {
@@ -538,7 +535,7 @@ export default function QuickThemePage() {
           <div className="space-y-3 text-sm">
             <dl className="grid grid-cols-[8rem_1fr] gap-y-1">
               <dt className="text-muted-foreground">Festival</dt>
-              <dd>{festivalId}</dd>
+              <dd>{festivalId || "None"}</dd>
               <dt className="text-muted-foreground">Wallpaper</dt>
               <dd>{wallpaperId}</dd>
               <dt className="text-muted-foreground">Scene</dt>

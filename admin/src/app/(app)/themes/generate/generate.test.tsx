@@ -100,21 +100,14 @@ describe("ThemeGeneratePage Wizard", () => {
     );
   };
 
-  it("validates step 1: festival required", async () => {
-    const postSpy = vi.spyOn(client, "POST");
+  it("generates without a festival (festival is optional)", async () => {
+    const postSpy = vi.spyOn(client, "POST").mockResolvedValue({ data: { options: [] } } as never);
     renderComponent();
 
-    // Click "Generate Themes" without selecting a festival
-    const submitBtn = screen.getByRole("button", { name: /generate themes/i });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: /generate themes/i }));
 
-    // Festival is required error should appear
-    await waitFor(() => {
-      expect(screen.getByText("Festival is required")).toBeInTheDocument();
-    });
-
-    // No POST to generate endpoint should have occurred
-    expect(postSpy).not.toHaveBeenCalled();
+    await waitFor(() => expect(postSpy).toHaveBeenCalled());
+    expect(screen.queryByText("Festival is required")).not.toBeInTheDocument();
   });
 
   it("shuffles only one slot and undo restores it", async () => {

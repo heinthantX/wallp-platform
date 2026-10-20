@@ -814,7 +814,7 @@ func (t *ThemeDetail) Validate() []FieldError {
 			Message: "rev must be at least 1",
 		})
 	}
-	if !isValidID(t.FestivalID) {
+	if t.FestivalID != "" && !isValidID(t.FestivalID) {
 		errs = append(errs, FieldError{
 			Field:   "festivalId",
 			Code:    "invalid_id",
@@ -834,7 +834,7 @@ func (t *ThemeDetail) Validate() []FieldError {
 		})
 	}
 
-	if _, ok := isValidTime(t.PublishedAt); !ok {
+	if _, ok := isValidTime(t.PublishedAt); t.PublishedAt != "" && !ok {
 		errs = append(errs, FieldError{
 			Field:   "publishedAt",
 			Code:    "invalid_time",
@@ -1043,7 +1043,7 @@ func (t *ThemeSummary) Validate() []FieldError {
 			Message: "rev must be at least 1",
 		})
 	}
-	if !isValidID(t.FestivalID) {
+	if t.FestivalID != "" && !isValidID(t.FestivalID) {
 		errs = append(errs, FieldError{
 			Field:   "festivalId",
 			Code:    "invalid_id",
@@ -1061,7 +1061,7 @@ func (t *ThemeSummary) Validate() []FieldError {
 			Message: "style must be classic, cozy, minimal, or cute",
 		})
 	}
-	if _, ok := isValidTime(t.PublishedAt); !ok {
+	if _, ok := isValidTime(t.PublishedAt); t.PublishedAt != "" && !ok {
 		errs = append(errs, FieldError{
 			Field:   "publishedAt",
 			Code:    "invalid_time",
@@ -1144,7 +1144,7 @@ func (w *Wallpaper) Validate() []FieldError {
 			Message: "wallpaper id must be lowercase kebab-case",
 		})
 	}
-	if !isValidID(w.FestivalID) {
+	if w.FestivalID != "" && !isValidID(w.FestivalID) {
 		errs = append(errs, FieldError{
 			Field:   "festivalId",
 			Code:    "invalid_id",
@@ -1161,7 +1161,7 @@ func (w *Wallpaper) Validate() []FieldError {
 		})
 	}
 
-	if _, ok := isValidTime(w.PublishedAt); !ok {
+	if _, ok := isValidTime(w.PublishedAt); w.PublishedAt != "" && !ok {
 		errs = append(errs, FieldError{
 			Field:   "publishedAt",
 			Code:    "invalid_time",
@@ -1355,7 +1355,7 @@ func (p *IconPack) Validate() []FieldError {
 			Message: "icon pack id must be lowercase kebab-case",
 		})
 	}
-	if !isValidID(p.FestivalID) {
+	if p.FestivalID != "" && !isValidID(p.FestivalID) {
 		errs = append(errs, FieldError{
 			Field:   "festivalId",
 			Code:    "invalid_id",
@@ -1424,7 +1424,7 @@ func (p *IconPack) Validate() []FieldError {
 		}
 	}
 
-	if _, ok := isValidTime(p.PublishedAt); !ok {
+	if _, ok := isValidTime(p.PublishedAt); p.PublishedAt != "" && !ok {
 		errs = append(errs, FieldError{
 			Field:   "publishedAt",
 			Code:    "invalid_time",
@@ -1617,7 +1617,7 @@ func (c *Catalog) Validate() []FieldError {
 	ids("banners", len(c.Banners), func(i int) string { return c.Banners[i].ID })
 
 	ref := func(set map[string]struct{}, id, field, what string) {
-		if _, ok := set[id]; !ok {
+		if _, ok := set[id]; !ok && !(what == "festival" && id == "") {
 			errs = append(errs, FieldError{Field: field, Code: "ref_missing", Message: fmt.Sprintf("%s %q does not exist in the catalog", what, id)})
 		}
 	}

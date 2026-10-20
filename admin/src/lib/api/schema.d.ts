@@ -2705,8 +2705,8 @@ export interface components {
             description?: string;
             /** @description Engine (halloween, christmas, thingyan, layers) */
             engine?: string;
-            /** @description Festival ID (must exist) */
-            festivalId: string;
+            /** @description Festival ID (optional; must exist when set) */
+            festivalId?: string;
             /** @description Enable learning bias from feedback (default true) */
             learnBias?: boolean;
             locked?: components["schemas"]["Locked"];

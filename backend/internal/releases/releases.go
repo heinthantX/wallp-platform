@@ -214,6 +214,12 @@ func build(ctx context.Context, db *bun.DB, storageDir string, rel *model.Releas
 				if rev < 1 {
 					rev = 1
 				}
+				if publishNow && (isTheme || k == items.WallpaperKind || k == items.IconPackKind) {
+					var err error
+					if src, err = stampPublishedAt(src, now); err != nil {
+						return fmt.Errorf("%s %s: %w", k.Name, r.ID, err)
+					}
+				}
 				data, err := canon(src, isTheme, rev)
 				if err != nil {
 					return fmt.Errorf("%s %s: %w", k.Name, r.ID, err)
@@ -595,6 +601,21 @@ func canon(b []byte, theme bool, rev int) ([]byte, error) {
 		}
 	}
 	return json.Marshal(v)
+}
+
+// stampPublishedAt fills an empty publishedAt with the release time; admin drafts never set it.
+func stampPublishedAt(b []byte, now time.Time) ([]byte, error) {
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.UseNumber()
+	var m map[string]any
+	if err := dec.Decode(&m); err != nil {
+		return nil, err
+	}
+	if v, _ := m["publishedAt"].(string); v != "" {
+		return b, nil
+	}
+	m["publishedAt"] = now.UTC().Format(time.RFC3339)
+	return json.Marshal(m)
 }
 
 func manifestBytes(m catalog.Manifest) ([]byte, error) { return json.MarshalIndent(m, "", "  ") }

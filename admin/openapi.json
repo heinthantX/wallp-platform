@@ -1667,7 +1667,7 @@
             "type": "string"
           },
           "festivalId": {
-            "description": "Festival ID (must exist)",
+            "description": "Festival ID (optional; must exist when set)",
             "type": "string"
           },
           "learnBias": {
@@ -1689,9 +1689,6 @@
             "type": "integer"
           }
         },
-        "required": [
-          "festivalId"
-        ],
         "type": "object"
       },
       "GenerateThemeOutputBody": {

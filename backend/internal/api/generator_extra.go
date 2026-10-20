@@ -213,25 +213,22 @@ func registerGeneratorExtra(h huma.API, d *Deps) {
 			return nil, apierr.Invalid("image", "The image could not be read")
 		}
 
-		festivalID := formValue(form, "festivalId")
-		if festivalID == "" {
-			return nil, apierr.Invalid("festivalId", "festivalId is required")
-		}
-
-		// Festival must exist
-		var festRow items.ItemRow
-		if err := d.DB.NewSelect().Table("festivals").
-			Where("id = ?", festivalID).
-			Column("data").
-			Scan(ctx, &festRow); err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return nil, apierr.NotFound("Festival " + festivalID)
-			}
-			return nil, err
-		}
+		// No festival is fine: the theme just gets no festival colours, tags or id prefix.
 		var fest catalog.Festival
-		if err := json.Unmarshal(festRow.Data, &fest); err != nil {
-			return nil, err
+		if festivalID := formValue(form, "festivalId"); festivalID != "" {
+			var festRow items.ItemRow
+			if err := d.DB.NewSelect().Table("festivals").
+				Where("id = ?", festivalID).
+				Column("data").
+				Scan(ctx, &festRow); err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return nil, apierr.NotFound("Festival " + festivalID)
+				}
+				return nil, err
+			}
+			if err := json.Unmarshal(festRow.Data, &fest); err != nil {
+				return nil, err
+			}
 		}
 
 		// Recipe

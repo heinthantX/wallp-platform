@@ -101,7 +101,7 @@ const MOODS = [
 type Mood = (typeof MOODS)[number]["id"];
 
 const step1Schema = z.object({
-  festivalId: z.string().min(1, "Festival is required"),
+  festivalId: z.string(),
   mood: z.enum(["classic", "cozy", "minimal", "cute"]),
   pickForMe: z.boolean(),
   baseColor: z.string().optional(),
@@ -784,7 +784,7 @@ function ThemeGenerateContent() {
               {/* Festival Select */}
               <div className="space-y-2">
                 <Label htmlFor="festivalId">
-                  Festival <span className="text-destructive">*</span>
+                  Festival
                 </Label>
                 {festivalsLoading ? (
                   <Skeleton className="h-10 w-full" />
@@ -794,8 +794,8 @@ function ThemeGenerateContent() {
                     name="festivalId"
                     render={({ field }) => (
                       <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
+                        value={field.value || "none"}
+                        onValueChange={(v) => field.onChange(v === "none" ? "" : v)}
                       >
                         <SelectTrigger
                           id="festivalId"
@@ -804,6 +804,7 @@ function ThemeGenerateContent() {
                           <SelectValue placeholder="Select a festival..." />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="none">None (all year)</SelectItem>
                           {festivalsData?.items?.map((fest) => (
                             <SelectItem key={fest.id} value={fest.id}>
                               {festivalName(fest.data) ?? fest.id}

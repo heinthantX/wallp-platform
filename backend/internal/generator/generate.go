@@ -1081,13 +1081,17 @@ func generateSingleOption(in Input, rng *rand.Rand, seed int64) (*Option, bool) 
 	}
 	moodWord := words[rng.IntN(len(words))]
 	suffix := generateBase36(rng, 4)
-	themeID := fmt.Sprintf("%s-%s-%s", in.FestivalID, strings.ToLower(moodWord), suffix)
+	idPrefix := in.FestivalID
+	if idPrefix == "" {
+		idPrefix = "theme"
+	}
+	themeID := fmt.Sprintf("%s-%s-%s", idPrefix, strings.ToLower(moodWord), suffix)
 
 	festivalName := in.FestivalName["en"]
 	if strings.TrimSpace(festivalName) == "" {
 		festivalName = toTitleKebab(in.FestivalID)
 	}
-	nameEn := fmt.Sprintf("%s %s", festivalName, moodWord)
+	nameEn := strings.TrimSpace(festivalName + " " + moodWord)
 
 	hWord := hueWord(baseHue)
 	tagSet := make(map[string]struct{})
