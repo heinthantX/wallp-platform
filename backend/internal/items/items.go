@@ -1454,7 +1454,7 @@ func (s *Store) Transition(ctx context.Context, id, action string, note *string,
 	return &outView, nil
 }
 
-func (s *Store) Schedule(ctx context.Context, id string, at *time.Time, callerName string) (*ItemView, error) {
+func (s *Store) Schedule(ctx context.Context, id string, at *time.Time, callerName, callerRole string) (*ItemView, error) {
 	var outView ItemView
 	err := s.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		existing, err := s.getRow(ctx, tx, id)
@@ -1471,7 +1471,13 @@ func (s *Store) Schedule(ctx context.Context, id string, at *time.Time, callerNa
 			if !at.After(time.Now()) {
 				return apierr.Invalid("at", "Scheduled time must be in the future")
 			}
-			if existing.Status != model.StatusApproved && existing.Status != model.StatusScheduled {
+			// Admins skip the approve step: scheduling a draft approves it too.
+			pending := existing.Status == model.StatusDraft || existing.Status == model.StatusInReview
+			if pending && callerRole == model.RoleAdmin {
+				if valErrors := s.kind.Validate(existing.Data); len(valErrors) > 0 {
+					return makeInvalidItemError(valErrors)
+				}
+			} else if existing.Status != model.StatusApproved && existing.Status != model.StatusScheduled {
 				return apierr.Invalid("status", "Item must be approved to schedule")
 			}
 			existing.Status = model.StatusScheduled

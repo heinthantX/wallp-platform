@@ -540,15 +540,15 @@ func registerCatalogItems(h huma.API, d *Deps) {
 		Method:      http.MethodPost,
 		Path:        tp + "/{id}/schedule",
 		Summary:     "Schedule or unschedule a theme",
-		Description: "Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.",
+		Description: "Admins may schedule a draft or in-review theme directly (it is validated first). Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.",
 		Tags:        themeTags,
 	}, model.RoleReviewer), func(ctx context.Context, in *ScheduleInput) (*ItemOutput, error) {
 		me := auth.From(ctx)
-		updater := "system"
+		updater, role := "system", ""
 		if me != nil {
-			updater = me.Name
+			updater, role = me.Name, me.Role
 		}
-		res, err := themes.Schedule(ctx, in.ID, in.Body.At, updater)
+		res, err := themes.Schedule(ctx, in.ID, in.Body.At, updater, role)
 		if err != nil {
 			return nil, err
 		}
@@ -1169,14 +1169,15 @@ func registerItemStandardRoutes(h huma.API, store *items.Store, singular, path s
 		Method:      http.MethodPost,
 		Path:        path + "/{id}/schedule",
 		Summary:     "Schedule or unschedule a " + singular,
+		Description: "Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.",
 		Tags:        tags,
 	}, model.RoleReviewer), func(ctx context.Context, in *ScheduleInput) (*ItemOutput, error) {
 		me := auth.From(ctx)
-		updater := "system"
+		updater, role := "system", ""
 		if me != nil {
-			updater = me.Name
+			updater, role = me.Name, me.Role
 		}
-		res, err := store.Schedule(ctx, in.ID, in.Body.At, updater)
+		res, err := store.Schedule(ctx, in.ID, in.Body.At, updater, role)
 		if err != nil {
 			return nil, err
 		}

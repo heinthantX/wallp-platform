@@ -73,6 +73,10 @@ export function ReviewBar({
   const isDraft = normalizedStatus === "draft" || !normalizedStatus;
   // Admins skip the review request: they approve a draft directly (the API allows it).
   const adminApprovesDraft = currentUser?.role === "admin" && isDraft && Boolean(onApprove);
+  // Admins may also schedule a draft or in-review item straight away (the API approves it).
+  const canSchedule =
+    normalizedStatus === "approved" ||
+    (currentUser?.role === "admin" && (isDraft || normalizedStatus === "in_review"));
 
   const handleConfirmReject = () => {
     onReject?.(rejectNote);
@@ -181,8 +185,8 @@ export function ReviewBar({
             </>
           )}
 
-          {/* Schedule (approved -> scheduled) */}
-          {onSchedule && normalizedStatus === "approved" && can(currentUser, "items:schedule") && (
+          {/* Schedule (approved -> scheduled; admins also from draft / in review) */}
+          {onSchedule && canSchedule && can(currentUser, "items:schedule") && (
             <Button
               type="button"
               variant="secondary"

@@ -135,6 +135,22 @@ function Shell<T extends FieldValues & { id: string }>({
     }
   };
 
+  type SchedulePath = "/admin/v1/fonts/{id}/schedule";
+  const schedule = async (at: string) => {
+    if (!idParam) return;
+    try {
+      await client.POST(`/admin/v1${basePath}/{id}/schedule` as SchedulePath, {
+        params: { path: { id: idParam } },
+        body: { at },
+      });
+      toast.success("Release scheduled");
+      refetch();
+      queryClient.invalidateQueries({ queryKey: queryKeys.allAudit });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to schedule release");
+    }
+  };
+
   const duplicate = async () => {
     if (!idParam) return;
     try {
@@ -235,6 +251,7 @@ function Shell<T extends FieldValues & { id: string }>({
         onRequestReview={item ? () => review("request", "Review requested") : undefined}
         onApprove={item ? () => review("approve", "Approved") : undefined}
         onReject={item ? (note) => review("reject", "Rejected", note) : undefined}
+        onSchedule={item ? schedule : undefined}
         onDuplicate={item ? duplicate : undefined}
         onArchive={item && item.status !== "archived" ? () => run("archive") : undefined}
       />

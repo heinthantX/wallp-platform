@@ -5614,7 +5614,7 @@
     },
     "/admin/v1/banners/{id}/schedule": {
       "post": {
-        "description": "Roles: admin, reviewer",
+        "description": "Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.\n\nRoles: admin, reviewer",
         "operationId": "schedule-banner",
         "parameters": [
           {
@@ -6276,7 +6276,7 @@
     },
     "/admin/v1/categories/{id}/schedule": {
       "post": {
-        "description": "Roles: admin, reviewer",
+        "description": "Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.\n\nRoles: admin, reviewer",
         "operationId": "schedule-category",
         "parameters": [
           {
@@ -7471,7 +7471,7 @@
     },
     "/admin/v1/fonts/{id}/schedule": {
       "post": {
-        "description": "Roles: admin, reviewer",
+        "description": "Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.\n\nRoles: admin, reviewer",
         "operationId": "schedule-font",
         "parameters": [
           {
@@ -8517,7 +8517,7 @@
     },
     "/admin/v1/icon-packs/{id}/schedule": {
       "post": {
-        "description": "Roles: admin, reviewer",
+        "description": "Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.\n\nRoles: admin, reviewer",
         "operationId": "schedule-icon-pack",
         "parameters": [
           {
@@ -9863,7 +9863,7 @@
     },
     "/admin/v1/themes/{id}/schedule": {
       "post": {
-        "description": "Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.\n\nRoles: admin, reviewer",
+        "description": "Admins may schedule a draft or in-review theme directly (it is validated first). Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.\n\nRoles: admin, reviewer",
         "operationId": "schedule-theme",
         "parameters": [
           {
@@ -10765,7 +10765,7 @@
     },
     "/admin/v1/wallpapers/{id}/schedule": {
       "post": {
-        "description": "Roles: admin, reviewer",
+        "description": "Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.\n\nRoles: admin, reviewer",
         "operationId": "schedule-wallpaper",
         "parameters": [
           {

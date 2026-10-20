@@ -24,6 +24,18 @@ describe("ReviewBar", () => {
     expect(h.onApprove).toHaveBeenCalledTimes(1);
   });
 
+  // User, 2026-10-20: admins can go Save draft -> Schedule release, and keep Approve to mark an item finished.
+  it("admin on a draft can schedule a release and still approve", () => {
+    render(<ReviewBar status="draft" user={{ role: "admin" }} {...all()} />);
+    expect(screen.getByRole("button", { name: /schedule release/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^approve$/i })).toBeInTheDocument();
+  });
+
+  it("reviewer cannot schedule a draft", () => {
+    render(<ReviewBar status="draft" user={{ role: "reviewer" }} {...all()} />);
+    expect(screen.queryByRole("button", { name: /schedule release/i })).toBeNull();
+  });
+
   it("designer on a draft still requests review", () => {
     render(<ReviewBar status="draft" user={{ role: "designer" }} {...all()} />);
     expect(screen.getByRole("button", { name: /request review/i })).toBeInTheDocument();

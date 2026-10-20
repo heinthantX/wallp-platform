@@ -528,7 +528,9 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a banner
-         * @description Roles: admin, reviewer
+         * @description Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.
+         *
+         *     Roles: admin, reviewer
          */
         post: operations["schedule-banner"];
         delete?: never;
@@ -713,7 +715,9 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a category
-         * @description Roles: admin, reviewer
+         * @description Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.
+         *
+         *     Roles: admin, reviewer
          */
         post: operations["schedule-category"];
         delete?: never;
@@ -1035,7 +1039,9 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a font
-         * @description Roles: admin, reviewer
+         * @description Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.
+         *
+         *     Roles: admin, reviewer
          */
         post: operations["schedule-font"];
         delete?: never;
@@ -1286,7 +1292,9 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a icon-pack
-         * @description Roles: admin, reviewer
+         * @description Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.
+         *
+         *     Roles: admin, reviewer
          */
         post: operations["schedule-icon-pack"];
         delete?: never;
@@ -1695,7 +1703,7 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a theme
-         * @description Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.
+         * @description Admins may schedule a draft or in-review theme directly (it is validated first). Never-published wallpapers the theme uses are scheduled at the same time, or moved back to approved on unschedule.
          *
          *     Roles: admin, reviewer
          */
@@ -1923,7 +1931,9 @@ export interface paths {
         put?: never;
         /**
          * Schedule or unschedule a wallpaper
-         * @description Roles: admin, reviewer
+         * @description Admins may schedule a draft or in-review item directly (it is validated first); others need it approved.
+         *
+         *     Roles: admin, reviewer
          */
         post: operations["schedule-wallpaper"];
         delete?: never;
