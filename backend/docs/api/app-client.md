@@ -93,7 +93,12 @@ How to draw an app icon with such a pack (stop at the first step that works):
 
 A failed download goes on to step 2, so one broken file never blanks the home screen. Images are square, at least 192 px and at most 1 MB (the server checks this before publishing).
 
-Per-app images made from an icon sheet in the dashboard are white glyphs on a transparent background (192 x 192 PNG). Draw them over the pack's background, or tint them with `glyph`.
+Per-app images come from three dashboard tools, so do not assume one look:
+- **Icon sheet import:** 192 x 192 PNG on a transparent background. Either white glyphs (draw over the pack's background, or tint with `glyph`) or, for coloured sheets, the original colours (draw as is, do not tint).
+- **Prompt kit + upload:** square PNGs on a transparent background, in their own colours.
+- **AI "Generate icons":** 512 x 512 JPG, opaque, with its own background. Draw it as the whole tile.
+
+Rule of thumb: draw the image as is; only tint it when every opaque pixel is white.
 
 A pack may have no background at all: `background` is missing or `null`, and `tile` is missing or an empty string `""`. Then draw only the glyph or per-app image, with no tile behind it (transparent), over the wallpaper.
 
@@ -103,16 +108,30 @@ The catalog has a new top-level `categories` array, ordered by `sort` then `id`:
 
 ```json
 "categories": [
-  {"id": "anime", "name": {"en": "Anime"}, "sort": 0, "tags": ["manga"]},
-  {"id": "nature", "name": {"en": "Nature"}, "sort": 1}
+  {"id": "myanmar", "name": {"en": "Myanmar"}, "sort": 10, "festivalIds": ["thingyan", "thadingyut"]},
+  {"id": "anime", "name": {"en": "Anime"}, "sort": 20, "tags": ["manga"]}
 ]
 ```
 
-Themes (in the catalog's `themes` summaries and in each `themes/<id>.<rev>.json` file) and wallpapers have a new `categoryIds` array (for example `["anime", "dark"]`). An item can be in many categories, or in none (the field is then missing). `festivalId` is unchanged and still drives the festival pages.
+Themes (in the catalog's `themes` summaries and in each `themes/<id>.<rev>.json` file) and wallpapers have a new `categoryIds` array (for example `["anime", "dark"]`). An item can be in many categories, or in none (the field is then missing). Icon packs and fonts have no `categoryIds`.
 
-- A category page shows every theme and wallpaper whose `categoryIds` contains its `id`.
+A category may also list `festivalIds` (optional). Every theme and wallpaper of those festivals belongs to the category too.
+
+- A category page (or filter chip) shows every theme and wallpaper whose `categoryIds` contains its `id`, **or** whose `festivalId` is in its `festivalIds`.
+- Show categories as filter chips in `sort` order; hide a chip with no items.
+- A `festivalIds` entry always names a festival in the same catalog (publish checks reject unknown ones).
 - An id in `categoryIds` that is not in `categories` never ships: the server's publish checks reject it.
 - Old apps ignore both fields.
+
+### Optional festival (new)
+
+`festivalId` on themes, wallpapers and icon packs is now optional. An empty string `""` (or a missing field) means "no festival": the item belongs to no festival page, but still shows in the general lists, search and its categories. Parse it as an optional id; do not drop the item.
+
+Current app builds parse `festivalId` as a required id and skip such items (the catalog parser is lenient, so the rest of the store still loads).
+
+### publishedAt on items
+
+`publishedAt` on themes, wallpapers and icon packs is always set in a published catalog (UTC, RFC 3339 with `Z`). The server fills it with the publish time when the dashboard left it empty, and keeps it on later publishes.
 
 ### Immutability rules
 
