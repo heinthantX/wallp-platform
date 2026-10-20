@@ -18,6 +18,7 @@ Release gate (`internal/checks`), publish pipeline and public catalog serving (`
   3. Version `YYYY-MM-DD.N` (N increments per UTC day).
   4. Each theme whose canonical JSON changed gets `rev = last+1` and `themes/<id>.<rev>.json`. Unchanged themes keep their rev.
   5. Write `catalog.<version>.json`, then `manifest.json` last (temp file plus atomic rename).
+  5b. `stampPublishedAt` (releases.go): an empty `publishedAt` on a shipping theme, wallpaper or icon pack is set to the publish time (UTC RFC3339 with Z) and saved back into `data` and `published_data`, so later publishes keep it.
   6. Mark approved and scheduled-now items published. Release row plus audit `publish`.
 - `POST /admin/v1/releases/{version}/rollback` (admin): rewrites `manifest.json` from the stored manifest only. Audit `rollback`. Files are kept (90-day retention noted, not enforced).
 - Public (no auth, outside `/admin`): `/catalog/v1/manifest.json` (`max-age=300`), `/catalog/v1/catalog.<version>.json`, `/catalog/v1/themes/<id>.<rev>.json`, `/catalog/v1/assets/<sha>.<ext>` (immutable). Strong ETag is `"sha256"` of bytes; `If-None-Match` returns 304.

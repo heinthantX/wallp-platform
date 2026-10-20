@@ -52,3 +52,6 @@ Root cause: Homebrew pnpm vanished from PATH (2026-10-20) and pnpm 10 no longer 
 
 ## flux-2-klein-9b returned 400 code 5006 on JSON body
 Root cause: Cloudflare FLUX.2 models require multipart/form-data (`prompt,width,height,steps,seed`), not JSON; the error reads "required properties ... multipart". The response is JSON `{result:{image:<base64>}}`. Fix: `cloudflareImageBody` picks multipart for `@cf/black-forest-labs/flux-2*`, JSON otherwise.
+
+## "publishedAt must be ISO 8601 UTC with Z" on staging drafts (16f2a67)
+Root cause: 8 staging drafts failed validation because the admin never writes `publishedAt` on create, yet validation required it. Fix: allow empty and stamp at publish (`releases.stampPublishedAt`). Same change made `festivalId` optional ("" = no festival) on themes, wallpapers and icon packs; older Flutter builds cannot parse festival-less items.

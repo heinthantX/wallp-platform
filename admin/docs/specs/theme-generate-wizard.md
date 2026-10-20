@@ -10,7 +10,7 @@ Admin page `/themes/generate/` that turns inputs into a saved theme using the ba
 - Backend contract: `docs/specs/theme-generator.md` in the backend repo.
 
 ## Core Flows
-- Step 1, inputs: festival, mood, base colour, engine, recipe, description, seed, learn-bias switch.
+- Step 1, inputs: festival (optional, "None (all year)"), mood, base colour, engine, recipe, description, seed, learn-bias switch.
 - Description is interpreted live (debounced) through the interpret endpoint. Matched terms show as chips the user can remove.
 - Photo drop zone (drag, drop, paste): extracted swatches appear; clicking a swatch sets the base colour.
 - Step 2, options: six option cards from one generate call. Each shows its checks. Amber chips for `similar_to`, `cvd_accents_close` and `scene_cost`. Lock icon per swatch; Shuffle respects locks.
@@ -21,6 +21,7 @@ Admin page `/themes/generate/` that turns inputs into a saved theme using the ba
 - Prefill: query params fill step 1, so the editor's "Regenerate from saved inputs" link works.
 
 ## Quick wizard (`/themes/quick`)
+- Festival is optional (RelationSelect optional, noneLabel "None (all year)").
 - Steps: Wallpaper, Icon pack, Font (search-as-you-type picker), Live scene (optional), Create. No palette step: palette and accents are derived silently from the wallpaper via the from-image generator (top candidate).
 - Scene wallpapers (no image) are sampled from their rendered canvas thumbnail; the theme reuses the wallpaper's scene.
 - Polish: skeletons, empty states linking to create wallpaper or import fonts, Retry on generator failure, Enter = Next, Esc = Back.
