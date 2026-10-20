@@ -53,5 +53,8 @@ Root cause: Homebrew pnpm vanished from PATH (2026-10-20) and pnpm 10 no longer 
 ## flux-2-klein-9b returned 400 code 5006 on JSON body
 Root cause: Cloudflare FLUX.2 models require multipart/form-data (`prompt,width,height,steps,seed`), not JSON; the error reads "required properties ... multipart". The response is JSON `{result:{image:<base64>}}`. Fix: `cloudflareImageBody` picks multipart for `@cf/black-forest-labs/flux-2*`, JSON otherwise.
 
+## Release check ref_missing for a theme's draft wallpaper (2026-10-20)
+Root cause: quick theme generation (admin themes/quick) saves its AI wallpaper as a draft; the theme was approved/scheduled but the wallpaper stayed draft, and releases/checks only ship approved or due-scheduled wallpapers, so `ref_missing` "wallpaper X does not exist in the catalog" fired (theme thadingyut-still-henz, wallpaperIds[0]). Fix: `items.syncThemeWallpapers` approves/schedules never-published linked wallpapers with the theme (see specs/checks-and-releases.md). Themes scheduled before the fix still need their wallpaper approved once by hand.
+
 ## "publishedAt must be ISO 8601 UTC with Z" on staging drafts (16f2a67)
 Root cause: 8 staging drafts failed validation because the admin never writes `publishedAt` on create, yet validation required it. Fix: allow empty and stamp at publish (`releases.stampPublishedAt`). Same change made `festivalId` optional ("" = no festival) on themes, wallpapers and icon packs; the Flutter app parses the catalog leniently, so it skips festival-less items (they are hidden in the app, the rest of the store works).
