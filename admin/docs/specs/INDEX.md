@@ -4,7 +4,7 @@
 | theme-generate-wizard | Zero-AI theme generator wizard: interpret chips, photo palette, locks, breed, feedback, undo; quick wizard /themes/quick | docs/specs/theme-generate-wizard.md | 2026-10-20 |
 | categories-pages | Categories list/editor, CategoriesField chips on themes and wallpapers, real-scene theme cards | docs/specs/categories-pages.md | 2026-10-20 |
 | settings-import | Settings page to import a catalog bundle (drag/drop, result table) and export catalog.json | docs/specs/settings-import.md | 2026-10-18 |
-| media-pages | Wallpapers, fonts (Google import), icon packs, banners and asset library pages; icon pack no-background and sprite import | docs/specs/media-pages.md | 2026-10-20 |
+| media-pages | Wallpapers, fonts (Google import), icon packs, banners and asset library pages; icon pack no-background, sprite import (drop/paste auto-slice), AI Suggest names | docs/specs/media-pages.md | 2026-10-20 |
 | publish-page | Run checks, grouped issues, publish with warning ack, release history, rollback | docs/specs/publish-page.md | 2026-10-18 |
 | overview-and-statistics | Home overview (festival countdown, review queue) and statistics with CSV export | docs/specs/overview-and-statistics.md | 2026-10-18 |
 | layers-editor | Shared dnd-kit layers editor with polygon points and scene cost meter | docs/specs/layers-editor.md | 2026-10-18 |

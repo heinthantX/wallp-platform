@@ -33,4 +33,6 @@
 | Node env | Use /opt/homebrew/bin/node (v26); 3 admin client tests fail on clean main (env) | fixes.md | 2026-10-20 |
 | Builtin catalog | assets/builtin/catalog imports but cannot publish alone (fonts only in mock assets) | fixes.md | 2026-10-20 |
 | Scheduler backoff | Failed scheduled publish retries only on item change or backoff (2 ticks, x2, cap 1h); logs check details once | fixes.md | 2026-10-20 |
+| AI suggest (502) | Spell out JSON shape in prompt, parse free-model output leniently, retry once on ai_bad_output | fixes.md | 2026-10-20 |
+| Admin eslint env | pnpm 10 no hoist: install with `--config.public-hoist-pattern='*eslint*'` via npx pnpm@10.28.2 | fixes.md | 2026-10-20 |
 | CORS cache (B17) | Send Vary: Origin; wizard fetches with cache "no-store" | fixes.md | 2026-10-19 |

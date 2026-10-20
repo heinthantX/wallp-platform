@@ -56,7 +56,7 @@ Both runners chose the hybrid with A first. Confirmed: A is the only option that
 - Overturned: sonnet's `POST /admin/v1/icon-packs/{id}/import`. Files upload through the existing `POST /admin/v1/assets`, which already handles dedupe, sniffing and caps. P6 owns the import UI.
 
 ## Built: P7 part A (wallp-loop-2, 2026-10-19; never needs a key)
-Shipped: status endpoint, 501 helper, admin prompt kit, disabled AI placeholders. No provider client exists yet.
+Shipped: status endpoint, 501 helper, admin prompt kit. The OpenRouter text client was added later (Deferred 3); no image provider exists yet.
 1. **Backend `GET /admin/v1/ai/status`** (`internal/api/ai.go`), `auth.Admin(op)` so any role incl. viewer. Booleans plus env key names, never values:
    `{"anyConfigured":false,"providers":[{"id":"openrouter","kind":"text","configured":false,"envKeys":[...]}, cloudflare (image), gemini (text)]}`.
    `configured` is true only when every listed key is non-empty. Table test: no env, one key, partial Cloudflare pair.
@@ -67,7 +67,7 @@ Shipped: status endpoint, 501 helper, admin prompt kit, disabled AI placeholders
      > Icon set, {pack name}, {style} style. One square 1024x1024 PNG per subject. Flat illustration, same light from top-left, same line weight, palette: background {tile}, main {glyph}, detail {accent}. Subject centred inside the middle 66%, background fills edge to edge, no border, no rounded corners, no text, no watermark, no brand logos: draw the app's purpose, not its logo. Save each file under the given name.
      > `com.google.android.apps.maps.png`: a map pin with a holly sprig
    - Tips under the button: approve the first icon, then reuse it as a style reference (chat tools: "match the previous image"; Midjourney: `--sref <url> --ar 1:1`; Ideogram: style-reference upload).
-4. **AI buttons** ("Suggest names", "Generate icons") are disabled placeholders with no handler until a provider lands. The disabled reason is exposed accessibly (tooltip plus aria text), e.g. "Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN to enable".
+4. **AI buttons**: "Suggest names" is live (see Deferred 3, enabled when openrouter or gemini is configured). "Generate icons" stays disabled without Cloudflare keys; its hint says free OpenRouter keys have no image models (all OpenRouter image-output models are paid as of 2026-10-20). The disabled reason is exposed accessibly (tooltip plus aria text), e.g. "Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_TOKEN to enable".
 5. **Env keys documented** in `.env.example` (names only, empty values) and in `docs/api/admin.md`.
 
 Out of P7: any provider client, model discovery, and the glyph filler.
@@ -122,7 +122,9 @@ Out of P7: any provider client, model discovery, and the glyph filler.
 1. D glyph filler: "Fill N missing with simple icons". About 30 min, no keys, and it writes into `apps` like an upload.
 2. C `POST /admin/v1/ai/images {prompt, count, seed, size}` with `auth.Admin(op, model.RoleDesigner)`. It returns asset rows into the same mapping table and records the provider and prompt in the asset `source` for takedown. Add `ai_jobs` only if fan-out needs progress tracking.
 3. B or F `POST /admin/v1/ai/suggest {description}` with `auth.Admin(op, model.RoleDesigner, model.RoleReviewer)`, returning names, subtitle, tags and mood words that become `Interpret` chips. Include a 15 s timeout, a cache by input hash, and 402/429 handling.
-   - Built: B (2026-10-20): `POST /admin/v1/ai/suggest` with `OPENROUTER_API_KEY` (base URL override `OPENROUTER_BASE_URL`, default `https://openrouter.ai/api/v1`; model override `OPENROUTER_MODEL`, default `openrouter/free`). In-memory 24 h sha256 cache (max 200 entries, evict oldest). Errors: 501 `ai_not_configured`, 402 `ai_no_credit`, 429 `ai_rate_limited`, 502 `ai_bad_output` / `ai_upstream_error`, 504 `ai_timeout`.
+   - Built: B (2026-10-20, `internal/api/ai_suggest.go`, staging-deployed): `POST /admin/v1/ai/suggest {description (1-500), kind iconPack|theme|wallpaper|font}` -> `{names[{en,my}], subtitle{en}, tags[], moodWords[], model}`. Roles designer, reviewer (+admin). Uses `OPENROUTER_API_KEY` (base URL override `OPENROUTER_BASE_URL` for tests, default `https://openrouter.ai/api/v1`; model `OPENROUTER_MODEL`, default `openrouter/free`). 15 s timeout; in-memory 24 h sha256 cache (max 200 entries, evict oldest). Errors: 501 `ai_not_configured`, 402 `ai_no_credit`, 429 `ai_rate_limited`, 502 `ai_bad_output` / `ai_upstream_error`, 504 `ai_timeout`.
+   - Free-model robustness: the system prompt spells out the exact JSON shape; the parser accepts names as strings or `{en,my,name}`, subtitle as string or `{en}`, lists as arrays or comma strings, and cuts the outermost `{...}` from prose or code fences. One retry on `ai_bad_output` (the router often picks another model).
+   - Staging has `OPENROUTER_API_KEY` (free key); `OPENROUTER_MODEL` unset.
 4. (E sprite-sheet slicer: built client-side in the admin, see above.)
 5. A provenance field on assets (`origin: upload|glyph|ai`, provider, prompt) for later takedown.
 

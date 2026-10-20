@@ -13,6 +13,8 @@ Admin pages for wallpapers, fonts, icon packs, banners and the asset library. Ba
 - Fonts: list with live preview text loaded through `FontFace`. Google Fonts search dialog (debounced, reached from `Cmd+K` "Add Google font"). Upload TTF or OTF with a required licence select (OFL-1.1 or Apache-2.0), category, tags, scripts, weights, sampleText per language, listed toggle, fallback per script.
 - Icon packs: fields per dashboard section 4.7. Tile preview under sample app logos (lucide icons as stand-ins) on a theme wallpaper, with a shape switcher (squircle, circle, square, leaf) using clip-path or border-radius. Ring, tile and glyph colour fields.
   - Background mode: "Background image" or "No background" (`background` null, tile ""); the app logo glyph is drawn in front (fixed for now, custom glyph generation later). Backend no longer requires `background` for kind images.
+  - "Suggest names" (`AiButtons.tsx`, `useAiSuggest.ts`; enabled when openrouter or gemini is configured) opens a popover with a description prefilled from pack name + style; Cmd/Ctrl+Enter submits; picking a name sets `name.en` (and `name.my` if given). "Generate icons" stays disabled without Cloudflare keys (hint: free OpenRouter keys have no image models).
+  - Per-app drop zone ("Drop or paste app icons, or a whole sprite sheet"): ONE image whose filename matches no app and whose shape is not a single icon (aspect off by >10% or min side >= 768 px) opens the sprite-sheet slicer instead of uploading. Cmd/Ctrl+V of an image anywhere on the editor page takes the same path (extensionless clipboard files are renamed `pasted.<ext>`). Verified: a 1536x1024 8-column sheet gives 51 cells.
   - Sprite sheet import (`sprite-sheet.ts`, in `PerAppIcons.tsx`): one image, white glyphs on a dark solid background, default 8 columns, cells in COMMON_APPS order (51 apps, Phone to Brave). Auto-detects the grid with a fixed-grid fallback; background becomes alpha; each cell is a 192x192 white PNG uploaded to `apps[pkg]`. Preview grid with per-cell unassign, "Uploading n / N" progress, Retry for failed uploads, Esc closes.
 - Banners: list with dnd-kit reorder (saves via `/banners/order`). Editor per section 4.8 with action select and https link validation. Phone-size carousel preview with a date picker for "what users see on <date>".
 - Assets: library table (format, size, dimensions, used-by). Delete with confirm.
@@ -32,4 +34,5 @@ Admin pages for wallpapers, fonts, icon packs, banners and the asset library. Ba
 - Keyboard-accessible reorder through the dnd-kit keyboard sensor.
 - Icon shape switcher updates the preview instantly with no request.
 - Command palette entries for each kind.
+- Suggest names popover: spinner "Asking OpenRouter...", inline error alert, fade-in result chips, toast on pick.
 - Icon pack "No background": clear `background` without `shouldDirty` and mark dirty via `tile` (react-hook-form getDirtyFields crashes diffing an object against null).

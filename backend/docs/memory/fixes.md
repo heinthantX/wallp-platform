@@ -43,3 +43,9 @@ Project fact: on 2026-10-20 the 27 extra themes from the app's older catalog (wa
 
 ## CORS "Failed to fetch" from cached img response (B17)
 Root cause: CORS responses lacked `Vary: Origin`, so a copy cached by an `<img>` load (no Origin header) was reused by `fetch()` and failed CORS. Fix: server adds `Vary: Origin`; the quick wizard fetches with `cache: "no-store"`.
+
+## Suggest names returned 502 ai_bad_output on staging
+Root cause: the system prompt said "exact output shape" without giving the shape, and the parser required strict types; free router models reply in varying shapes. Fix: spell out the JSON shape in the prompt, parse leniently (string or object names/subtitle, comma-string lists, outermost `{...}` from prose/fences), retry once on `ai_bad_output`.
+
+## Admin lint failed: Cannot find module eslint-plugin-react-hooks
+Root cause: Homebrew pnpm vanished from PATH (2026-10-20) and pnpm 10 no longer hoists eslint plugins, so `next lint` could not resolve them. Fix, in `admin/`: `CI=true npx -y pnpm@10.28.2 install --frozen-lockfile --config.public-hoist-pattern='*eslint*'`.
