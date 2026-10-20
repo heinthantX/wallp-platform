@@ -49,3 +49,6 @@ Root cause: the system prompt said "exact output shape" without giving the shape
 
 ## Admin lint failed: Cannot find module eslint-plugin-react-hooks
 Root cause: Homebrew pnpm vanished from PATH (2026-10-20) and pnpm 10 no longer hoists eslint plugins, so `next lint` could not resolve them. Fix, in `admin/`: `CI=true npx -y pnpm@10.28.2 install --frozen-lockfile --config.public-hoist-pattern='*eslint*'`.
+
+## flux-2-klein-9b returned 400 code 5006 on JSON body
+Root cause: Cloudflare FLUX.2 models require multipart/form-data (`prompt,width,height,steps,seed`), not JSON; the error reads "required properties ... multipart". The response is JSON `{result:{image:<base64>}}`. Fix: `cloudflareImageBody` picks multipart for `@cf/black-forest-labs/flux-2*`, JSON otherwise.
